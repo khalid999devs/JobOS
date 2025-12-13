@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+    id 'java'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+application {
+    mainClass = 'com.jobos.desktop.Main'
+}
+
+javafx {
+    version = '25.0.1'
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+dependencies {
+    implementation project(':shared')
+    implementation 'com.squareup.okhttp3:okhttp:5.3.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.20.0'
+}

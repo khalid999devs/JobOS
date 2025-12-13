@@ -1,0 +1,4 @@
+rootProject.name = "jobos"
+include("shared")
+include("backend")
+include("desktop")
