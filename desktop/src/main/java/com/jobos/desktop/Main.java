@@ -1,15 +1,25 @@
 package com.jobos.desktop;
 
-import com.jobos.desktop.ui.AppView;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) {
-        AppView appView = new AppView();
-        appView.show(primaryStage);
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main-view.fxml"));
+        Parent root = loader.load();
+        
+        Scene scene = new Scene(root, 600, 400);
+        scene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
+        
+        primaryStage.setTitle("JobOS");
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(true);
+        primaryStage.show();
     }
 
     public static void main(String[] args) {
