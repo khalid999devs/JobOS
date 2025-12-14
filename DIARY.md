@@ -30,3 +30,10 @@
 
 - Configured gitignore for build artifacts and secrets
 - Created README.md and android/STRUCTURE.md documentation
+
+### Authentication & Security
+
+- Implemented JWT-based auth with access tokens (15 min) and refresh tokens (30 days)
+- Session-specific logout with unique sessionId per device (multi-device support)
+- BCrypt password hashing, SHA-256 token hashing, HMAC-SHA512 JWT signing
+- Complete error handling with ApiResponse wrapper and custom exceptions
