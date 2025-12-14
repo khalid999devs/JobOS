@@ -1,4 +1,4 @@
-package com.jobos.android;
+package com.jobos.android.ui.main;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -12,8 +12,10 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.jobos.android.dto.PingResponse;
-import com.jobos.android.dto.Notification;
+import com.jobos.android.R;
+import com.jobos.android.data.model.PingResponse;
+import com.jobos.android.data.model.Notification;
+import com.jobos.android.data.network.ApiClient;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.text.SimpleDateFormat;
@@ -65,12 +67,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupFirebaseListener() {
-        Log.d(TAG, "Setting up Firebase listener...");
         FirebaseDatabase database = FirebaseDatabase.getInstance(
             "https://jobos-4e21e-default-rtdb.asia-southeast1.firebasedatabase.app/"
         );
+        
+        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+        connectedRef.addValueEventListener(new com.google.firebase.database.ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean connected = snapshot.getValue(Boolean.class);
+                Log.d(TAG, "Firebase connected: " + connected);
+                runOnUiThread(() -> responseText.setText(connected ? "Firebase: Connected" : "Firebase: Disconnected"));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Connection error: " + error.getMessage());
+            }
+        });
+        
         notificationsRef = database.getReference("users/" + USER_ID + "/notifications");
-        Log.d(TAG, "Firebase reference: users/" + USER_ID + "/notifications");
+        notificationsRef.keepSynced(true);
 
         notificationListener = new ChildEventListener() {
             @Override

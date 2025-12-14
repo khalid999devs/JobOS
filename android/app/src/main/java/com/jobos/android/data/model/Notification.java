@@ -1,4 +1,4 @@
-package com.jobos.android.dto;
+package com.jobos.android.data.model;
 
 public class Notification {
     private String id;

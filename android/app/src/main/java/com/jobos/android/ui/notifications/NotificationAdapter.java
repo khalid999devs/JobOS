@@ -1,4 +1,4 @@
-package com.jobos.android;
+package com.jobos.android.ui.notifications;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,7 +6,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.jobos.android.dto.Notification;
+import com.jobos.android.R;
+import com.jobos.android.data.model.Notification;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

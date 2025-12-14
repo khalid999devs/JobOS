@@ -1,7 +1,8 @@
-package com.jobos.android;
+package com.jobos.android.data.network;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jobos.android.dto.PingResponse;
+import com.jobos.android.data.model.PingResponse;
+import com.jobos.android.config.ApiConfig;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

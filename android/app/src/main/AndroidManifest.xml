@@ -17,7 +17,7 @@
         android:theme="@style/Theme.JobOS"
         android:networkSecurityConfig="@xml/network_security_config">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
