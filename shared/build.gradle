@@ -7,3 +7,8 @@ java {
         languageVersion = JavaLanguageVersion.of(25)
     }
 }
+
+dependencies {
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.2'
+}
