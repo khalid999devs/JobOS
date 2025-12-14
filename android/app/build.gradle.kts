@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -38,8 +39,12 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
+    implementation(libs.recyclerview)
+    implementation(libs.cardview)
+    implementation(libs.okhttp)
+    implementation(libs.jackson.databind)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

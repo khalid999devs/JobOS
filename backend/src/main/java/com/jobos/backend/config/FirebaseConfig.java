@@ -27,6 +27,7 @@ public class FirebaseConfig {
         try (FileInputStream serviceAccount = new FileInputStream(serviceAccountPath)) {
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setDatabaseUrl("https://jobos-4e21e-default-rtdb.asia-southeast1.firebasedatabase.app/")
                     .build();
             
             FirebaseApp.initializeApp(options);

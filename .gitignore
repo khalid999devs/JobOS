@@ -25,8 +25,13 @@ android/**/build/
 android/local.properties
 android/.idea/
 android/*.iml
+android/app/google-services.json
 *.apk
 *.aab
+
+# Firebase
+firebase-keys/
+*-firebase-*.json
 
 # Logs
 *.log
