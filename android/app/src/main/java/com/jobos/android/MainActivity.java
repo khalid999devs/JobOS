@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 Notification notification = snapshot.getValue(Notification.class);
                 if (notification != null) {
                     Log.d(TAG, "Notification: " + notification.getTitle());
-                    String time = dateFormat.format(new Date());
+                    String time = dateFormat.format(new Date(notification.getCreatedAt() != null ? notification.getCreatedAt() : System.currentTimeMillis()));
                     String newNotif = "[" + time + "] " + notification.getTitle() + "\n" + 
                                      notification.getBody() + "\n\n";
                     notificationList.insert(0, newNotif);
