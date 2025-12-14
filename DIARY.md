@@ -5,7 +5,7 @@
 ### Initial Setup
 
 - Created Gradle multi-module monorepo (shared, backend, desktop, android)
-- Configured Java 25 LTS, Gradle 9.2.1, Spring Boot 4.0.0
+- Configured Java, Gradle, and Spring Boot
 - Set up PostgreSQL database
 
 ### Backend

@@ -15,28 +15,28 @@ The system features real-time notifications powered by Firebase, ensuring users 
 
 ### Backend
 
-- **Spring Boot 4.0.0** - REST API server
-- **PostgreSQL 42.7.8** - Primary database
-- **Firebase Admin SDK 9.7.0** - Real-time notifications
-- **Java 25 LTS** - Language runtime
+- **Spring Boot** - REST API server
+- **PostgreSQL** - Primary database
+- **Firebase Admin SDK** - Real-time notifications
+- **Java** - Language runtime
 
 ### Desktop Application
 
-- **JavaFX 25.0.1** - Rich desktop UI with FXML/CSS
-- **OkHttp 5.3.2** - HTTP client
+- **JavaFX** - Rich desktop UI with FXML/CSS
+- **OkHttp** - HTTP client
 - **MVC Architecture** - Clean separation of concerns
 
 ### Android Application
 
-- **Android SDK (minSdk 24, targetSdk 36)** - Java-only
-- **Firebase BOM 33.7.0** - Real-time database client
-- **OkHttp 5.3.2** - Network layer
+- **Android SDK** - Java-only
+- **Firebase BOM** - Real-time database client
+- **OkHttp** - Network layer
 - **Package-by-feature** - Production-ready structure
 
 ### Shared
 
 - **Common DTOs** - Reusable data models across platforms
-- **Gradle 9.2.1** - Multi-module build system
+- **Gradle** - Multi-module build system
 
 ## Project Structure
 
