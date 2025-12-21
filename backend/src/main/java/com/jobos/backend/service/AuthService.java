@@ -121,11 +121,6 @@ public class AuthService {
 
     @Transactional
     public void logout(UUID sessionId) {
-        // Check if session exists
-        RefreshToken token = refreshTokenRepository.findBySessionId(sessionId)
-                .orElseThrow(() -> new InvalidTokenException("No active session found"));
-        
-        // Revoke only this specific session (not all devices)
         refreshTokenRepository.deleteBySessionId(sessionId);
     }
 

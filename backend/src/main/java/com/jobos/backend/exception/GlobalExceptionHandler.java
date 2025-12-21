@@ -72,6 +72,62 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(error, ex.getMessage()));
     }
 
+    @ExceptionHandler(OtpExpiredException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleOtpExpired(
+            OtpExpiredException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.GONE.value(),
+                "Gone",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.GONE).body(ApiResponse.error(error, ex.getMessage()));
+    }
+
+    @ExceptionHandler(OtpAttemptsExceededException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleOtpAttemptsExceeded(
+            OtpAttemptsExceededException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                "Too Many Requests",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.error(error, ex.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleRateLimit(
+            RateLimitException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                "Too Many Requests",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(ApiResponse.error(error, ex.getMessage()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleUserNotFound(
+            UserNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(error, ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleValidationErrors(
             MethodArgumentNotValidException ex,

@@ -34,5 +34,8 @@ android/app/google-services.json
 firebase-keys/
 *-firebase-*.json
 
+# Environment variables
+.env
+
 # Logs
 *.log

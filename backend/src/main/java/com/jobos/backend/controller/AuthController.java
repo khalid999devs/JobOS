@@ -2,10 +2,8 @@ package com.jobos.backend.controller;
 
 import com.jobos.backend.security.jwt.JwtUtil;
 import com.jobos.backend.service.AuthService;
-import com.jobos.shared.dto.auth.AuthResponse;
-import com.jobos.shared.dto.auth.LoginRequest;
-import com.jobos.shared.dto.auth.RefreshRequest;
-import com.jobos.shared.dto.auth.RegisterRequest;
+import com.jobos.backend.service.PasswordResetService;
+import com.jobos.shared.dto.auth.*;
 import com.jobos.shared.dto.common.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +17,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final PasswordResetService passwordResetService;
 
-    public AuthController(AuthService authService, JwtUtil jwtUtil) {
+    public AuthController(AuthService authService, JwtUtil jwtUtil, PasswordResetService passwordResetService) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
@@ -57,6 +57,37 @@ public class AuthController {
         
         return ResponseEntity.ok(
             ApiResponse.success(null, "Logged out successfully from this device")
+        );
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.requestPasswordReset(request);
+        return ResponseEntity.ok(
+            ApiResponse.success(null, "A 6-digit OTP has been sent to your email. Please check your inbox and use it to reset your password. The OTP will expire in 10 minutes.")
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request);
+        return ResponseEntity.ok(
+            ApiResponse.success(null, "Password reset successfully")
+        );
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        // Extract token and get userId
+        String token = authHeader.substring(7);
+        jwtUtil.validateToken(token);
+        UUID userId = jwtUtil.getUserIdFromToken(token);
+        
+        passwordResetService.changePassword(userId, request);
+        return ResponseEntity.ok(
+            ApiResponse.success(null, "Password changed successfully. All active sessions have been logged out for security. Please login again with your new password.")
         );
     }
 }
