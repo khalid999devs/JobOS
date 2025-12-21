@@ -25,7 +25,6 @@ import java.util.UUID;
 @Service
 public class PasswordResetService {
 
-    private static final int OTP_LENGTH = 6;
     private static final int OTP_EXPIRY_MINUTES = 10;
     private static final int RATE_LIMIT_MINUTES = 2;
 
@@ -54,7 +53,7 @@ public class PasswordResetService {
     public void requestPasswordReset(ForgotPasswordRequest request) {
         String email = request.getEmail().toLowerCase().trim();
 
-        User user = userRepository.findByEmail(email)
+        userRepository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException("No account exists with email: " + email));
 
         resetTokenRepository.findByEmailAndUsedAtIsNull(email).ifPresent(existing -> {
