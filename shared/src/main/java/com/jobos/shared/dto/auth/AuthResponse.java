@@ -7,6 +7,7 @@ public class AuthResponse {
     private String userId;
     private String email;
     private String role;
+    private Boolean profileCompleted;
 
     public String getAccessToken() {
         return accessToken;
@@ -46,5 +47,13 @@ public class AuthResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Boolean getProfileCompleted() {
+        return profileCompleted;
+    }
+
+    public void setProfileCompleted(Boolean profileCompleted) {
+        this.profileCompleted = profileCompleted;
     }
 }

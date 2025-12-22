@@ -3,6 +3,7 @@ package com.jobos.backend.security.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobos.backend.repository.RefreshTokenRepository;
 import com.jobos.backend.repository.UserRepository;
+import com.jobos.backend.security.AuthenticatedUser;
 import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.common.ErrorResponse;
 import jakarta.servlet.FilterChain;
@@ -76,8 +77,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 userRepository.findById(userId).ifPresent(user -> {
+                    AuthenticatedUser authenticatedUser = new AuthenticatedUser(userId, email, role);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            email,
+                            authenticatedUser,
                             null,
                             Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
                     );

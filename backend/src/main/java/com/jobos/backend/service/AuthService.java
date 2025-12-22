@@ -115,6 +115,7 @@ public class AuthService {
         response.setUserId(user.getId().toString());
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
+        response.setProfileCompleted(user.getProfileCompleted());
 
         return response;
     }
@@ -146,6 +147,7 @@ public class AuthService {
         response.setUserId(user.getId().toString());
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
+        response.setProfileCompleted(user.getProfileCompleted());
 
         return response;
     }

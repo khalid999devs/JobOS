@@ -37,3 +37,14 @@
 - Session-specific logout with unique sessionId per device (multi-device support)
 - BCrypt password hashing, SHA-256 token hashing, HMAC-SHA512 JWT signing
 - Complete error handling with ApiResponse wrapper and custom exceptions
+
+## December 22, 2025
+
+### Profile & Preferences System
+
+- Extended User entity with profile fields (name, phone, avatar, bio, location, timezone)
+- Created role-specific preferences (SeekerPreferences and PosterProfile entities)
+- Built JSON storage for flexible arrays (skills, roles, job types, documents)
+- Added profileCompleted flag for frontend onboarding detection
+- Implemented AuthenticatedUser principal (userId + email accessible in controllers)
+- Role-aware responses automatically populate seeker or poster data based on user type
