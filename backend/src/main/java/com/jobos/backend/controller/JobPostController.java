@@ -1,7 +1,9 @@
 package com.jobos.backend.controller;
 
 import com.jobos.backend.security.AuthenticatedUser;
+import com.jobos.backend.service.ApplicationService;
 import com.jobos.backend.service.JobService;
+import com.jobos.shared.dto.application.ApplicantResponse;
 import com.jobos.shared.dto.job.JobListResponse;
 import com.jobos.shared.dto.job.JobPostRequest;
 import com.jobos.shared.dto.job.JobPostResponse;
@@ -27,6 +29,9 @@ public class JobPostController {
 
     @Autowired
     private JobService jobService;
+
+    @Autowired
+    private ApplicationService applicationService;
 
     @PostMapping
     public ResponseEntity<JobPostResponse> createJob(
@@ -87,6 +92,33 @@ public class JobPostController {
                 authenticatedUser.getUserId(), 
                 authenticatedUser.getRole(), 
                 request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/applicants")
+    public ResponseEntity<Map<String, Object>> getJobApplicants(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+            @PathVariable UUID id,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by(Sort.Direction.DESC, "appliedAt"));
+        Page<ApplicantResponse> applicantPage = applicationService.getJobApplicants(
+                id, 
+                authenticatedUser.getUserId(), 
+                status, 
+                pageable);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("applicants", applicantPage.getContent());
+        response.put("currentPage", applicantPage.getNumber());
+        response.put("totalPages", applicantPage.getTotalPages());
+        response.put("totalElements", applicantPage.getTotalElements());
+        response.put("pageSize", applicantPage.getSize());
+        response.put("hasNext", applicantPage.hasNext());
+        response.put("hasPrevious", applicantPage.hasPrevious());
+        
         return ResponseEntity.ok(response);
     }
 
