@@ -1,6 +1,7 @@
 package com.jobos.backend.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jobos.backend.domain.user.UserRole;
 import com.jobos.backend.repository.RefreshTokenRepository;
 import com.jobos.backend.repository.UserRepository;
 import com.jobos.backend.security.AuthenticatedUser;
@@ -77,7 +78,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 userRepository.findById(userId).ifPresent(user -> {
-                    AuthenticatedUser authenticatedUser = new AuthenticatedUser(userId, email, role);
+                    UserRole userRole = UserRole.valueOf(role);
+                    AuthenticatedUser authenticatedUser = new AuthenticatedUser(userId, email, userRole);
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             authenticatedUser,
                             null,

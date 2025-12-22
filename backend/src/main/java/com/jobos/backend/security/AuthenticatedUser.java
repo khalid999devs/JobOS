@@ -1,14 +1,16 @@
 package com.jobos.backend.security;
 
+import com.jobos.backend.domain.user.UserRole;
+
 import java.util.UUID;
 
 public class AuthenticatedUser {
     
     private final UUID userId;
     private final String email;
-    private final String role;
+    private final UserRole role;
 
-    public AuthenticatedUser(UUID userId, String email, String role) {
+    public AuthenticatedUser(UUID userId, String email, UserRole role) {
         this.userId = userId;
         this.email = email;
         this.role = role;
@@ -22,7 +24,7 @@ public class AuthenticatedUser {
         return email;
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return role;
     }
 
