@@ -9,7 +9,6 @@
             fx:controller="com.jobos.desktop.controller.AppShellController"
             styleClass="app-shell">
 
-    <!-- Top Bar -->
     <top>
         <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="20">
             <padding>
