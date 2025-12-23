@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.jobos.desktop.controller.SeekerApplicationsController"
+      spacing="24" 
+      styleClass="seeker-applications">
+
+    <HBox alignment="CENTER_LEFT">
+        <Label text="My Applications" styleClass="h1" HBox.hgrow="ALWAYS"/>
+        <Button text="Filter" styleClass="tertiary-button"/>
+    </HBox>
+
+    <TableView styleClass="table-view" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="Job Title" prefWidth="250"/>
+            <TableColumn text="Company" prefWidth="200"/>
+            <TableColumn text="Status" prefWidth="150"/>
+            <TableColumn text="Applied Date" prefWidth="150"/>
+            <TableColumn text="Actions" prefWidth="150"/>
+        </columns>
+        <placeholder>
+            <VBox alignment="CENTER" spacing="12" style="-fx-padding: 40px;">
+                <Label text="No applications yet" styleClass="h2"/>
+                <Label text="Start applying to jobs to see them here" styleClass="subtitle"/>
+                <Button text="Browse Jobs" styleClass="primary-button"/>
+            </VBox>
+        </placeholder>
+    </TableView>
+
+</VBox>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.jobos.desktop.controller.SeekerCVsController"
+      spacing="24" 
+      styleClass="seeker-cvs">
+
+    <HBox alignment="CENTER_LEFT">
+        <Label text="My CVs" styleClass="h1" HBox.hgrow="ALWAYS"/>
+        <Button text="Create New CV" styleClass="primary-button"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <GridPane hgap="16" vgap="16">
+            <!-- Mock CV Cards -->
+            <VBox styleClass="stat-card" spacing="12" GridPane.columnIndex="0" GridPane.rowIndex="0" prefWidth="350">
+                <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                <Label text="Software Engineer CV" styleClass="h2"/>
+                <Label text="Last updated: Dec 20, 2025" styleClass="subtitle"/>
+                <HBox spacing="12">
+                    <Button text="Edit" styleClass="primary-button"/>
+                    <Button text="Download" styleClass="secondary-button"/>
+                    <Button text="Delete" styleClass="tertiary-button"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="stat-card" spacing="12" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="350">
+                <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                <Label text="Full Stack Developer CV" styleClass="h2"/>
+                <Label text="Last updated: Dec 15, 2025" styleClass="subtitle"/>
+                <HBox spacing="12">
+                    <Button text="Edit" styleClass="primary-button"/>
+                    <Button text="Download" styleClass="secondary-button"/>
+                    <Button text="Delete" styleClass="tertiary-button"/>
+                </HBox>
+            </VBox>
+        </GridPane>
+    </ScrollPane>
+
+</VBox>

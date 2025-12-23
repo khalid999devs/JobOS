@@ -1,0 +1,503 @@
+* {
+  -fx-bg: #fafafa;
+  -fx-surface: #ffffff;
+  -fx-surface-subtle: #f5f5f5;
+  -fx-border: #e0e0e0;
+  -fx-text-primary: #1a1a1a;
+  -fx-text-secondary: #6b7280;
+  -fx-accent: #3b82f6;
+  -fx-accent-hover: #2563eb;
+  -fx-success: #10b981;
+  -fx-warning: #f59e0b;
+  -fx-danger: #ef4444;
+
+  -fx-radius-sm: 8px;
+  -fx-radius-md: 12px;
+  -fx-radius-lg: 14px;
+
+  -fx-spacing-xs: 8px;
+  -fx-spacing-sm: 12px;
+  -fx-spacing-md: 16px;
+  -fx-spacing-lg: 24px;
+  -fx-spacing-xl: 32px;
+
+  -fx-font-family: 'Inter', 'SF Pro', -apple-system, system-ui, sans-serif;
+}
+
+.root {
+  -fx-background-color: -fx-bg;
+  -fx-font-family: -fx-font-family;
+  -fx-font-size: 12px;
+}
+
+.title {
+  -fx-font-size: 26px;
+  -fx-font-weight: 600;
+  -fx-text-fill: -fx-text-primary;
+}
+
+.h1 {
+  -fx-font-size: 17px;
+  -fx-font-weight: 600;
+  -fx-text-fill: -fx-text-primary;
+}
+
+.h2 {
+  -fx-font-size: 14px;
+  -fx-font-weight: 600;
+  -fx-text-fill: -fx-text-primary;
+}
+
+.body {
+  -fx-font-size: 12px;
+  -fx-text-fill: -fx-text-primary;
+}
+.subtitle {
+  -fx-font-size: 14px;
+  -fx-text-fill: -fx-text-secondary;
+}
+
+.form-label {
+  -fx-font-size: 12px;
+  -fx-font-weight: 500;
+  -fx-text-fill: -fx-text-primary;
+}
+
+.link {
+  -fx-font-size: 12px;
+  -fx-text-fill: -fx-accent;
+  -fx-cursor: hand;
+}
+
+.link:hover {
+  -fx-underline: true;
+}
+
+.error-label {
+  -fx-text-fill: -fx-danger;
+  -fx-font-size: 12px;
+  -fx-padding: 8px 0 0 0;
+}
+.body-secondary {
+  -fx-font-size: 12px;
+  -fx-text-fill: -fx-text-secondary;
+}
+
+.surface {
+  -fx-background-color: -fx-surface;
+  -fx-background-radius: -fx-radius-md;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1px;
+  -fx-border-radius: -fx-radius-md;
+}
+
+.primary-button {
+  -fx-background-color: -fx-accent;
+  -fx-text-fill: white;
+  -fx-background-radius: -fx-radius-sm;
+  -fx-padding: 14px 28px;
+  -fx-font-size: 14px;
+  -fx-font-weight: 600;
+  -fx-cursor: hand;
+  -fx-border-width: 0;
+}
+
+.primary-button:hover {
+  -fx-background-color: -fx-accent-hover;
+}
+
+.primary-button:pressed {
+  -fx-opacity: 0.9;
+}
+
+.primary-button:disabled {
+  -fx-opacity: 0.5;
+  -fx-cursor: default;
+}
+
+.secondary-button {
+  -fx-background-color: transparent;
+  -fx-text-fill: -fx-text-primary;
+  -fx-background-radius: -fx-radius-sm;
+  -fx-padding: 14px 28px;
+  -fx-font-size: 14px;
+  -fx-font-weight: 600;
+  -fx-cursor: hand;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1.5px;
+  -fx-border-radius: -fx-radius-sm;
+}
+
+.secondary-button:hover {
+  -fx-background-color: -fx-surface-subtle;
+}
+
+.secondary-button:pressed {
+  -fx-opacity: 0.9;
+}
+
+.tertiary-button {
+  -fx-background-color: transparent;
+  -fx-text-fill: -fx-text-secondary;
+  -fx-background-radius: -fx-radius-sm;
+  -fx-padding: 10px 16px;
+  -fx-font-size: 14px;
+  -fx-cursor: hand;
+  -fx-border-width: 0;
+}
+
+.tertiary-button:hover {
+  -fx-text-fill: -fx-text-primary;
+  -fx-background-color: -fx-surface-subtle;
+}
+
+.text-field,
+.text-area {
+  -fx-background-color: -fx-surface;
+  -fx-background-radius: -fx-radius-sm;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1.5px;
+  -fx-border-radius: -fx-radius-sm;
+  -fx-padding: 12px 16px;
+  -fx-font-size: 14px;
+  -fx-text-fill: -fx-text-primary;
+}
+
+.text-field:focused,
+.text-area:focused {
+  -fx-border-color: -fx-accent;
+  -fx-border-width: 2px;
+}
+
+.text-field:disabled,
+.text-area:disabled {
+  -fx-background-color: -fx-surface-subtle;
+  -fx-opacity: 0.6;
+}
+
+.status-pill {
+  -fx-background-radius: 12px;
+  -fx-padding: 4px 12px;
+  -fx-font-size: 11px;
+  -fx-font-weight: 500;
+}
+
+.status-pill.success {
+  -fx-background-color: #d1fae5;
+  -fx-text-fill: #065f46;
+}
+
+.status-pill.warning {
+  -fx-background-color: #fef3c7;
+  -fx-text-fill: #92400e;
+}
+
+.status-pill.danger {
+  -fx-background-color: #fee2e2;
+  -fx-text-fill: #991b1b;
+}
+
+.status-pill.neutral {
+  -fx-background-color: -fx-surface-subtle;
+  -fx-text-fill: -fx-text-secondary;
+}
+
+.sidebar {
+  -fx-background-color: -fx-surface;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 0 1px 0 0;
+}
+
+.sidebar-logo {
+  -fx-font-size: 24px;
+  -fx-font-weight: 700;
+  -fx-text-fill: -fx-accent;
+  -fx-padding: 0 20px;
+}
+
+.sidebar-item {
+  -fx-background-color: transparent;
+  -fx-padding: 14px 20px;
+  -fx-cursor: hand;
+  -fx-alignment: center-left;
+  -fx-font-size: 14px;
+  -fx-text-fill: -fx-text-primary;
+  -fx-background-radius: 0;
+  -fx-border-width: 0;
+}
+
+.sidebar-item:hover {
+  -fx-background-color: -fx-surface-subtle;
+}
+
+.sidebar-item.active {
+  -fx-background-color: rgba(59, 130, 246, 0.08);
+  -fx-text-fill: -fx-accent;
+  -fx-font-weight: 600;
+  -fx-border-color: -fx-accent;
+  -fx-border-width: 0 0 0 3px;
+}
+
+.logout-button {
+  -fx-background-color: transparent;
+  -fx-text-fill: -fx-danger;
+  -fx-padding: 12px 16px;
+  -fx-font-size: 14px;
+  -fx-font-weight: 500;
+  -fx-border-color: -fx-danger;
+  -fx-border-width: 1.5px;
+  -fx-border-radius: -fx-radius-sm;
+  -fx-background-radius: -fx-radius-sm;
+  -fx-cursor: hand;
+}
+
+.logout-button:hover {
+  -fx-background-color: rgba(239, 68, 68, 0.1);
+}
+
+.top-bar {
+  -fx-background-color: -fx-surface;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 0 0 1px 0;
+}
+
+.profile-section {
+  -fx-padding: 8px 12px;
+  -fx-background-color: -fx-surface-subtle;
+  -fx-background-radius: -fx-radius-sm;
+}
+
+.profile-menu-button {
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+}
+
+.profile-menu-button .arrow-button {
+  -fx-padding: 0;
+}
+
+.avatar {
+  -fx-min-width: 36px;
+  -fx-min-height: 36px;
+  -fx-max-width: 36px;
+  -fx-max-height: 36px;
+  -fx-background-color: -fx-accent;
+  -fx-background-radius: 18px;
+}
+
+.icon-button {
+  -fx-background-color: transparent;
+  -fx-padding: 8px;
+  -fx-cursor: hand;
+  -fx-background-radius: -fx-radius-sm;
+}
+
+.icon-button:hover {
+  -fx-background-color: -fx-surface-subtle;
+}
+
+.bell-icon {
+  -fx-min-width: 24px;
+  -fx-min-height: 24px;
+  -fx-background-color: -fx-text-secondary;
+  -fx-shape: 'M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z';
+}
+
+.badge {
+  -fx-background-color: -fx-danger;
+  -fx-background-radius: 10px;
+  -fx-text-fill: white;
+  -fx-font-size: 10px;
+  -fx-font-weight: 700;
+  -fx-padding: 2px 6px;
+  -fx-min-width: 18px;
+  -fx-alignment: center;
+}
+
+.toast {
+  -fx-background-color: -fx-surface;
+  -fx-background-radius: -fx-radius-md;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1px;
+  -fx-border-radius: -fx-radius-md;
+  -fx-padding: -fx-spacing-md;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 20, 0, 0, 4);
+}
+
+.toast.success {
+  -fx-border-color: -fx-success;
+  -fx-border-width: 2px;
+}
+
+.toast.error {
+  -fx-border-color: -fx-danger;
+  -fx-border-width: 2px;
+}
+
+.modal-overlay {
+  -fx-background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  -fx-background-color: -fx-surface;
+  -fx-background-radius: -fx-radius-lg;
+  -fx-padding: -fx-spacing-lg;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 40, 0, 0, 8);
+}
+
+.empty-state {
+  -fx-alignment: center;
+  -fx-spacing: -fx-spacing-md;
+  -fx-padding: -fx-spacing-xl;
+}
+
+.skeleton {
+  -fx-background-color: linear-gradient(
+    to right,
+    -fx-surface-subtle 0%,
+    #e8e8e8 50%,
+    -fx-surface-subtle 100%
+  );
+  -fx-background-radius: -fx-radius-sm;
+}
+
+.table-view {
+  -fx-background-color: -fx-surface;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1px;
+  -fx-border-radius: -fx-radius-md;
+}
+
+.table-view .column-header {
+  -fx-background-color: -fx-surface-subtle;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 0 0 1px 0;
+  -fx-padding: 12px 16px;
+  -fx-font-weight: 600;
+  -fx-font-size: 11px;
+}
+
+.table-view .table-row-cell {
+  -fx-padding: 12px 16px;
+}
+
+/* Screen Styles */
+.welcome-screen {
+  -fx-background-color: -fx-bg;
+}
+
+.login-screen {
+  -fx-background-color: -fx-bg;
+}
+
+.seeker-dashboard {
+  -fx-background-color: transparent;
+}
+
+.stat-card {
+  -fx-background-color: -fx-surface;
+  -fx-background-radius: -fx-radius-md;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1px;
+  -fx-border-radius: -fx-radius-md;
+}
+
+.stat-label {
+  -fx-font-size: 13px;
+  -fx-text-fill: -fx-text-secondary;
+  -fx-font-weight: 500;
+}
+
+.stat-value {
+  -fx-font-size: 40px;
+  -fx-font-weight: 700;
+  -fx-text-fill: -fx-text-primary;
+}
+
+.app-shell {
+  -fx-background-color: -fx-bg;
+}
+
+.content-area {
+  -fx-background-color: transparent;
+}
+
+.job-card {
+  -fx-background-color: -fx-surface;
+  -fx-background-radius: -fx-radius-md;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1px;
+  -fx-border-radius: -fx-radius-md;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.04), 8, 0, 0, 2);
+}
+
+.job-card:hover {
+  -fx-border-color: -fx-accent;
+  -fx-effect: dropshadow(gaussian, rgba(59, 130, 246, 0.15), 12, 0, 0, 4);
+}
+
+.skill-tag {
+  -fx-background-color: rgba(59, 130, 246, 0.1);
+  -fx-text-fill: -fx-accent;
+  -fx-padding: 6px 14px;
+  -fx-background-radius: 6px;
+  -fx-font-size: 12px;
+  -fx-font-weight: 500;
+}
+
+.filter-chip {
+  -fx-background-color: -fx-surface;
+  -fx-text-fill: -fx-text-primary;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1px;
+  -fx-border-radius: 20px;
+  -fx-background-radius: 20px;
+  -fx-padding: 8px 16px;
+  -fx-font-size: 13px;
+  -fx-cursor: hand;
+}
+
+.filter-chip:hover {
+  -fx-background-color: -fx-accent;
+  -fx-text-fill: white;
+  -fx-border-color: -fx-accent;
+}
+
+.notification-bell {
+  -fx-cursor: hand;
+}
+
+.bell-icon {
+  -fx-font-size: 20px;
+}
+
+.profile-menu {
+  -fx-background-color: transparent;
+  -fx-border-color: -fx-border;
+  -fx-border-width: 1px;
+  -fx-border-radius: -fx-radius-sm;
+  -fx-padding: 8px 16px;
+}
+
+.table-view .table-row-cell:hover {
+  -fx-background-color: -fx-surface-subtle;
+}
+
+.scroll-bar {
+  -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+  -fx-background-color: #d1d5db;
+  -fx-background-radius: 4px;
+}
+
+.scroll-bar .thumb:hover {
+  -fx-background-color: #9ca3af;
+}
+
+.focus-indicator {
+  -fx-border-color: -fx-accent;
+  -fx-border-width: 2px;
+  -fx-border-radius: -fx-radius-sm;
+}

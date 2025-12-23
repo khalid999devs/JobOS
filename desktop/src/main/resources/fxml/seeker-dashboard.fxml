@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.jobos.desktop.controller.SeekerDashboardController"
+      spacing="28" 
+      styleClass="seeker-dashboard">
+
+    <!-- Stats Cards -->
+    <HBox spacing="20">
+        <VBox styleClass="stat-card" spacing="12" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24"/>
+            </padding>
+            <Label text="Applications" styleClass="stat-label"/>
+            <Label fx:id="applicationsCount" text="0" styleClass="stat-value"/>
+            <Label text="+3 this week" styleClass="form-label" style="-fx-text-fill: -fx-success;"/>
+        </VBox>
+
+        <VBox styleClass="stat-card" spacing="12" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24"/>
+            </padding>
+            <Label text="Interviews" styleClass="stat-label"/>
+            <Label fx:id="interviewsCount" text="0" styleClass="stat-value"/>
+            <Label text="2 upcoming" styleClass="form-label" style="-fx-text-fill: -fx-warning;"/>
+        </VBox>
+
+        <VBox styleClass="stat-card" spacing="12" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24"/>
+            </padding>
+            <Label text="Saved Jobs" styleClass="stat-label"/>
+            <Label fx:id="savedJobsCount" text="0" styleClass="stat-value"/>
+            <Label text="12 new today" styleClass="form-label" style="-fx-text-fill: -fx-accent;"/>
+        </VBox>
+    </HBox>
+
+    <!-- Recent Applications -->
+    <VBox spacing="16">
+        <HBox alignment="CENTER_LEFT">
+            <Label text="Recent Applications" styleClass="h1" HBox.hgrow="ALWAYS"/>
+            <Button text="View All" styleClass="tertiary-button" onAction="#handleViewAllApplications"/>
+        </HBox>
+
+        <TableView fx:id="applicationsTable" styleClass="table-view" prefHeight="300">
+            <columns>
+                <TableColumn text="Job Title" prefWidth="280" fx:id="jobTitleColumn"/>
+                <TableColumn text="Company" prefWidth="200" fx:id="companyColumn"/>
+                <TableColumn text="Status" prefWidth="150" fx:id="statusColumn"/>
+                <TableColumn text="Applied Date" prefWidth="140" fx:id="dateColumn"/>
+                <TableColumn text="Salary" prefWidth="130" fx:id="salaryColumn"/>
+            </columns>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="12" style="-fx-padding: 40px;">
+                    <Label text="No applications yet" styleClass="h2"/>
+                    <Label text="Start applying to jobs to see them here" styleClass="subtitle"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+    <!-- Quick Actions -->
+    <HBox spacing="16">
+        <Button text="Browse Jobs" styleClass="primary-button" onAction="#handleBrowseJobs"/>
+        <Button text="My CVs" styleClass="secondary-button" onAction="#handleMyCVs"/>
+        <Button text="Update Profile" styleClass="secondary-button"/>
+    </HBox>
+
+</VBox>
