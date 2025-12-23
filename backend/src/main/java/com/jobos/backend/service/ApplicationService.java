@@ -76,10 +76,12 @@ public class ApplicationService {
         jobPost.setApplicationCount(jobPost.getApplicationCount() + 1);
         jobPostRepository.save(jobPost);
 
-        notificationService.publishUserNotification(
-                jobPost.getPoster().getId().toString(),
+        notificationService.createNotification(
+                jobPost.getPoster(),
+                com.jobos.backend.domain.notification.NotificationType.APPLICATION_STATUS_CHANGE,
                 "New Application for " + jobPost.getTitle(),
-                seeker.getFirstName() + " " + seeker.getLastName() + " applied to your job"
+                seeker.getFirstName() + " " + seeker.getLastName() + " applied to your job",
+                "/applications/" + application.getId()
         );
 
         return mapToApplicationResponse(application);
@@ -177,10 +179,12 @@ public class ApplicationService {
         history.setNotes(request.getNotes());
         statusHistoryRepository.save(history);
 
-        notificationService.publishUserNotification(
-                application.getSeeker().getId().toString(),
+        notificationService.createNotification(
+                application.getSeeker(),
+                com.jobos.backend.domain.notification.NotificationType.APPLICATION_STATUS_CHANGE,
                 "Application Status Updated",
-                "Your application for " + application.getJobPost().getTitle() + " is now " + newStatus
+                "Your application for " + application.getJobPost().getTitle() + " is now " + newStatus,
+                "/applications/" + application.getId()
         );
 
         return mapToApplicationResponse(application);
