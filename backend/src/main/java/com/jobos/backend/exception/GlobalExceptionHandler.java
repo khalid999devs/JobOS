@@ -3,6 +3,8 @@ package com.jobos.backend.exception;
 import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.common.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,6 +18,8 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleResponseStatusException(
@@ -183,12 +187,23 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+        logger.error("Unexpected error occurred: ", ex);
+        
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "An unexpected error occurred",
+                ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred",
                 request.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.error(error, "An unexpected error occurred"));
+        
+        List<String> details = new ArrayList<>();
+        details.add("Exception type: " + ex.getClass().getSimpleName());
+        if (ex.getCause() != null) {
+            details.add("Cause: " + ex.getCause().getMessage());
+        }
+        error.setDetails(details);
+        
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error(error, ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred"));
     }
 }

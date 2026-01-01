@@ -1,9 +1,13 @@
 package com.jobos.backend.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobos.backend.domain.cv.*;
 import com.jobos.backend.domain.user.User;
 import com.jobos.backend.repository.*;
 import com.jobos.shared.dto.cv.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -14,25 +18,31 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class CVService {
 
+    private static final Logger logger = LoggerFactory.getLogger(CVService.class);
+
     private final CVRepository cvRepository;
     private final CVSectionRepository cvSectionRepository;
     private final CVTemplateRepository cvTemplateRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
     private static final int MAX_CVS_PER_USER = 5;
     private static final int MAX_SECTIONS_PER_CV = 15;
 
     public CVService(CVRepository cvRepository, CVSectionRepository cvSectionRepository,
-                     CVTemplateRepository cvTemplateRepository, UserRepository userRepository) {
+                     CVTemplateRepository cvTemplateRepository, UserRepository userRepository,
+                     ObjectMapper objectMapper) {
         this.cvRepository = cvRepository;
         this.cvSectionRepository = cvSectionRepository;
         this.cvTemplateRepository = cvTemplateRepository;
         this.userRepository = userRepository;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -50,9 +60,10 @@ public class CVService {
         cv.setUser(user);
         cv.setTitle(request.getTitle());
 
+        CVTemplate template = null;
         if (request.getTemplateId() != null && !request.getTemplateId().isEmpty()) {
             UUID templateId = UUID.fromString(request.getTemplateId());
-            CVTemplate template = cvTemplateRepository.findById(templateId)
+            template = cvTemplateRepository.findById(templateId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Template not found"));
             cv.setTemplate(template);
         }
@@ -70,7 +81,30 @@ public class CVService {
         }
 
         cv = cvRepository.save(cv);
-        return mapToCVResponse(cv);
+        cvRepository.flush();
+
+        // Create sections from template configuration
+        List<CVSectionResponse> sectionResponses = new ArrayList<>();
+        if (template != null && template.getSectionsConfig() != null) {
+            sectionResponses = createSectionsFromTemplate(cv, template);
+        }
+        
+        CVResponse response = new CVResponse();
+        response.setId(cv.getId().toString());
+        response.setTitle(cv.getTitle());
+        response.setIsDefault(cv.getIsDefault());
+        response.setVisibility(cv.getVisibility().name());
+        response.setCreatedAt(cv.getCreatedAt());
+        response.setUpdatedAt(cv.getUpdatedAt());
+        
+        if (template != null) {
+            response.setTemplateId(template.getId().toString());
+            response.setTemplateName(template.getName());
+        }
+        
+        response.setSections(sectionResponses);
+        
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -183,8 +217,8 @@ public class CVService {
         }
 
         section.setTitle(request.getTitle());
-        section.setContent(request.getContent());
-        section.setIsVisible(request.getIsVisible());
+        section.setContent(convertContentToString(request.getContent()));
+        section.setIsVisible(request.getIsVisible() != null ? request.getIsVisible() : true);
         section.setOrderIndex(cv.getSections().size());
 
         section = cvSectionRepository.save(section);
@@ -219,8 +253,8 @@ public class CVService {
             section.setTitle(request.getTitle());
         }
 
-        if (request.getContent() != null && !request.getContent().isEmpty()) {
-            section.setContent(request.getContent());
+        if (request.getContent() != null) {
+            section.setContent(convertContentToString(request.getContent()));
         }
 
         if (request.getIsVisible() != null) {
@@ -294,9 +328,12 @@ public class CVService {
             response.setTemplateName(cv.getTemplate().getName());
         }
 
-        List<CVSectionResponse> sectionResponses = cv.getSections().stream()
-                .map(this::mapToCVSectionResponse)
-                .collect(Collectors.toList());
+        List<CVSectionResponse> sectionResponses = new ArrayList<>();
+        if (cv.getSections() != null) {
+            sectionResponses = cv.getSections().stream()
+                    .map(this::mapToCVSectionResponse)
+                    .collect(Collectors.toList());
+        }
         response.setSections(sectionResponses);
 
         return response;
@@ -329,5 +366,83 @@ public class CVService {
         response.setIsVisible(section.getIsVisible());
         response.setCreatedAt(section.getCreatedAt());
         return response;
+    }
+
+    /**
+     * Creates CV sections based on template's sectionsConfig JSON.
+     * Each template defines which sections should be created and their default structure.
+     */
+    private List<CVSectionResponse> createSectionsFromTemplate(CV cv, CVTemplate template) {
+        List<CVSectionResponse> responses = new ArrayList<>();
+        
+        try {
+            String sectionsConfig = template.getSectionsConfig();
+            if (sectionsConfig == null || sectionsConfig.isEmpty()) {
+                return responses;
+            }
+
+            List<Map<String, Object>> sectionConfigs = objectMapper.readValue(
+                sectionsConfig, 
+                new TypeReference<List<Map<String, Object>>>() {}
+            );
+
+            for (Map<String, Object> config : sectionConfigs) {
+                CVSection section = new CVSection();
+                section.setCv(cv);
+
+                // Parse section type
+                String sectionTypeStr = (String) config.get("sectionType");
+                try {
+                    section.setSectionType(CVSectionType.valueOf(sectionTypeStr));
+                } catch (IllegalArgumentException e) {
+                    logger.warn("Unknown section type: {}, skipping", sectionTypeStr);
+                    continue;
+                }
+
+                // Set title
+                section.setTitle((String) config.get("title"));
+
+                // Set order index
+                Object orderIndexObj = config.get("orderIndex");
+                section.setOrderIndex(orderIndexObj instanceof Integer ? (Integer) orderIndexObj : 0);
+
+                // Set visibility
+                Object isVisibleObj = config.get("isVisible");
+                section.setIsVisible(isVisibleObj instanceof Boolean ? (Boolean) isVisibleObj : true);
+
+                // Convert defaultContent to JSON string for storage
+                Object defaultContent = config.get("defaultContent");
+                if (defaultContent != null) {
+                    section.setContent(objectMapper.writeValueAsString(defaultContent));
+                } else {
+                    section.setContent("{}");
+                }
+
+                section = cvSectionRepository.save(section);
+                responses.add(mapToCVSectionResponse(section));
+            }
+
+            logger.info("Created {} sections for CV {} from template {}", 
+                responses.size(), cv.getId(), template.getName());
+
+        } catch (Exception e) {
+            logger.error("Error creating sections from template: {}", e.getMessage(), e);
+        }
+
+        return responses;
+    }
+
+    private String convertContentToString(Object content) {
+        if (content == null) {
+            return null;
+        }
+        if (content instanceof String) {
+            return (String) content;
+        }
+        try {
+            return objectMapper.writeValueAsString(content);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid content format");
+        }
     }
 }

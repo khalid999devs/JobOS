@@ -1,7 +1,6 @@
 package com.jobos.shared.dto.cv;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class CVSectionRequest {
@@ -12,10 +11,8 @@ public class CVSectionRequest {
     @Size(max = 100, message = "Title must not exceed 100 characters")
     private String title;
 
-    @NotBlank(message = "Content is required")
-    private String content;
+    private Object content;
 
-    @NotNull(message = "Visibility is required")
     private Boolean isVisible;
 
     public String getSectionType() {
@@ -34,11 +31,11 @@ public class CVSectionRequest {
         this.title = title;
     }
 
-    public String getContent() {
+    public Object getContent() {
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(Object content) {
         this.content = content;
     }
 

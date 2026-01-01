@@ -118,6 +118,12 @@ JobOS/
    source ~/.zshrc
    ```
 
+### Continuously building the Backend
+
+```bash
+./gradlew :backend:classes --continuous
+```
+
 ### Running the Backend
 
 ```bash

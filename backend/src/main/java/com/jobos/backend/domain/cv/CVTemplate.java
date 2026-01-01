@@ -2,6 +2,8 @@ package com.jobos.backend.domain.cv;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -32,6 +34,17 @@ public class CVTemplate {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TemplateCategory category;
+
+    // JSON configuration defining sections structure for this template
+    // Format: [{"sectionType": "PERSONAL_INFO", "title": "Personal Information", "orderIndex": 0, "defaultContent": {...}}, ...]
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "sections_config", columnDefinition = "jsonb")
+    private String sectionsConfig;
+
+    // Styling configuration for the template (colors, fonts, layout)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "style_config", columnDefinition = "jsonb")
+    private String styleConfig;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
@@ -102,6 +115,22 @@ public class CVTemplate {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public String getSectionsConfig() {
+        return sectionsConfig;
+    }
+
+    public void setSectionsConfig(String sectionsConfig) {
+        this.sectionsConfig = sectionsConfig;
+    }
+
+    public String getStyleConfig() {
+        return styleConfig;
+    }
+
+    public void setStyleConfig(String styleConfig) {
+        this.styleConfig = styleConfig;
     }
 
     public LocalDateTime getCreatedAt() {

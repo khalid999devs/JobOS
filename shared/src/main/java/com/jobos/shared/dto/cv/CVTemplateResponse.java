@@ -12,6 +12,9 @@ public class CVTemplateResponse {
     private Integer creditCost;
     private String category;
     private Boolean isUnlocked;
+    private String sectionsConfig;  // JSON config defining template sections
+    private String styleConfig;     // JSON config defining template styling
+    private Integer sectionCount;   // Number of sections in this template
     private LocalDateTime createdAt;
 
     public String getId() {
@@ -76,6 +79,30 @@ public class CVTemplateResponse {
 
     public void setIsUnlocked(Boolean isUnlocked) {
         this.isUnlocked = isUnlocked;
+    }
+
+    public String getSectionsConfig() {
+        return sectionsConfig;
+    }
+
+    public void setSectionsConfig(String sectionsConfig) {
+        this.sectionsConfig = sectionsConfig;
+    }
+
+    public String getStyleConfig() {
+        return styleConfig;
+    }
+
+    public void setStyleConfig(String styleConfig) {
+        this.styleConfig = styleConfig;
+    }
+
+    public Integer getSectionCount() {
+        return sectionCount;
+    }
+
+    public void setSectionCount(Integer sectionCount) {
+        this.sectionCount = sectionCount;
     }
 
     public LocalDateTime getCreatedAt() {

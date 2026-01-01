@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import com.jobos.backend.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +28,9 @@ public class CVTemplateController {
     @GetMapping
     @Operation(summary = "Get all templates", description = "Get all available CV templates. Premium templates show isUnlocked status based on user's unlocks. Filter by category (optional).")
     public ResponseEntity<List<CVTemplateResponse>> getAllTemplates(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(required = false) String category) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         List<CVTemplateResponse> templates = cvTemplateService.getAllTemplates(userId, category);
         return ResponseEntity.ok(templates);
     }
@@ -38,9 +38,9 @@ public class CVTemplateController {
     @GetMapping("/{templateId}")
     @Operation(summary = "Get template by ID", description = "Get CV template details with unlock status")
     public ResponseEntity<CVTemplateResponse> getTemplateById(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable String templateId) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         UUID templateUUID = UUID.fromString(templateId);
         CVTemplateResponse response = cvTemplateService.getTemplateById(templateUUID, userId);
         return ResponseEntity.ok(response);
@@ -49,9 +49,9 @@ public class CVTemplateController {
     @PostMapping("/{templateId}/unlock")
     @Operation(summary = "Unlock premium template", description = "Unlock a premium template using credits. Free templates are already unlocked.")
     public ResponseEntity<CVTemplateResponse> unlockTemplate(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable String templateId) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         UUID templateUUID = UUID.fromString(templateId);
         CVTemplateResponse response = cvTemplateService.unlockTemplate(templateUUID, userId);
         return ResponseEntity.ok(response);

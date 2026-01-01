@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import com.jobos.backend.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +29,8 @@ public class SubscriptionController {
 
     @GetMapping
     @Operation(summary = "Get all plans", description = "Get all available subscription plans with current plan indication")
-    public ResponseEntity<List<SubscriptionPlanResponse>> getAllPlans(@AuthenticationPrincipal Jwt jwt) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+    public ResponseEntity<List<SubscriptionPlanResponse>> getAllPlans(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
         List<SubscriptionPlanResponse> response = creditService.getAllPlans(userId);
         return ResponseEntity.ok(response);
     }
@@ -38,9 +38,9 @@ public class SubscriptionController {
     @PostMapping("/subscribe")
     @Operation(summary = "Subscribe to plan", description = "Subscribe to a subscription plan")
     public ResponseEntity<SubscriptionPlanResponse> subscribe(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @Valid @RequestBody SubscribeRequest request) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         SubscriptionPlanResponse response = creditService.subscribe(userId, request);
         return ResponseEntity.ok(response);
     }

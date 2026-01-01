@@ -11,7 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import com.jobos.backend.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,8 +31,8 @@ public class CreditController {
 
     @GetMapping("/balance")
     @Operation(summary = "Get credit balance", description = "Get user's current credit balance")
-    public ResponseEntity<CreditBalanceResponse> getBalance(@AuthenticationPrincipal Jwt jwt) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+    public ResponseEntity<CreditBalanceResponse> getBalance(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
         CreditBalanceResponse response = creditService.getBalance(userId);
         return ResponseEntity.ok(response);
     }
@@ -40,9 +40,9 @@ public class CreditController {
     @PostMapping("/purchase")
     @Operation(summary = "Purchase credits", description = "Purchase credits using payment method")
     public ResponseEntity<CreditBalanceResponse> purchaseCredits(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @Valid @RequestBody CreditPurchaseRequest request) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         CreditBalanceResponse response = creditService.purchaseCredits(userId, request);
         return ResponseEntity.ok(response);
     }
@@ -50,10 +50,10 @@ public class CreditController {
     @GetMapping("/transactions")
     @Operation(summary = "Get credit transactions", description = "Get paginated credit transaction history")
     public ResponseEntity<Page<CreditTransactionResponse>> getTransactions(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<CreditTransactionResponse> response = creditService.getTransactions(userId, pageable);
         return ResponseEntity.ok(response);

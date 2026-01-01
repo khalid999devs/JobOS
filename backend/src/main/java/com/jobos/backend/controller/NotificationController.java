@@ -13,7 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import com.jobos.backend.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -33,10 +33,10 @@ public class NotificationController {
     @GetMapping
     @Operation(summary = "Get notifications", description = "Get paginated list of notifications")
     public ResponseEntity<Page<NotificationResponse>> getNotifications(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<NotificationResponse> response = notificationService.getNotifications(userId, pageable);
         return ResponseEntity.ok(response);
@@ -44,8 +44,8 @@ public class NotificationController {
 
     @GetMapping("/unread-count")
     @Operation(summary = "Get unread count", description = "Get count of unread notifications")
-    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal Jwt jwt) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
         long count = notificationService.getUnreadCount(userId);
         return ResponseEntity.ok(count);
     }
@@ -53,9 +53,9 @@ public class NotificationController {
     @PatchMapping("/{notificationId}/read")
     @Operation(summary = "Mark as read", description = "Mark notification as read")
     public ResponseEntity<NotificationResponse> markAsRead(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @PathVariable String notificationId) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         UUID notifId = UUID.fromString(notificationId);
         NotificationResponse response = notificationService.markAsRead(userId, notifId);
         return ResponseEntity.ok(response);
@@ -63,16 +63,16 @@ public class NotificationController {
 
     @PatchMapping("/read-all")
     @Operation(summary = "Mark all as read", description = "Mark all notifications as read")
-    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal Jwt jwt) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
         notificationService.markAllAsRead(userId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/preferences")
     @Operation(summary = "Get preferences", description = "Get notification preferences")
-    public ResponseEntity<NotificationPreferenceResponse> getPreferences(@AuthenticationPrincipal Jwt jwt) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+    public ResponseEntity<NotificationPreferenceResponse> getPreferences(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
         NotificationPreferenceResponse response = notificationService.getPreferences(userId);
         return ResponseEntity.ok(response);
     }
@@ -80,9 +80,9 @@ public class NotificationController {
     @PatchMapping("/preferences")
     @Operation(summary = "Update preferences", description = "Update notification preferences")
     public ResponseEntity<NotificationPreferenceResponse> updatePreferences(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal AuthenticatedUser user,
             @Valid @RequestBody UpdatePreferenceRequest request) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = user.getUserId();
         NotificationPreferenceResponse response = notificationService.updatePreferences(userId, request);
         return ResponseEntity.ok(response);
     }
