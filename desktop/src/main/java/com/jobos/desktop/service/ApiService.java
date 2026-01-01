@@ -1,7 +1,9 @@
 package com.jobos.desktop.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobos.desktop.util.Constants;
+import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.common.HealthResponse;
 import com.jobos.shared.dto.common.PingResponse;
 import okhttp3.OkHttpClient;
@@ -28,7 +30,16 @@ public class ApiService {
                 throw new Exception("HTTP " + response.code());
             }
             String responseBody = response.body().string();
-            return objectMapper.readValue(responseBody, PingResponse.class);
+            ApiResponse<PingResponse> apiResponse = objectMapper.readValue(
+                responseBody, 
+                new TypeReference<ApiResponse<PingResponse>>() {}
+            );
+            
+            if (!apiResponse.isSuccess()) {
+                throw new Exception(apiResponse.getMessage() != null ? apiResponse.getMessage() : "API request failed");
+            }
+            
+            return apiResponse.getResult();
         }
     }
 
@@ -43,7 +54,16 @@ public class ApiService {
                 throw new Exception("HTTP " + response.code());
             }
             String responseBody = response.body().string();
-            return objectMapper.readValue(responseBody, HealthResponse.class);
+            ApiResponse<HealthResponse> apiResponse = objectMapper.readValue(
+                responseBody, 
+                new TypeReference<ApiResponse<HealthResponse>>() {}
+            );
+            
+            if (!apiResponse.isSuccess()) {
+                throw new Exception(apiResponse.getMessage() != null ? apiResponse.getMessage() : "API request failed");
+            }
+            
+            return apiResponse.getResult();
         }
     }
 }

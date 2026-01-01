@@ -1,6 +1,5 @@
 package com.jobos.desktop.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.*;
@@ -15,10 +14,8 @@ public class FirebaseService {
     private static final String DATABASE_URL = "https://jobos-4e21e-default-rtdb.asia-southeast1.firebasedatabase.app/";
     private static FirebaseService instance;
     private DatabaseReference notificationsRef;
-    private final ObjectMapper objectMapper;
 
     private FirebaseService() throws IOException {
-        objectMapper = new ObjectMapper();
         initializeFirebase();
     }
 

@@ -1,39 +1,101 @@
 package com.jobos.backend.controller;
 
 import com.jobos.backend.service.NotificationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jobos.shared.dto.common.ApiResponse;
+import com.jobos.shared.dto.notification.NotificationPreferenceResponse;
+import com.jobos.shared.dto.notification.NotificationResponse;
+import com.jobos.shared.dto.notification.UpdateFcmTokenRequest;
+import com.jobos.shared.dto.notification.UpdatePreferenceRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.jobos.backend.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/notifications")
+@Tag(name = "Notifications", description = "Notification management endpoints")
+@SecurityRequirement(name = "bearer-auth")
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    @PostMapping("/send")
-    public ResponseEntity<?> sendNotification(@RequestBody Map<String, String> request) {
-        try {
-            String userId = request.get("userId");
-            String title = request.get("title");
-            String body = request.get("body");
+    public NotificationController(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
 
-            if (userId == null || title == null || body == null) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Missing required fields: userId, title, body"));
-            }
+    @GetMapping
+    @Operation(summary = "Get notifications", description = "Get paginated list of notifications")
+    public ResponseEntity<ApiResponse<Page<NotificationResponse>>> getNotifications(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        UUID userId = user.getUserId();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<NotificationResponse> response = notificationService.getNotifications(userId, pageable);
+        return ResponseEntity.ok(ApiResponse.success(response, "Notifications retrieved successfully"));
+    }
 
-            notificationService.publishUserNotification(userId, title, body);
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Notification sent to user: " + userId
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                .body(Map.of("error", e.getMessage()));
-        }
+    @GetMapping("/unread-count")
+    @Operation(summary = "Get unread count", description = "Get count of unread notifications")
+    public ResponseEntity<ApiResponse<Long>> getUnreadCount(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
+        long count = notificationService.getUnreadCount(userId);
+        return ResponseEntity.ok(ApiResponse.success(count, "Unread count retrieved successfully"));
+    }
+
+    @PatchMapping("/{notificationId}/read")
+    @Operation(summary = "Mark as read", description = "Mark notification as read")
+    public ResponseEntity<ApiResponse<NotificationResponse>> markAsRead(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @PathVariable String notificationId) {
+        UUID userId = user.getUserId();
+        UUID notifId = UUID.fromString(notificationId);
+        NotificationResponse response = notificationService.markAsRead(userId, notifId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Notification marked as read"));
+    }
+
+    @PatchMapping("/read-all")
+    @Operation(summary = "Mark all as read", description = "Mark all notifications as read")
+    public ResponseEntity<ApiResponse<Void>> markAllAsRead(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "All notifications marked as read"));
+    }
+
+    @GetMapping("/preferences")
+    @Operation(summary = "Get preferences", description = "Get notification preferences")
+    public ResponseEntity<ApiResponse<NotificationPreferenceResponse>> getPreferences(@AuthenticationPrincipal AuthenticatedUser user) {
+        UUID userId = user.getUserId();
+        NotificationPreferenceResponse response = notificationService.getPreferences(userId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Notification preferences retrieved successfully"));
+    }
+
+    @PatchMapping("/preferences")
+    @Operation(summary = "Update preferences", description = "Update notification preferences")
+    public ResponseEntity<ApiResponse<NotificationPreferenceResponse>> updatePreferences(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @Valid @RequestBody UpdatePreferenceRequest request) {
+        UUID userId = user.getUserId();
+        NotificationPreferenceResponse response = notificationService.updatePreferences(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "Notification preferences updated successfully"));
+    }
+
+    @PostMapping("/fcm-token")
+    @Operation(summary = "Update FCM token", description = "Update user's Firebase Cloud Messaging token for push notifications")
+    public ResponseEntity<ApiResponse<Void>> updateFcmToken(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @Valid @RequestBody UpdateFcmTokenRequest request) {
+        UUID userId = user.getUserId();
+        notificationService.updateFcmToken(userId, request.getFcmToken());
+        return ResponseEntity.ok(ApiResponse.success(null, "FCM token updated successfully"));
     }
 }

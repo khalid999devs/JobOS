@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.jobos.desktop.controller.SeekerJobsController"
+      spacing="24" 
+      styleClass="seeker-jobs">
+
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <TextField promptText="Search jobs by title, company, or skills..." prefWidth="400" styleClass="text-field" HBox.hgrow="ALWAYS"/>
+        <ComboBox promptText="Location" prefWidth="150" styleClass="text-field"/>
+        <ComboBox promptText="Job Type" prefWidth="150" styleClass="text-field"/>
+        <Button text="Search" styleClass="primary-button" prefWidth="120"/>
+    </HBox>
+
+    <HBox spacing="12">
+        <Label text="Filters:" styleClass="body" style="-fx-font-weight: 600;"/>
+        <Button text="Remote" styleClass="filter-chip"/>
+        <Button text="Full-time" styleClass="filter-chip"/>
+        <Button text="$100k+" styleClass="filter-chip"/>
+        <Button text="Clear All" styleClass="tertiary-button"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+        <VBox spacing="16">
+            <!-- Mock Job Cards with detailed info -->
+            <VBox styleClass="job-card" spacing="16">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Senior Java Developer" styleClass="h2"/>
+                        <Label text="Tech Solutions Inc." styleClass="body" style="-fx-font-weight: 600;"/>
+                        <HBox spacing="16">
+                            <Label text="San Francisco, CA" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="Remote Available" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="Full-time" styleClass="subtitle"/>
+                        </HBox>
+                    </VBox>
+                    <VBox alignment="TOP_RIGHT" spacing="4">
+                        <Label text="$120k - $150k" styleClass="h2" style="-fx-text-fill: -fx-success;"/>
+                        <Label text="Posted 2 days ago" styleClass="form-label" style="-fx-text-fill: -fx-text-secondary;"/>
+                    </VBox>
+                </HBox>
+                <Label text="We're looking for an experienced Java developer to join our backend team. You'll work on microservices architecture, cloud deployment, and scalable systems." styleClass="body" wrapText="true"/>
+                <HBox spacing="8">
+                    <Label text="Java" styleClass="skill-tag"/>
+                    <Label text="Spring Boot" styleClass="skill-tag"/>
+                    <Label text="AWS" styleClass="skill-tag"/>
+                    <Label text="Docker" styleClass="skill-tag"/>
+                    <Label text="Kubernetes" styleClass="skill-tag"/>
+                </HBox>
+                <HBox spacing="12">
+                    <Button text="Apply Now" styleClass="primary-button"/>
+                    <Button text="Save Job" styleClass="secondary-button"/>
+                    <Button text="View Details" styleClass="tertiary-button"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="job-card" spacing="16">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Full Stack Engineer" styleClass="h2"/>
+                        <Label text="Innovation Labs" styleClass="body" style="-fx-font-weight: 600;"/>
+                        <HBox spacing="16">
+                            <Label text="New York, NY" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="Hybrid" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="Full-time" styleClass="subtitle"/>
+                        </HBox>
+                    </VBox>
+                    <VBox alignment="TOP_RIGHT" spacing="4">
+                        <Label text="$100k - $130k" styleClass="h2" style="-fx-text-fill: -fx-success;"/>
+                        <Label text="Posted 5 days ago" styleClass="form-label" style="-fx-text-fill: -fx-text-secondary;"/>
+                    </VBox>
+                </HBox>
+                <Label text="Join our fast-growing startup to build innovative web applications. Work with modern tech stack and shape product direction." styleClass="body" wrapText="true"/>
+                <HBox spacing="8">
+                    <Label text="React" styleClass="skill-tag"/>
+                    <Label text="Node.js" styleClass="skill-tag"/>
+                    <Label text="PostgreSQL" styleClass="skill-tag"/>
+                    <Label text="TypeScript" styleClass="skill-tag"/>
+                </HBox>
+                <HBox spacing="12">
+                    <Button text="Apply Now" styleClass="primary-button"/>
+                    <Button text="Save Job" styleClass="secondary-button"/>
+                    <Button text="View Details" styleClass="tertiary-button"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="job-card" spacing="16">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Backend Developer" styleClass="h2"/>
+                        <Label text="Cloud Systems Corp" styleClass="body" style="-fx-font-weight: 600;"/>
+                        <HBox spacing="16">
+                            <Label text="Austin, TX" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="On-site" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="Full-time" styleClass="subtitle"/>
+                        </HBox>
+                    </VBox>
+                    <VBox alignment="TOP_RIGHT" spacing="4">
+                        <Label text="$110k - $140k" styleClass="h2" style="-fx-text-fill: -fx-success;"/>
+                        <Label text="Posted 1 week ago" styleClass="form-label" style="-fx-text-fill: -fx-text-secondary;"/>
+                    </VBox>
+                </HBox>
+                <Label text="Build and maintain scalable backend services for our cloud platform. Work with cutting-edge technologies and distributed systems." styleClass="body" wrapText="true"/>
+                <HBox spacing="8">
+                    <Label text="Python" styleClass="skill-tag"/>
+                    <Label text="Django" styleClass="skill-tag"/>
+                    <Label text="Redis" styleClass="skill-tag"/>
+                    <Label text="MongoDB" styleClass="skill-tag"/>
+                </HBox>
+                <HBox spacing="12">
+                    <Button text="Apply Now" styleClass="primary-button"/>
+                    <Button text="Save Job" styleClass="secondary-button"/>
+                    <Button text="View Details" styleClass="tertiary-button"/>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="job-card" spacing="16">
+                <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="8" HBox.hgrow="ALWAYS">
+                        <Label text="Software Architect" styleClass="h2"/>
+                        <Label text="Enterprise Solutions Ltd" styleClass="body" style="-fx-font-weight: 600;"/>
+                        <HBox spacing="16">
+                            <Label text="Seattle, WA" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="Remote" styleClass="subtitle"/>
+                            <Label text="•" styleClass="subtitle"/>
+                            <Label text="Full-time" styleClass="subtitle"/>
+                        </HBox>
+                    </VBox>
+                    <VBox alignment="TOP_RIGHT" spacing="4">
+                        <Label text="$150k - $180k" styleClass="h2" style="-fx-text-fill: -fx-success;"/>
+                        <Label text="Posted 3 days ago" styleClass="form-label" style="-fx-text-fill: -fx-text-secondary;"/>
+                    </VBox>
+                </HBox>
+                <Label text="Lead technical architecture for enterprise applications. Define standards, mentor teams, and drive technical excellence." styleClass="body" wrapText="true"/>
+                <HBox spacing="8">
+                    <Label text="Microservices" styleClass="skill-tag"/>
+                    <Label text="System Design" styleClass="skill-tag"/>
+                    <Label text="Cloud" styleClass="skill-tag"/>
+                    <Label text="Leadership" styleClass="skill-tag"/>
+                </HBox>
+                <HBox spacing="12">
+                    <Button text="Apply Now" styleClass="primary-button"/>
+                    <Button text="Save Job" styleClass="secondary-button"/>
+                    <Button text="View Details" styleClass="tertiary-button"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+
+</VBox>

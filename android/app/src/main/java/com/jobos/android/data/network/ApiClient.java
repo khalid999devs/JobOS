@@ -1,6 +1,8 @@
 package com.jobos.android.data.network;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jobos.android.data.model.ApiResponse;
 import com.jobos.android.data.model.PingResponse;
 import com.jobos.android.config.ApiConfig;
 import okhttp3.OkHttpClient;
@@ -27,7 +29,16 @@ public class ApiClient {
                 throw new Exception("HTTP error: " + response.code());
             }
             String responseBody = response.body().string();
-            return objectMapper.readValue(responseBody, PingResponse.class);
+            ApiResponse<PingResponse> apiResponse = objectMapper.readValue(
+                responseBody, 
+                new TypeReference<ApiResponse<PingResponse>>() {}
+            );
+            
+            if (!apiResponse.isSuccess()) {
+                throw new Exception(apiResponse.getMessage() != null ? apiResponse.getMessage() : "API request failed");
+            }
+            
+            return apiResponse.getResult();
         }
     }
 }
