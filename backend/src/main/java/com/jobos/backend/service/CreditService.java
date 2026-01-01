@@ -4,6 +4,8 @@ import com.jobos.backend.domain.credit.*;
 import com.jobos.backend.domain.user.User;
 import com.jobos.backend.repository.*;
 import com.jobos.shared.dto.credit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class CreditService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CreditService.class);
 
     private final CreditBalanceRepository creditBalanceRepository;
     private final CreditTransactionRepository creditTransactionRepository;
@@ -51,6 +55,7 @@ public class CreditService {
 
     @Transactional
     public CreditBalanceResponse purchaseCredits(UUID userId, CreditPurchaseRequest request) {
+        logger.info("User {} initiating credit purchase of {} credits", userId, request.getAmount());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -59,6 +64,7 @@ public class CreditService {
 
         balance.setBalance(balance.getBalance() + request.getAmount());
         balance = creditBalanceRepository.save(balance);
+        logger.info("Credit purchase successful for user {}. New balance: {}", userId, balance.getBalance());
 
         // Record transaction
         CreditTransaction transaction = new CreditTransaction();
@@ -74,15 +80,18 @@ public class CreditService {
 
     @Transactional
     public boolean deductCredits(User user, Integer amount, String description) {
+        logger.debug("Attempting to deduct {} credits from user {} for: {}", amount, user.getId(), description);
         CreditBalance balance = creditBalanceRepository.findByUser(user)
                 .orElseGet(() -> initializeBalance(user));
 
         if (balance.getBalance() < amount) {
+            logger.warn("Insufficient credits for user {}. Required: {}, Available: {}", user.getId(), amount, balance.getBalance());
             return false;
         }
 
         balance.setBalance(balance.getBalance() - amount);
         balance = creditBalanceRepository.save(balance);
+        logger.info("Credits deducted from user {}. Amount: {}, New balance: {}, Reason: {}", user.getId(), amount, balance.getBalance(), description);
 
         // Record transaction
         CreditTransaction transaction = new CreditTransaction();
@@ -123,6 +132,7 @@ public class CreditService {
 
     @Transactional
     public SubscriptionPlanResponse subscribe(UUID userId, SubscribeRequest request) {
+        logger.info("User {} subscribing to plan {}", userId, request.getPlanId());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -152,6 +162,7 @@ public class CreditService {
         subscription.setIsActive(true);
         subscription.setAutoRenew(true);
         userSubscriptionRepository.save(subscription);
+        logger.info("Subscription created for user {}. Plan: {}, EndDate: {}", userId, plan.getName(), subscription.getEndDate());
 
         // Add monthly credits
         CreditBalance balance = creditBalanceRepository.findByUser(user)

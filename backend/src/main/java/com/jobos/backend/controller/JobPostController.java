@@ -9,7 +9,6 @@ import com.jobos.shared.dto.job.JobPostRequest;
 import com.jobos.shared.dto.job.JobPostResponse;
 import com.jobos.shared.dto.job.JobPostUpdateRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,11 +26,13 @@ import java.util.UUID;
 @RequestMapping("/api/job-posts")
 public class JobPostController {
 
-    @Autowired
-    private JobService jobService;
+    private final JobService jobService;
+    private final ApplicationService applicationService;
 
-    @Autowired
-    private ApplicationService applicationService;
+    public JobPostController(JobService jobService, ApplicationService applicationService) {
+        this.jobService = jobService;
+        this.applicationService = applicationService;
+    }
 
     @PostMapping
     public ResponseEntity<JobPostResponse> createJob(

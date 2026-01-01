@@ -12,6 +12,8 @@ import com.jobos.backend.repository.ApplicationStatusHistoryRepository;
 import com.jobos.backend.repository.JobPostRepository;
 import com.jobos.backend.repository.UserRepository;
 import com.jobos.shared.dto.application.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,8 @@ import java.util.UUID;
 
 @Service
 public class ApplicationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
 
     private final ApplicationRepository applicationRepository;
     private final ApplicationStatusHistoryRepository statusHistoryRepository;
@@ -45,6 +49,7 @@ public class ApplicationService {
 
     @Transactional
     public ApplicationResponse apply(UUID seekerId, ApplicationRequest request) {
+        logger.info("Seeker {} applying for job {}", seekerId, request.getJobId());
         User seeker = userRepository.findById(seekerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -72,6 +77,7 @@ public class ApplicationService {
         application.setStatus(ApplicationStatus.PENDING);
 
         application = applicationRepository.saveAndFlush(application);
+        logger.info("Application {} created successfully for job {} by seeker {}", application.getId(), jobPost.getId(), seekerId);
 
         jobPost.setApplicationCount(jobPost.getApplicationCount() + 1);
         jobPostRepository.save(jobPost);
@@ -161,6 +167,7 @@ public class ApplicationService {
         try {
             newStatus = ApplicationStatus.valueOf(request.getStatus().toUpperCase());
         } catch (IllegalArgumentException e) {
+            logger.warn("Invalid status update attempt: {} for application {}", request.getStatus(), applicationId);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + request.getStatus());
         }
 
@@ -170,6 +177,7 @@ public class ApplicationService {
 
         application.setStatus(newStatus);
         application = applicationRepository.saveAndFlush(application);
+        logger.info("Application {} status changed from {} to {} by poster {}", applicationId, oldStatus, newStatus, posterId);
 
         ApplicationStatusHistory history = new ApplicationStatusHistory();
         history.setApplication(application);

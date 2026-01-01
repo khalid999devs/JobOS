@@ -6,10 +6,17 @@ spring:
     url: jdbc:postgresql://localhost:5432/jobos
     username: postgres
     password: khalid01
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: false
+    open-in-view: false
   mail:
     host: smtp.gmail.com
     port: 587
@@ -30,3 +37,12 @@ jwt:
   secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production-use-environment-variable-min-32-chars}
   access-token-expiration: 15
   refresh-token-expiration: 30
+
+logging:
+  level:
+    root: INFO
+    com.jobos.backend: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n'

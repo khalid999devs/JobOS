@@ -9,7 +9,8 @@ import com.jobos.backend.repository.SavedJobRepository;
 import com.jobos.backend.repository.UserRepository;
 import com.jobos.shared.dto.job.*;
 import jakarta.persistence.criteria.Predicate;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,17 +31,22 @@ import java.util.stream.Collectors;
 @Service
 public class JobSearchService {
 
-    @Autowired
-    private JobPostRepository jobPostRepository;
+    private static final Logger logger = LoggerFactory.getLogger(JobSearchService.class);
 
-    @Autowired
-    private SavedJobRepository savedJobRepository;
+    private final JobPostRepository jobPostRepository;
+    private final SavedJobRepository savedJobRepository;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    public JobSearchService(JobPostRepository jobPostRepository,
+                           SavedJobRepository savedJobRepository,
+                           UserRepository userRepository,
+                           ObjectMapper objectMapper) {
+        this.jobPostRepository = jobPostRepository;
+        this.savedJobRepository = savedJobRepository;
+        this.userRepository = userRepository;
+        this.objectMapper = objectMapper;
+    }
 
     @Transactional(readOnly = true)
     public JobSearchResponse searchJobs(JobSearchRequest searchRequest, UUID userId) {

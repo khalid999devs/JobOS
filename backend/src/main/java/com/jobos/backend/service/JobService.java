@@ -11,7 +11,8 @@ import com.jobos.backend.repository.PosterProfileRepository;
 import com.jobos.backend.repository.SavedJobRepository;
 import com.jobos.backend.repository.UserRepository;
 import com.jobos.shared.dto.job.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,20 +29,25 @@ import java.util.UUID;
 @Service
 public class JobService {
 
-    @Autowired
-    private JobPostRepository jobPostRepository;
+    private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
-    @Autowired
-    private UserRepository userRepository;
+    private final JobPostRepository jobPostRepository;
+    private final UserRepository userRepository;
+    private final PosterProfileRepository posterProfileRepository;
+    private final SavedJobRepository savedJobRepository;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private PosterProfileRepository posterProfileRepository;
-
-    @Autowired
-    private SavedJobRepository savedJobRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    public JobService(JobPostRepository jobPostRepository,
+                     UserRepository userRepository,
+                     PosterProfileRepository posterProfileRepository,
+                     SavedJobRepository savedJobRepository,
+                     ObjectMapper objectMapper) {
+        this.jobPostRepository = jobPostRepository;
+        this.userRepository = userRepository;
+        this.posterProfileRepository = posterProfileRepository;
+        this.savedJobRepository = savedJobRepository;
+        this.objectMapper = objectMapper;
+    }
 
     @Transactional
     public JobPostResponse createJob(UUID posterId, UserRole userRole, JobPostRequest request) {

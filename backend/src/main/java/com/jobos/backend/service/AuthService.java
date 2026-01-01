@@ -14,9 +14,11 @@ import com.jobos.backend.security.jwt.JwtUtil;
 import com.jobos.shared.dto.auth.AuthResponse;
 import com.jobos.shared.dto.auth.LoginRequest;
 import com.jobos.shared.dto.auth.RegisterRequest;
-import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -27,6 +29,8 @@ import java.util.UUID;
 
 @Service
 public class AuthService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -47,7 +51,10 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        logger.info("Registration attempt for email: {}", request.getEmail());
+        
         if (userRepository.existsByEmail(request.getEmail())) {
+            logger.warn("Registration failed - email already exists: {}", request.getEmail());
             throw new DuplicateResourceException("Email already registered: " + request.getEmail());
         }
 
@@ -65,6 +72,7 @@ public class AuthService {
         user.setStatus(UserStatus.ACTIVE);
 
         user = userRepository.save(user);
+        logger.info("User registered successfully: {} with role: {}", user.getId(), role);
 
         UUID sessionId = UUID.randomUUID();
         return generateAuthResponse(user, sessionId);
@@ -72,17 +80,25 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
+        logger.info("Login attempt for email: {}", request.getEmail());
+        
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+                .orElseThrow(() -> {
+                    logger.warn("Login failed - user not found: {}", request.getEmail());
+                    return new InvalidCredentialsException("Invalid email or password");
+                });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            logger.warn("Login failed - invalid password for user: {}", request.getEmail());
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
+            logger.warn("Login failed - account not active: {} status: {}", request.getEmail(), user.getStatus());
             throw new InvalidCredentialsException("Account is " + user.getStatus().name().toLowerCase());
         }
 
+        logger.info("User logged in successfully: {}", user.getId());
         UUID sessionId = UUID.randomUUID();
         return generateAuthResponse(user, sessionId);
     }
@@ -101,7 +117,6 @@ public class AuthService {
         User user = userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Generate new access token with same sessionId
         String newAccessToken = jwtUtil.generateAccessToken(
             user.getId(), 
             user.getEmail(), 
@@ -122,6 +137,7 @@ public class AuthService {
 
     @Transactional
     public void logout(UUID sessionId) {
+        logger.info("Logout for session: {}", sessionId);
         refreshTokenRepository.deleteBySessionId(sessionId);
     }
 

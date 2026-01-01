@@ -9,6 +9,8 @@ import com.jobos.backend.repository.UserRepository;
 import com.jobos.shared.dto.auth.ChangePasswordRequest;
 import com.jobos.shared.dto.auth.ForgotPasswordRequest;
 import com.jobos.shared.dto.auth.ResetPasswordRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ import java.util.UUID;
 @Service
 public class PasswordResetService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PasswordResetService.class);
     private static final int OTP_EXPIRY_MINUTES = 10;
     private static final int RATE_LIMIT_MINUTES = 2;
 

@@ -7,7 +7,6 @@ import com.jobos.shared.dto.job.JobListResponse;
 import com.jobos.shared.dto.job.JobPostResponse;
 import com.jobos.shared.dto.job.JobSearchRequest;
 import com.jobos.shared.dto.job.JobSearchResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +23,13 @@ import java.util.UUID;
 @RequestMapping("/api/jobs")
 public class JobSearchController {
 
-    @Autowired
-    private JobSearchService jobSearchService;
+    private final JobSearchService jobSearchService;
+    private final JobService jobService;
 
-    @Autowired
-    private JobService jobService;
+    public JobSearchController(JobSearchService jobSearchService, JobService jobService) {
+        this.jobSearchService = jobSearchService;
+        this.jobService = jobService;
+    }
 
     @PostMapping("/search")
     public ResponseEntity<JobSearchResponse> searchJobs(
