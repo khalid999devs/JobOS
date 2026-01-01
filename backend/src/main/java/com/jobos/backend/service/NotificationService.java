@@ -10,6 +10,8 @@ import com.jobos.backend.repository.UserRepository;
 import com.jobos.shared.dto.notification.NotificationPreferenceResponse;
 import com.jobos.shared.dto.notification.NotificationResponse;
 import com.jobos.shared.dto.notification.UpdatePreferenceRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,16 +24,21 @@ import java.util.UUID;
 @Service
 public class NotificationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+
     private final NotificationRepository notificationRepository;
     private final NotificationPreferenceRepository preferenceRepository;
     private final UserRepository userRepository;
+    private final FirebaseMessagingService firebaseMessagingService;
 
     public NotificationService(NotificationRepository notificationRepository,
                               NotificationPreferenceRepository preferenceRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository,
+                              FirebaseMessagingService firebaseMessagingService) {
         this.notificationRepository = notificationRepository;
         this.preferenceRepository = preferenceRepository;
         this.userRepository = userRepository;
+        this.firebaseMessagingService = firebaseMessagingService;
     }
 
     @Transactional(readOnly = true)
@@ -87,6 +94,61 @@ public class NotificationService {
         notification.setActionUrl(actionUrl);
         notification.setIsRead(false);
         notificationRepository.save(notification);
+
+        sendPushNotificationIfEnabled(user, type, title, message, actionUrl);
+    }
+
+    private void sendPushNotificationIfEnabled(User user, NotificationType type, String title, String message, String actionUrl) {
+        try {
+            NotificationPreference pref = preferenceRepository.findByUser(user).orElse(null);
+            
+            if (pref == null) {
+                logger.debug("No preferences found for user {}, skipping push notification", user.getId());
+                return;
+            }
+
+            if (!Boolean.TRUE.equals(pref.getPushEnabled())) {
+                logger.debug("Push notifications disabled for user {}", user.getId());
+                return;
+            }
+
+            if (!isNotificationTypeEnabled(pref, type)) {
+                logger.debug("Notification type {} disabled for user {}", type, user.getId());
+                return;
+            }
+
+            String fcmToken = user.getFcmToken();
+            if (fcmToken == null || fcmToken.isEmpty()) {
+                logger.debug("No FCM token for user {}, skipping push notification", user.getId());
+                return;
+            }
+
+            firebaseMessagingService.sendPushNotification(fcmToken, title, message, actionUrl);
+        } catch (Exception e) {
+            logger.error("Failed to send push notification to user {}: {}", user.getId(), e.getMessage());
+        }
+    }
+
+    private boolean isNotificationTypeEnabled(NotificationPreference pref, NotificationType type) {
+        return switch (type) {
+            case APPLICATION_STATUS_CHANGE -> Boolean.TRUE.equals(pref.getApplicationUpdates());
+            case NEW_JOB_MATCH -> Boolean.TRUE.equals(pref.getJobRecommendations());
+            case MESSAGE_RECEIVED -> true;
+            case CREDIT_LOW -> true;
+            case SUBSCRIPTION_EXPIRING -> true;
+            case SYSTEM_ANNOUNCEMENT -> true;
+        };
+    }
+
+    @Transactional
+    public void updateFcmToken(UUID userId, String fcmToken) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        
+        String cleanToken = fcmToken != null ? fcmToken.replaceAll("^\"|\"$", "").trim() : null;
+        user.setFcmToken(cleanToken);
+        userRepository.save(user);
+        logger.info("FCM token updated for user {}", userId);
     }
 
     @Transactional(readOnly = true)

@@ -1,6 +1,7 @@
 package com.jobos.backend.controller;
 
 import com.jobos.backend.service.CreditService;
+import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.credit.SubscribeRequest;
 import com.jobos.shared.dto.credit.SubscriptionPlanResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,19 +30,19 @@ public class SubscriptionController {
 
     @GetMapping
     @Operation(summary = "Get all plans", description = "Get all available subscription plans with current plan indication")
-    public ResponseEntity<List<SubscriptionPlanResponse>> getAllPlans(@AuthenticationPrincipal AuthenticatedUser user) {
+    public ResponseEntity<ApiResponse<List<SubscriptionPlanResponse>>> getAllPlans(@AuthenticationPrincipal AuthenticatedUser user) {
         UUID userId = user.getUserId();
         List<SubscriptionPlanResponse> response = creditService.getAllPlans(userId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response, "Subscription plans retrieved successfully"));
     }
 
     @PostMapping("/subscribe")
     @Operation(summary = "Subscribe to plan", description = "Subscribe to a subscription plan")
-    public ResponseEntity<SubscriptionPlanResponse> subscribe(
+    public ResponseEntity<ApiResponse<SubscriptionPlanResponse>> subscribe(
             @AuthenticationPrincipal AuthenticatedUser user,
             @Valid @RequestBody SubscribeRequest request) {
         UUID userId = user.getUserId();
         SubscriptionPlanResponse response = creditService.subscribe(userId, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response, "Subscribed to plan successfully"));
     }
 }

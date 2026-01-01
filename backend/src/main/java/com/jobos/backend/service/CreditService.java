@@ -38,7 +38,7 @@ public class CreditService {
         this.userRepository = userRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public CreditBalanceResponse getBalance(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -175,15 +175,17 @@ public class CreditService {
         CreditBalance balance = new CreditBalance();
         balance.setUser(user);
         balance.setBalance(0);
-        return creditBalanceRepository.save(balance);
+        balance = creditBalanceRepository.save(balance);
+        creditBalanceRepository.flush();
+        return balance;
     }
 
     private CreditBalanceResponse mapToBalanceResponse(CreditBalance balance) {
         CreditBalanceResponse response = new CreditBalanceResponse();
         response.setUserId(balance.getUser().getId().toString());
         response.setBalance(balance.getBalance());
-        response.setCreatedAt(balance.getCreatedAt().toString());
-        response.setUpdatedAt(balance.getUpdatedAt().toString());
+        response.setCreatedAt(balance.getCreatedAt() != null ? balance.getCreatedAt().toString() : null);
+        response.setUpdatedAt(balance.getUpdatedAt() != null ? balance.getUpdatedAt().toString() : null);
         return response;
     }
 

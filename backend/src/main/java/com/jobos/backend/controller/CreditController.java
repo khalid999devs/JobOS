@@ -1,6 +1,7 @@
 package com.jobos.backend.controller;
 
 import com.jobos.backend.service.CreditService;
+import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.credit.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.jobos.backend.security.AuthenticatedUser;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,31 +31,31 @@ public class CreditController {
 
     @GetMapping("/balance")
     @Operation(summary = "Get credit balance", description = "Get user's current credit balance")
-    public ResponseEntity<CreditBalanceResponse> getBalance(@AuthenticationPrincipal AuthenticatedUser user) {
+    public ResponseEntity<ApiResponse<CreditBalanceResponse>> getBalance(@AuthenticationPrincipal AuthenticatedUser user) {
         UUID userId = user.getUserId();
         CreditBalanceResponse response = creditService.getBalance(userId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response, "Credit balance retrieved successfully"));
     }
 
     @PostMapping("/purchase")
     @Operation(summary = "Purchase credits", description = "Purchase credits using payment method")
-    public ResponseEntity<CreditBalanceResponse> purchaseCredits(
+    public ResponseEntity<ApiResponse<CreditBalanceResponse>> purchaseCredits(
             @AuthenticationPrincipal AuthenticatedUser user,
             @Valid @RequestBody CreditPurchaseRequest request) {
         UUID userId = user.getUserId();
         CreditBalanceResponse response = creditService.purchaseCredits(userId, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response, "Credits purchased successfully"));
     }
 
     @GetMapping("/transactions")
     @Operation(summary = "Get credit transactions", description = "Get paginated credit transaction history")
-    public ResponseEntity<Page<CreditTransactionResponse>> getTransactions(
+    public ResponseEntity<ApiResponse<Page<CreditTransactionResponse>>> getTransactions(
             @AuthenticationPrincipal AuthenticatedUser user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         UUID userId = user.getUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<CreditTransactionResponse> response = creditService.getTransactions(userId, pageable);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response, "Credit transactions retrieved successfully"));
     }
 }

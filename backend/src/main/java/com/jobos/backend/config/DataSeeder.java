@@ -1,14 +1,18 @@
 package com.jobos.backend.config;
 
+import com.jobos.backend.domain.credit.PlanType;
+import com.jobos.backend.domain.credit.SubscriptionPlan;
 import com.jobos.backend.domain.cv.CVTemplate;
 import com.jobos.backend.domain.cv.TemplateCategory;
 import com.jobos.backend.repository.CVTemplateRepository;
+import com.jobos.backend.repository.SubscriptionPlanRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Configuration
@@ -174,5 +178,49 @@ public class DataSeeder {
         template.setStyleConfig(styleConfig.trim());
         template.setIsActive(true);
         return template;
+    }
+
+    @Bean
+    CommandLineRunner seedSubscriptionPlans(SubscriptionPlanRepository planRepository) {
+        return args -> {
+            if (planRepository.count() > 0) {
+                logger.info("Subscription Plans already exist. Skipping seeding.");
+                return;
+            }
+
+            logger.info("Seeding Subscription Plans...");
+
+            List<SubscriptionPlan> plans = List.of(
+                createPlan(PlanType.FREE, "Free Plan", "Get started with essential features for job seekers. Perfect for exploring the platform.", 
+                    BigDecimal.ZERO, BigDecimal.ZERO, 100, 3, 25, false, false, false),
+                createPlan(PlanType.PRO, "Pro Plan", "Unlock advanced features for serious job seekers. AI assistance and premium templates included.", 
+                    new BigDecimal("9.99"), new BigDecimal("99.99"), 500, 10, 100, true, false, true),
+                createPlan(PlanType.PREMIUM, "Premium Plan", "Ultimate package for power users. Unlimited access to all features with priority support.", 
+                    new BigDecimal("19.99"), new BigDecimal("199.99"), 2000, 999, 999, true, true, true)
+            );
+
+            planRepository.saveAll(plans);
+            logger.info("Successfully seeded {} Subscription Plans", plans.size());
+        };
+    }
+
+    private SubscriptionPlan createPlan(PlanType planType, String name, String description,
+                                        BigDecimal monthlyPrice, BigDecimal yearlyPrice,
+                                        Integer monthlyCredits, Integer maxCVs, Integer maxJobApplications,
+                                        Boolean hasAIAssistance, Boolean hasPrioritySupport, Boolean hasPremiumTemplates) {
+        SubscriptionPlan plan = new SubscriptionPlan();
+        plan.setPlanType(planType);
+        plan.setName(name);
+        plan.setDescription(description);
+        plan.setMonthlyPrice(monthlyPrice);
+        plan.setYearlyPrice(yearlyPrice);
+        plan.setMonthlyCredits(monthlyCredits);
+        plan.setMaxCVs(maxCVs);
+        plan.setMaxJobApplications(maxJobApplications);
+        plan.setHasAIAssistance(hasAIAssistance);
+        plan.setHasPrioritySupport(hasPrioritySupport);
+        plan.setHasPremiumTemplates(hasPremiumTemplates);
+        plan.setIsActive(true);
+        return plan;
     }
 }
