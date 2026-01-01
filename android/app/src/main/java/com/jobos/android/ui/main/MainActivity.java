@@ -1,143 +1,111 @@
 package com.jobos.android.ui.main;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
+import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.jobos.android.R;
-import com.jobos.android.data.model.PingResponse;
-import com.jobos.android.data.model.Notification;
-import com.jobos.android.data.network.ApiClient;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import com.jobos.android.data.local.SessionManager;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "JobOS";
-    private static final String USER_ID = "test-user-123";
-    
-    private TextView responseText;
-    private TextView notificationsText;
-    private ApiClient apiClient;
-    private ExecutorService executor;
-    private DatabaseReference notificationsRef;
-    private ChildEventListener notificationListener;
-    private StringBuilder notificationList = new StringBuilder();
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+
+    private NavController navController;
+    private BottomNavigationView bottomNavigation;
+    private SessionManager sessionManager;
+
+    private final Set<Integer> noBottomNavDestinations = new HashSet<>(Arrays.asList(
+            R.id.splashFragment,
+            R.id.loginFragment,
+            R.id.registerFragment,
+            R.id.forgotPasswordFragment,
+            R.id.resetPasswordFragment,
+            R.id.roleSelectionFragment,
+            R.id.seekerSetupFragment,
+            R.id.posterSetupFragment
+    ));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        apiClient = new ApiClient();
-        executor = Executors.newSingleThreadExecutor();
-
-        responseText = findViewById(R.id.responseText);
-        notificationsText = findViewById(R.id.notificationsText);
-        Button pingButton = findViewById(R.id.pingButton);
-
-        pingButton.setOnClickListener(v -> pingBackend());
-        setupFirebaseListener();
+        sessionManager = new SessionManager(this);
+        setupNavigation();
     }
 
-    private void pingBackend() {
-        executor.execute(() -> {
-            try {
-                PingResponse response = apiClient.ping();
-                runOnUiThread(() ->
-                    responseText.setText("Response: " + response.getMessage())
-                );
-            } catch (Exception e) {
-                runOnUiThread(() ->
-                    responseText.setText("Error: " + e.getMessage())
-                );
-            }
+    private void setupNavigation() {
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+        if (navHostFragment != null) {
+            navController = navHostFragment.getNavController();
+        }
+
+        bottomNavigation = findViewById(R.id.bottom_navigation);
+        
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            updateBottomNavigationVisibility(destination);
         });
     }
 
-    private void setupFirebaseListener() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance(
-            "https://jobos-4e21e-default-rtdb.asia-southeast1.firebasedatabase.app/"
-        );
+    private void updateBottomNavigationVisibility(NavDestination destination) {
+        int destId = destination.getId();
         
-        DatabaseReference connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
-        connectedRef.addValueEventListener(new com.google.firebase.database.ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                boolean connected = snapshot.getValue(Boolean.class);
-                Log.d(TAG, "Firebase connected: " + connected);
-                runOnUiThread(() -> responseText.setText(connected ? "Firebase: Connected" : "Firebase: Disconnected"));
-            }
+        if (noBottomNavDestinations.contains(destId)) {
+            bottomNavigation.setVisibility(View.GONE);
+            return;
+        }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Connection error: " + error.getMessage());
-            }
-        });
+        bottomNavigation.setVisibility(View.VISIBLE);
         
-        notificationsRef = database.getReference("users/" + USER_ID + "/notifications");
-        notificationsRef.keepSynced(true);
+        String userRole = sessionManager.getUserRole();
+        if ("POSTER".equals(userRole)) {
+            bottomNavigation.getMenu().clear();
+            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_poster);
+        } else {
+            bottomNavigation.getMenu().clear();
+            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_seeker);
+        }
+        
+        NavigationUI.setupWithNavController(bottomNavigation, navController);
+    }
 
-        notificationListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Log.d(TAG, "Firebase onChildAdded: " + snapshot.getKey());
-                Notification notification = snapshot.getValue(Notification.class);
-                if (notification != null) {
-                    Log.d(TAG, "Notification: " + notification.getTitle());
-                    String time = dateFormat.format(new Date(notification.getCreatedAt() != null ? notification.getCreatedAt() : System.currentTimeMillis()));
-                    String newNotif = "[" + time + "] " + notification.getTitle() + "\n" + 
-                                     notification.getBody() + "\n\n";
-                    notificationList.insert(0, newNotif);
-                    runOnUiThread(() -> notificationsText.setText(notificationList.toString()));
-                } else {
-                    Log.w(TAG, "Notification is null");
-                }
-            }
+    public void updateBottomNavForRole(String role) {
+        if (bottomNavigation == null) return;
+        
+        bottomNavigation.getMenu().clear();
+        if ("POSTER".equals(role)) {
+            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_poster);
+        } else {
+            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_seeker);
+        }
+        NavigationUI.setupWithNavController(bottomNavigation, navController);
+    }
 
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Log.d(TAG, "onChildChanged: " + snapshot.getKey());
-            }
+    public void showBottomNavigation() {
+        if (bottomNavigation != null) {
+            bottomNavigation.setVisibility(View.VISIBLE);
+        }
+    }
 
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                Log.d(TAG, "onChildRemoved: " + snapshot.getKey());
-            }
+    public void hideBottomNavigation() {
+        if (bottomNavigation != null) {
+            bottomNavigation.setVisibility(View.GONE);
+        }
+    }
 
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Log.d(TAG, "onChildMoved: " + snapshot.getKey());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "Firebase error: " + error.getMessage());
-                runOnUiThread(() -> notificationsText.setText("Firebase Error: " + error.getMessage()));
-            }
-        };
-
-        notificationsRef.addChildEventListener(notificationListener);
-        Log.d(TAG, "Firebase listener attached");
+    public NavController getNavController() {
+        return navController;
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executor.shutdown();
-        if (notificationsRef != null && notificationListener != null) {
-            notificationsRef.removeEventListener(notificationListener);
-        }
+    public boolean onSupportNavigateUp() {
+        return navController.navigateUp() || super.onSupportNavigateUp();
     }
 }

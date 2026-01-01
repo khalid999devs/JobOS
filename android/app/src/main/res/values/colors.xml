@@ -2,4 +2,79 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <color name="primary">#1E88E5</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="primary_light">#64B5F6</color>
+    <color name="primary_container">#E3F2FD</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_container">#1565C0</color>
+    
+    <color name="secondary">#26A69A</color>
+    <color name="secondary_dark">#00897B</color>
+    <color name="secondary_container">#E0F2F1</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_secondary_container">#00695C</color>
+    
+    <color name="tertiary">#7E57C2</color>
+    <color name="tertiary_container">#EDE7F6</color>
+    
+    <color name="error">#D32F2F</color>
+    <color name="error_container">#FFEBEE</color>
+    <color name="on_error">#FFFFFF</color>
+    <color name="on_error_container">#B71C1C</color>
+    
+    <color name="success">#388E3C</color>
+    <color name="success_container">#E8F5E9</color>
+    <color name="on_success">#FFFFFF</color>
+    
+    <color name="warning">#F57C00</color>
+    <color name="warning_container">#FFF3E0</color>
+    
+    <color name="background">#FAFAFA</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F5F5F5</color>
+    <color name="on_background">#212121</color>
+    <color name="on_surface">#212121</color>
+    <color name="on_surface_variant">#757575</color>
+    
+    <color name="outline">#E0E0E0</color>
+    <color name="outline_variant">#EEEEEE</color>
+    
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#9E9E9E</color>
+    <color name="text_disabled">#BDBDBD</color>
+    
+    <color name="divider">#E0E0E0</color>
+    <color name="ripple">#1F1E88E5</color>
+    
+    <color name="status_pending">#FFA726</color>
+    <color name="status_pending_bg">#FFF3E0</color>
+    <color name="status_reviewed">#42A5F5</color>
+    <color name="status_reviewing">#42A5F5</color>
+    <color name="status_reviewing_bg">#E3F2FD</color>
+    <color name="status_shortlisted">#AB47BC</color>
+    <color name="status_shortlisted_bg">#F3E5F5</color>
+    <color name="status_accepted">#66BB6A</color>
+    <color name="status_hired">#388E3C</color>
+    <color name="status_hired_bg">#E8F5E9</color>
+    <color name="status_rejected">#EF5350</color>
+    <color name="status_rejected_bg">#FFEBEE</color>
+    
+    <color name="job_active">#66BB6A</color>
+    <color name="job_closed">#EF5350</color>
+    <color name="job_draft">#BDBDBD</color>
+    
+    <color name="job_status_active">#388E3C</color>
+    <color name="job_status_active_bg">#E8F5E9</color>
+    <color name="job_status_closed">#D32F2F</color>
+    <color name="job_status_closed_bg">#FFEBEE</color>
+    <color name="job_status_draft">#757575</color>
+    <color name="job_status_draft_bg">#F5F5F5</color>
+    
+    <color name="on_surface_secondary">#757575</color>
+    
+    <color name="shimmer_base">#E0E0E0</color>
+    <color name="shimmer_highlight">#F5F5F5</color>
 </resources>

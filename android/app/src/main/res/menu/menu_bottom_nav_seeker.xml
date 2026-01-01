@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/seekerHomeFragment"
+        android:icon="@drawable/ic_home"
+        android:title="@string/nav_home" />
+    <item
+        android:id="@+id/jobSearchFragment"
+        android:icon="@drawable/ic_search"
+        android:title="@string/nav_jobs" />
+    <item
+        android:id="@+id/applicationsFragment"
+        android:icon="@drawable/ic_applications"
+        android:title="@string/nav_applications" />
+    <item
+        android:id="@+id/cvListFragment"
+        android:icon="@drawable/ic_cv"
+        android:title="@string/nav_cv" />
+    <item
+        android:id="@+id/profileFragment"
+        android:icon="@drawable/ic_profile"
+        android:title="@string/nav_profile" />
+</menu>
