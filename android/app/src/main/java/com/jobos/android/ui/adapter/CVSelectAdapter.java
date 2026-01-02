@@ -10,17 +10,14 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import com.jobos.android.R;
-import com.jobos.shared.dto.cv.CVDTO;
-import java.text.SimpleDateFormat;
+import com.jobos.android.data.model.cv.CVDTO;
 import java.util.List;
-import java.util.Locale;
 
 public class CVSelectAdapter extends RecyclerView.Adapter<CVSelectAdapter.CVViewHolder> {
 
     private final List<CVDTO> cvList;
     private final OnCVSelectListener onSelectListener;
-    private Long selectedId = null;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+    private String selectedId = null;
 
     public interface OnCVSelectListener {
         void onSelect(CVDTO cv);
@@ -31,7 +28,7 @@ public class CVSelectAdapter extends RecyclerView.Adapter<CVSelectAdapter.CVView
         this.onSelectListener = onSelectListener;
     }
 
-    public void setSelectedId(Long id) {
+    public void setSelectedId(String id) {
         this.selectedId = id;
         notifyDataSetChanged();
     }
@@ -72,7 +69,7 @@ public class CVSelectAdapter extends RecyclerView.Adapter<CVSelectAdapter.CVView
             cvName.setText(cv.getName());
             
             if (cv.getUpdatedAt() != null) {
-                lastUpdated.setText("Updated " + dateFormat.format(cv.getUpdatedAt()));
+                lastUpdated.setText("Updated " + cv.getUpdatedAt());
             }
 
             boolean isSelected = selectedId != null && selectedId.equals(cv.getId());

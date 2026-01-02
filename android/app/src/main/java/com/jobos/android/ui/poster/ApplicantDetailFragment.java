@@ -15,10 +15,10 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.application.ApplicationDTO;
+import com.jobos.android.data.model.application.ApplicationDTO;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -43,7 +43,8 @@ public class ApplicantDetailFragment extends BaseFragment {
     private MaterialButton updateStatusButton;
     private ProgressBar progressBar;
 
-    private long applicationId = -1;
+    private String applicationId = null;
+    private ApiService apiService;
     private ApplicationDTO currentApplication;
     private String selectedStatus;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
@@ -57,10 +58,11 @@ public class ApplicantDetailFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiService = new ApiService();
         hideBottomNav();
         
         if (getArguments() != null) {
-            applicationId = getArguments().getLong("applicationId", -1);
+            applicationId = getArguments().getString("applicationId");
         }
         
         initViews(view);
@@ -118,21 +120,21 @@ public class ApplicantDetailFragment extends BaseFragment {
         viewCvButton.setOnClickListener(v -> {
             if (currentApplication != null && currentApplication.getCvId() != null) {
                 Bundle args = new Bundle();
-                args.putLong("cvId", currentApplication.getCvId());
+                args.putString("cvId", currentApplication.getCvId());
                 navController.navigate(R.id.cvPreviewFragment, args);
             }
         });
     }
 
     private void loadApplicationDetails() {
-        if (applicationId == -1) {
+        if (applicationId == null || applicationId.isEmpty()) {
             showToast("Invalid application");
             navController.popBackStack();
             return;
         }
 
         showLoading(true);
-        ApiService.getInstance(requireContext()).getApplicationDetails(sessionManager.getAccessToken(), applicationId, 
+        apiService.getApplicationDetails(sessionManager.getAccessToken(), applicationId, 
             new ApiCallback<ApplicationDTO>() {
                 @Override
                 public void onSuccess(ApplicationDTO result) {
@@ -163,7 +165,7 @@ public class ApplicantDetailFragment extends BaseFragment {
         jobTitle.setText(currentApplication.getJobTitle());
         
         if (currentApplication.getCreatedAt() != null) {
-            appliedDate.setText("Applied on " + dateFormat.format(currentApplication.getCreatedAt()));
+            appliedDate.setText("Applied on " + currentApplication.getCreatedAt());
         }
 
         setupStatusBadge(currentApplication.getStatus());
@@ -239,7 +241,7 @@ public class ApplicantDetailFragment extends BaseFragment {
 
     private void updateApplicationStatus() {
         showLoading(true);
-        ApiService.getInstance(requireContext()).updateApplicationStatus(
+        apiService.updateApplicationStatus(
             sessionManager.getAccessToken(), applicationId, selectedStatus, 
             new ApiCallback<ApplicationDTO>() {
                 @Override

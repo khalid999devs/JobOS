@@ -14,11 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.tabs.TabLayout;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.adapter.PosterApplicationAdapter;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.application.ApplicationDTO;
+import com.jobos.android.data.model.application.ApplicationDTO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +32,10 @@ public class ApplicantsListFragment extends BaseFragment {
     private ProgressBar progressBar;
 
     private PosterApplicationAdapter adapter;
+    private ApiService apiService;
     private List<ApplicationDTO> allApplications = new ArrayList<>();
     private List<ApplicationDTO> filteredApplications = new ArrayList<>();
-    private long jobId = -1;
+    private String jobId = null;
     private String currentFilter = "ALL";
 
     @Nullable
@@ -46,10 +47,11 @@ public class ApplicantsListFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiService = new ApiService();
         hideBottomNav();
         
         if (getArguments() != null) {
-            jobId = getArguments().getLong("jobId", -1);
+            jobId = getArguments().getString("jobId");
         }
         
         initViews(view);
@@ -99,7 +101,7 @@ public class ApplicantsListFragment extends BaseFragment {
     private void setupRecyclerView() {
         adapter = new PosterApplicationAdapter(filteredApplications, application -> {
             Bundle args = new Bundle();
-            args.putLong("applicationId", application.getId());
+            args.putString("applicationId", application.getId());
             navController.navigate(R.id.applicantDetailFragment, args);
         });
         applicantsRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -111,14 +113,14 @@ public class ApplicantsListFragment extends BaseFragment {
     }
 
     private void loadApplicants() {
-        if (jobId == -1) {
+        if (jobId == null || jobId.isEmpty()) {
             showToast("Invalid job");
             navController.popBackStack();
             return;
         }
 
         showLoading(true);
-        ApiService.getInstance(requireContext()).getJobApplications(sessionManager.getAccessToken(), jobId, 
+        apiService.getJobApplications(sessionManager.getAccessToken(), jobId, 
             new ApiCallback<List<ApplicationDTO>>() {
                 @Override
                 public void onSuccess(List<ApplicationDTO> result) {

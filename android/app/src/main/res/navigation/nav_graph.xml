@@ -95,12 +95,37 @@
         android:id="@+id/roleSelectionFragment"
         android:name="com.jobos.android.ui.onboarding.RoleSelectionFragment"
         android:label="@string/select_role">
+        <argument
+            android:name="name"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="email"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="password"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
         <action
             android:id="@+id/action_role_to_seeker_setup"
             app:destination="@id/seekerSetupFragment" />
         <action
             android:id="@+id/action_role_to_poster_setup"
             app:destination="@id/posterSetupFragment" />
+        <action
+            android:id="@+id/action_role_to_seeker_home"
+            app:destination="@id/seekerHomeFragment"
+            app:popUpTo="@id/roleSelectionFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_role_to_poster_dashboard"
+            app:destination="@id/posterDashboardFragment"
+            app:popUpTo="@id/roleSelectionFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -127,35 +152,47 @@
 
     <fragment
         android:id="@+id/seekerHomeFragment"
-        android:name="com.jobos.android.ui.seeker.home.SeekerHomeFragment"
+        android:name="com.jobos.android.ui.seeker.SeekerHomeFragment"
         android:label="@string/nav_home">
         <action
             android:id="@+id/action_home_to_job_detail"
             app:destination="@id/jobDetailFragment" />
         <action
+            android:id="@+id/action_seeker_home_to_job_detail"
+            app:destination="@id/jobDetailFragment" />
+        <action
             android:id="@+id/action_home_to_job_search"
             app:destination="@id/jobSearchFragment" />
         <action
+            android:id="@+id/action_seeker_home_to_job_search"
+            app:destination="@id/jobSearchFragment" />
+        <action
             android:id="@+id/action_home_to_notifications"
+            app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_seeker_home_to_notifications"
             app:destination="@id/notificationsFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/jobSearchFragment"
-        android:name="com.jobos.android.ui.seeker.jobs.JobSearchFragment"
+        android:name="com.jobos.android.ui.seeker.JobSearchFragment"
         android:label="@string/search_jobs">
         <action
             android:id="@+id/action_search_to_job_detail"
+            app:destination="@id/jobDetailFragment" />
+        <action
+            android:id="@+id/action_job_search_to_job_detail"
             app:destination="@id/jobDetailFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/jobDetailFragment"
-        android:name="com.jobos.android.ui.seeker.jobs.JobDetailFragment"
+        android:name="com.jobos.android.ui.seeker.JobDetailFragment"
         android:label="Job Details">
         <argument
             android:name="jobId"
-            app:argType="long" />
+            app:argType="string" />
         <action
             android:id="@+id/action_job_detail_to_apply"
             app:destination="@id/applyJobFragment" />
@@ -163,43 +200,49 @@
 
     <fragment
         android:id="@+id/savedJobsFragment"
-        android:name="com.jobos.android.ui.seeker.jobs.SavedJobsFragment"
+        android:name="com.jobos.android.ui.seeker.SavedJobsFragment"
         android:label="@string/save_job">
         <action
             android:id="@+id/action_saved_to_job_detail"
+            app:destination="@id/jobDetailFragment" />
+        <action
+            android:id="@+id/action_saved_jobs_to_job_detail"
             app:destination="@id/jobDetailFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/applyJobFragment"
-        android:name="com.jobos.android.ui.seeker.applications.ApplyJobFragment"
+        android:name="com.jobos.android.ui.seeker.ApplyJobFragment"
         android:label="@string/apply_now">
         <argument
             android:name="jobId"
-            app:argType="long" />
+            app:argType="string" />
     </fragment>
 
     <fragment
         android:id="@+id/applicationsFragment"
-        android:name="com.jobos.android.ui.seeker.applications.ApplicationsFragment"
+        android:name="com.jobos.android.ui.seeker.ApplicationsFragment"
         android:label="@string/my_applications">
         <action
             android:id="@+id/action_applications_to_detail"
+            app:destination="@id/applicationDetailFragment" />
+        <action
+            android:id="@+id/action_applications_to_application_detail"
             app:destination="@id/applicationDetailFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/applicationDetailFragment"
-        android:name="com.jobos.android.ui.seeker.applications.ApplicationDetailFragment"
+        android:name="com.jobos.android.ui.poster.ApplicantDetailFragment"
         android:label="Application Details">
         <argument
             android:name="applicationId"
-            app:argType="long" />
+            app:argType="string" />
     </fragment>
 
     <fragment
         android:id="@+id/cvListFragment"
-        android:name="com.jobos.android.ui.seeker.cv.CvListFragment"
+        android:name="com.jobos.android.ui.cv.CVListFragment"
         android:label="@string/my_cvs">
         <action
             android:id="@+id/action_cv_list_to_editor"
@@ -207,19 +250,22 @@
         <action
             android:id="@+id/action_cv_list_to_preview"
             app:destination="@id/cvPreviewFragment" />
+        <!-- Templates fragment not yet implemented
         <action
             android:id="@+id/action_cv_list_to_templates"
             app:destination="@id/templatesFragment" />
+        -->
     </fragment>
 
     <fragment
         android:id="@+id/cvEditorFragment"
-        android:name="com.jobos.android.ui.seeker.cv.CvEditorFragment"
+        android:name="com.jobos.android.ui.cv.CVEditorFragment"
         android:label="@string/edit_cv">
         <argument
             android:name="cvId"
-            app:argType="long"
-            android:defaultValue="-1L" />
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
         <argument
             android:name="templateId"
             app:argType="string"
@@ -232,22 +278,25 @@
 
     <fragment
         android:id="@+id/cvPreviewFragment"
-        android:name="com.jobos.android.ui.seeker.cv.CvPreviewFragment"
+        android:name="com.jobos.android.ui.cv.CVPreviewFragment"
         android:label="@string/preview_cv">
         <argument
             android:name="cvId"
-            app:argType="long" />
+            app:argType="string" />
     </fragment>
 
+    <!-- Templates fragment not yet implemented
     <fragment
         android:id="@+id/templatesFragment"
-        android:name="com.jobos.android.ui.seeker.cv.TemplatesFragment"
+        android:name="com.jobos.android.ui.cv.TemplatesFragment"
         android:label="@string/cv_templates">
         <action
             android:id="@+id/action_templates_to_editor"
             app:destination="@id/cvEditorFragment" />
     </fragment>
+    -->
 
+    <!-- Credits fragments not yet implemented
     <fragment
         android:id="@+id/creditsFragment"
         android:name="com.jobos.android.ui.credits.CreditsFragment"
@@ -269,47 +318,70 @@
         android:id="@+id/plansFragment"
         android:name="com.jobos.android.ui.credits.PlansFragment"
         android:label="@string/subscription_plans" />
+    -->
 
     <fragment
         android:id="@+id/notificationsFragment"
         android:name="com.jobos.android.ui.notifications.NotificationsFragment"
         android:label="@string/notifications">
+        <!-- NotificationPreferencesFragment not yet implemented
         <action
             android:id="@+id/action_notifications_to_preferences"
             app:destination="@id/notificationPreferencesFragment" />
+        -->
     </fragment>
 
+    <!-- NotificationPreferencesFragment not yet implemented
     <fragment
         android:id="@+id/notificationPreferencesFragment"
         android:name="com.jobos.android.ui.notifications.NotificationPreferencesFragment"
         android:label="@string/notification_preferences" />
+    -->
 
     <fragment
         android:id="@+id/posterDashboardFragment"
-        android:name="com.jobos.android.ui.poster.dashboard.PosterDashboardFragment"
+        android:name="com.jobos.android.ui.poster.PosterDashboardFragment"
         android:label="@string/nav_dashboard">
         <action
             android:id="@+id/action_dashboard_to_create_job"
             app:destination="@id/createJobFragment" />
         <action
+            android:id="@+id/action_poster_dashboard_to_create_job"
+            app:destination="@id/createJobFragment" />
+        <action
             android:id="@+id/action_dashboard_to_manage_jobs"
+            app:destination="@id/manageJobsFragment" />
+        <action
+            android:id="@+id/action_poster_dashboard_to_manage_jobs"
             app:destination="@id/manageJobsFragment" />
         <action
             android:id="@+id/action_dashboard_to_applicants"
             app:destination="@id/applicantsListFragment" />
         <action
+            android:id="@+id/action_poster_dashboard_to_applicants"
+            app:destination="@id/applicantsListFragment" />
+        <action
             android:id="@+id/action_dashboard_to_notifications"
             app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_poster_dashboard_to_notifications"
+            app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_poster_dashboard_to_applicant_detail"
+            app:destination="@id/applicantDetailFragment" />
+        <action
+            android:id="@+id/action_poster_dashboard_to_edit_job"
+            app:destination="@id/editJobFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/createJobFragment"
-        android:name="com.jobos.android.ui.poster.jobs.CreateJobFragment"
+        android:name="com.jobos.android.ui.poster.CreateJobFragment"
         android:label="@string/create_job" />
 
     <fragment
         android:id="@+id/manageJobsFragment"
-        android:name="com.jobos.android.ui.poster.jobs.ManageJobsFragment"
+        android:name="com.jobos.android.ui.poster.ManageJobsFragment"
         android:label="@string/manage_jobs">
         <action
             android:id="@+id/action_manage_to_edit_job"
@@ -321,21 +393,22 @@
 
     <fragment
         android:id="@+id/editJobFragment"
-        android:name="com.jobos.android.ui.poster.jobs.EditJobFragment"
+        android:name="com.jobos.android.ui.poster.EditJobFragment"
         android:label="@string/edit_job">
         <argument
             android:name="jobId"
-            app:argType="long" />
+            app:argType="string" />
     </fragment>
 
     <fragment
         android:id="@+id/applicantsListFragment"
-        android:name="com.jobos.android.ui.poster.applicants.ApplicantsListFragment"
+        android:name="com.jobos.android.ui.poster.ApplicantsListFragment"
         android:label="@string/view_applicants">
         <argument
             android:name="jobId"
-            app:argType="long"
-            android:defaultValue="-1L" />
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
         <action
             android:id="@+id/action_applicants_to_detail"
             app:destination="@id/applicantDetailFragment" />
@@ -343,11 +416,11 @@
 
     <fragment
         android:id="@+id/applicantDetailFragment"
-        android:name="com.jobos.android.ui.poster.applicants.ApplicantDetailFragment"
+        android:name="com.jobos.android.ui.poster.ApplicantDetailFragment"
         android:label="Applicant Details">
         <argument
             android:name="applicationId"
-            app:argType="long" />
+            app:argType="string" />
     </fragment>
 
     <fragment
@@ -360,9 +433,17 @@
         <action
             android:id="@+id/action_profile_to_settings"
             app:destination="@id/settingsFragment" />
+        <!-- Credits fragment not yet implemented
         <action
             android:id="@+id/action_profile_to_credits"
             app:destination="@id/creditsFragment" />
+        -->
+        <action
+            android:id="@+id/action_profile_to_cv_list"
+            app:destination="@id/cvListFragment" />
+        <action
+            android:id="@+id/action_profile_to_notifications"
+            app:destination="@id/notificationsFragment" />
         <action
             android:id="@+id/action_profile_to_login"
             app:destination="@id/loginFragment"
@@ -377,19 +458,21 @@
 
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.jobos.android.ui.profile.SettingsFragment"
+        android:name="com.jobos.android.ui.settings.SettingsFragment"
         android:label="@string/settings">
         <action
             android:id="@+id/action_settings_to_change_password"
             app:destination="@id/changePasswordFragment" />
+        <!-- NotificationPreferences not yet implemented
         <action
             android:id="@+id/action_settings_to_notification_prefs"
             app:destination="@id/notificationPreferencesFragment" />
+        -->
     </fragment>
 
     <fragment
         android:id="@+id/changePasswordFragment"
-        android:name="com.jobos.android.ui.profile.ChangePasswordFragment"
+        android:name="com.jobos.android.ui.settings.ChangePasswordFragment"
         android:label="@string/change_password" />
 
 </navigation>

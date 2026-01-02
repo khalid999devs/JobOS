@@ -17,8 +17,7 @@ import com.jobos.android.R;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.job.JobDTO;
-import java.text.SimpleDateFormat;
+import com.jobos.android.data.model.job.JobDTO;
 import java.util.Locale;
 
 public class JobDetailFragment extends BaseFragment {
@@ -39,10 +38,9 @@ public class JobDetailFragment extends BaseFragment {
     private ProgressBar progressBar;
 
     private ApiService apiService;
-    private Long jobId;
+    private String jobId;
     private JobDTO currentJob;
     private boolean isSaved = false;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
 
     @Nullable
     @Override
@@ -55,14 +53,14 @@ public class JobDetailFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         
         if (getArguments() != null) {
-            jobId = getArguments().getLong("jobId", -1);
+            jobId = getArguments().getString("jobId");
         }
         
         apiService = new ApiService();
         initViews(view);
         setupClickListeners();
         
-        if (jobId != null && jobId > 0) {
+        if (jobId != null && !jobId.isEmpty()) {
             loadJobDetails();
         }
     }
@@ -94,7 +92,7 @@ public class JobDetailFragment extends BaseFragment {
         applyButton.setOnClickListener(v -> {
             if (currentJob != null) {
                 Bundle args = new Bundle();
-                args.putLong("jobId", currentJob.getId());
+                args.putString("jobId", currentJob.getId());
                 navController.navigate(R.id.action_job_detail_to_apply, args);
             }
         });
@@ -144,10 +142,10 @@ public class JobDetailFragment extends BaseFragment {
         requirements.setText(job.getRequirements());
 
         if (job.getCreatedAt() != null) {
-            postedDate.setText(dateFormat.format(job.getCreatedAt()));
+            postedDate.setText(job.getCreatedAt());
         }
 
-        isSaved = job.isSaved();
+        isSaved = Boolean.TRUE.equals(job.getSaved());
         updateSaveIcon();
 
         skillsChipGroup.removeAllViews();

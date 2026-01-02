@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.notification.NotificationDTO;
+import com.jobos.android.data.model.notification.NotificationDTO;
 import java.util.List;
 
 public class NotificationsFragment extends BaseFragment implements NotificationAdapter.OnNotificationClickListener {
@@ -25,6 +25,7 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
     private LinearLayout emptyState;
     private ProgressBar progressBar;
     private NotificationAdapter adapter;
+    private ApiService apiService;
 
     @Nullable
     @Override
@@ -37,6 +38,7 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
         super.onViewCreated(view, savedInstanceState);
         hideBottomNav();
         
+        apiService = new ApiService();
         initViews(view);
         setupRecyclerView();
         loadNotifications();
@@ -60,7 +62,7 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
 
     private void loadNotifications() {
         showLoading(true);
-        ApiService.getInstance(requireContext()).getNotifications(sessionManager.getAccessToken(),
+        apiService.getNotifications(sessionManager.getAccessToken(), 0, 50,
             new ApiCallback<List<NotificationDTO>>() {
                 @Override
                 public void onSuccess(List<NotificationDTO> result) {
@@ -97,12 +99,12 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
     private void markAsRead(NotificationDTO notification) {
         if (notification.getRead() != null && notification.getRead()) return;
 
-        ApiService.getInstance(requireContext()).markNotificationAsRead(
+        apiService.markNotificationRead(
             sessionManager.getAccessToken(),
-            notification.getId(),
-            new ApiCallback<Void>() {
+            String.valueOf(notification.getId()),
+            new ApiCallback<String>() {
                 @Override
-                public void onSuccess(Void result) {
+                public void onSuccess(String result) {
                 }
 
                 @Override
@@ -118,13 +120,14 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
         if (type == null || referenceId == null) return;
 
         Bundle args = new Bundle();
+        String refIdStr = String.valueOf(referenceId);
         switch (type) {
             case "APPLICATION_UPDATE":
             case "NEW_APPLICATION":
-                args.putLong("applicationId", referenceId);
+                args.putString("applicationId", refIdStr);
                 break;
             case "JOB_MATCH":
-                args.putLong("jobId", referenceId);
+                args.putString("jobId", refIdStr);
                 navController.navigate(R.id.jobDetailFragment, args);
                 break;
         }

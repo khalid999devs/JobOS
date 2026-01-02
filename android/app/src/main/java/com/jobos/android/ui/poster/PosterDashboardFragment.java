@@ -19,8 +19,8 @@ import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.ui.adapter.PosterJobAdapter;
 import com.jobos.android.ui.adapter.PosterApplicationAdapter;
-import com.jobos.shared.dto.job.JobDTO;
-import com.jobos.shared.dto.application.ApplicationDTO;
+import com.jobos.android.data.model.job.JobDTO;
+import com.jobos.android.data.model.application.ApplicationDTO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -181,7 +181,7 @@ public class PosterDashboardFragment extends BaseFragment {
         }
 
         String token = sessionManager.getAccessToken();
-        Long firstJobId = jobs.get(0).getId();
+        String firstJobId = jobs.get(0).getId();
         
         apiService.getApplicationsForJob(token, firstJobId, 0, 5, new ApiCallback<List<ApplicationDTO>>() {
             @Override
@@ -214,19 +214,19 @@ public class PosterDashboardFragment extends BaseFragment {
 
     private void onApplicationClick(ApplicationDTO application) {
         Bundle args = new Bundle();
-        args.putLong("applicationId", application.getId());
+        args.putString("applicationId", application.getId());
         navController.navigate(R.id.action_poster_dashboard_to_applicant_detail, args);
     }
 
     private void onJobClick(JobDTO job) {
         Bundle args = new Bundle();
-        args.putLong("jobId", job.getId());
+        args.putString("jobId", job.getId());
         navController.navigate(R.id.action_poster_dashboard_to_applicants, args);
     }
 
     private void onJobEditClick(JobDTO job) {
         Bundle args = new Bundle();
-        args.putLong("jobId", job.getId());
+        args.putString("jobId", job.getId());
         navController.navigate(R.id.action_poster_dashboard_to_edit_job, args);
     }
 }

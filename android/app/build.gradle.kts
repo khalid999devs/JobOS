@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.cardview)
     implementation(libs.swiperefreshlayout)
     implementation(libs.viewpager2)
+    implementation(libs.splashscreen)
     
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)

@@ -15,11 +15,11 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.adapter.CVAdapter;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.cv.CVDTO;
+import com.jobos.android.data.model.cv.CVDTO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +33,7 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     private ProgressBar progressBar;
 
     private CVAdapter adapter;
+    private ApiService apiService;
     private final List<CVDTO> cvList = new ArrayList<>();
 
     @Nullable
@@ -44,6 +45,7 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiService = new ApiService();
         hideBottomNav();
         initViews(view);
         setupRecyclerView();
@@ -74,7 +76,7 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
 
     private void loadCVs() {
         showLoading(true);
-        ApiService.getInstance(requireContext()).getMyCVs(sessionManager.getAccessToken(),
+        apiService.getMyCVs(sessionManager.getAccessToken(),
             new ApiCallback<List<CVDTO>>() {
                 @Override
                 public void onSuccess(List<CVDTO> result) {
@@ -114,14 +116,14 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     @Override
     public void onEdit(CVDTO cv) {
         Bundle args = new Bundle();
-        args.putLong("cvId", cv.getId());
+        args.putString("cvId", cv.getId());
         navController.navigate(R.id.cvEditorFragment, args);
     }
 
     @Override
     public void onPreview(CVDTO cv) {
         Bundle args = new Bundle();
-        args.putLong("cvId", cv.getId());
+        args.putString("cvId", cv.getId());
         navController.navigate(R.id.cvPreviewFragment, args);
     }
 
@@ -138,7 +140,7 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     @Override
     public void onSetDefault(CVDTO cv) {
         showLoading(true);
-        ApiService.getInstance(requireContext()).setDefaultCV(sessionManager.getAccessToken(), cv.getId(),
+        apiService.setDefaultCV(sessionManager.getAccessToken(), cv.getId(),
             new ApiCallback<CVDTO>() {
                 @Override
                 public void onSuccess(CVDTO result) {
@@ -161,12 +163,12 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
             });
     }
 
-    private void deleteCV(Long cvId) {
+    private void deleteCV(String cvId) {
         showLoading(true);
-        ApiService.getInstance(requireContext()).deleteCV(sessionManager.getAccessToken(), cvId,
-            new ApiCallback<Void>() {
+        apiService.deleteCV(sessionManager.getAccessToken(), cvId,
+            new ApiCallback<String>() {
                 @Override
-                public void onSuccess(Void result) {
+                public void onSuccess(String result) {
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);

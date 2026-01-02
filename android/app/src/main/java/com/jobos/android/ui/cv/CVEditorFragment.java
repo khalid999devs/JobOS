@@ -12,10 +12,10 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.cv.CVDTO;
+import com.jobos.android.data.model.cv.CVDTO;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,7 +40,8 @@ public class CVEditorFragment extends BaseFragment {
     private ProgressBar progressBar;
     private TextInputLayout titleLayout;
 
-    private Long cvId = null;
+    private String cvId = null;
+    private ApiService apiService;
     private boolean isEditMode = false;
 
     @Nullable
@@ -52,13 +53,13 @@ public class CVEditorFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiService = new ApiService();
         hideBottomNav();
 
         if (getArguments() != null) {
-            cvId = getArguments().getLong("cvId", -1);
-            if (cvId == -1) cvId = null;
+            cvId = getArguments().getString("cvId");
         }
-        isEditMode = cvId != null;
+        isEditMode = cvId != null && !cvId.isEmpty();
 
         initViews(view);
         setupClickListeners();
@@ -110,7 +111,7 @@ public class CVEditorFragment extends BaseFragment {
         if (cvId == null) return;
 
         showLoading(true);
-        ApiService.getInstance(requireContext()).getCVDetails(sessionManager.getAccessToken(), cvId,
+        apiService.getCVDetails(sessionManager.getAccessToken(), cvId,
             new ApiCallback<CVDTO>() {
                 @Override
                 public void onSuccess(CVDTO result) {
@@ -248,9 +249,9 @@ public class CVEditorFragment extends BaseFragment {
         };
 
         if (isEditMode && cvId != null) {
-            ApiService.getInstance(requireContext()).updateCV(sessionManager.getAccessToken(), cvId, cvData, callback);
+            apiService.updateCV(sessionManager.getAccessToken(), cvId, cvData, callback);
         } else {
-            ApiService.getInstance(requireContext()).createCV(sessionManager.getAccessToken(), cvData, callback);
+            apiService.createCV(sessionManager.getAccessToken(), cvData, callback);
         }
     }
 

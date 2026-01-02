@@ -13,14 +13,13 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.user.UserDTO;
+import com.jobos.android.data.model.profile.ProfileResponse;
+import com.jobos.android.data.model.profile.UpdateProfileRequest;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class EditProfileFragment extends BaseFragment {
 
@@ -41,6 +40,7 @@ public class EditProfileFragment extends BaseFragment {
     private TextInputLayout nameLayout;
 
     private boolean isSeeker;
+    private ApiService apiService;
 
     @Nullable
     @Override
@@ -53,6 +53,7 @@ public class EditProfileFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         hideBottomNav();
         
+        apiService = new ApiService();
         isSeeker = "SEEKER".equals(sessionManager.getUserRole());
         
         initViews(view);
@@ -95,10 +96,10 @@ public class EditProfileFragment extends BaseFragment {
 
     private void loadProfile() {
         showLoading(true);
-        ApiService.getInstance(requireContext()).getMyProfile(sessionManager.getAccessToken(),
-            new ApiCallback<UserDTO>() {
+        apiService.getProfile(sessionManager.getAccessToken(),
+            new ApiCallback<ProfileResponse>() {
                 @Override
-                public void onSuccess(UserDTO result) {
+                public void onSuccess(ProfileResponse result) {
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
@@ -117,22 +118,22 @@ public class EditProfileFragment extends BaseFragment {
             });
     }
 
-    private void populateFields(UserDTO user) {
-        nameInput.setText(user.getName());
-        emailInput.setText(user.getEmail());
-        phoneInput.setText(user.getPhone());
-        locationInput.setText(user.getLocation());
-        bioInput.setText(user.getBio());
+    private void populateFields(ProfileResponse profile) {
+        nameInput.setText(profile.getName());
+        emailInput.setText(profile.getEmail());
+        phoneInput.setText(profile.getPhone());
+        locationInput.setText(profile.getLocation());
+        bioInput.setText(profile.getBio());
 
         if (isSeeker) {
-            jobTitleInput.setText(user.getJobTitle());
-            List<String> skills = user.getSkills();
+            jobTitleInput.setText(profile.getJobTitle());
+            List<String> skills = profile.getSkills();
             if (skills != null && !skills.isEmpty()) {
                 skillsInput.setText(String.join(", ", skills));
             }
         } else {
-            companyNameInput.setText(user.getCompanyName());
-            companyWebsiteInput.setText(user.getCompanyWebsite());
+            companyNameInput.setText(profile.getCompanyName());
+            companyWebsiteInput.setText(profile.getCompanyWebsite());
         }
     }
 
@@ -150,21 +151,21 @@ public class EditProfileFragment extends BaseFragment {
     private void saveProfile() {
         showLoading(true);
 
-        Map<String, Object> profileData = new HashMap<>();
-        profileData.put("name", nameInput.getText().toString().trim());
+        UpdateProfileRequest request = new UpdateProfileRequest();
+        request.setName(nameInput.getText().toString().trim());
         
         String phone = phoneInput.getText().toString().trim();
-        if (!phone.isEmpty()) profileData.put("phone", phone);
+        if (!phone.isEmpty()) request.setPhone(phone);
         
         String location = locationInput.getText().toString().trim();
-        if (!location.isEmpty()) profileData.put("location", location);
+        if (!location.isEmpty()) request.setLocation(location);
         
         String bio = bioInput.getText().toString().trim();
-        if (!bio.isEmpty()) profileData.put("bio", bio);
+        if (!bio.isEmpty()) request.setBio(bio);
 
         if (isSeeker) {
             String jobTitle = jobTitleInput.getText().toString().trim();
-            if (!jobTitle.isEmpty()) profileData.put("jobTitle", jobTitle);
+            if (!jobTitle.isEmpty()) request.setJobTitle(jobTitle);
             
             String skills = skillsInput.getText().toString().trim();
             if (!skills.isEmpty()) {
@@ -173,20 +174,20 @@ public class EditProfileFragment extends BaseFragment {
                     String trimmed = skill.trim();
                     if (!trimmed.isEmpty()) skillList.add(trimmed);
                 }
-                profileData.put("skills", skillList);
+                request.setSkills(skillList);
             }
         } else {
             String companyName = companyNameInput.getText().toString().trim();
-            if (!companyName.isEmpty()) profileData.put("companyName", companyName);
+            if (!companyName.isEmpty()) request.setCompanyName(companyName);
             
             String companyWebsite = companyWebsiteInput.getText().toString().trim();
-            if (!companyWebsite.isEmpty()) profileData.put("companyWebsite", companyWebsite);
+            if (!companyWebsite.isEmpty()) request.setCompanyWebsite(companyWebsite);
         }
 
-        ApiService.getInstance(requireContext()).updateProfile(sessionManager.getAccessToken(), profileData,
-            new ApiCallback<UserDTO>() {
+        apiService.updateProfile(sessionManager.getAccessToken(), request,
+            new ApiCallback<ProfileResponse>() {
                 @Override
-                public void onSuccess(UserDTO result) {
+                public void onSuccess(ProfileResponse result) {
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);

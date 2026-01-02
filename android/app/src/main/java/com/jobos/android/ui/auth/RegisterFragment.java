@@ -14,11 +14,7 @@ import androidx.annotation.Nullable;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jobos.android.R;
-import com.jobos.android.data.network.ApiService;
-import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.auth.RegisterRequest;
-import com.jobos.shared.dto.auth.AuthResponse;
 
 public class RegisterFragment extends BaseFragment {
 
@@ -35,8 +31,6 @@ public class RegisterFragment extends BaseFragment {
     private ImageView backButton;
     private TextView loginLink;
 
-    private ApiService apiService;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -47,7 +41,6 @@ public class RegisterFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
-        apiService = new ApiService();
         initViews(view);
         setupClickListeners();
     }
@@ -68,7 +61,7 @@ public class RegisterFragment extends BaseFragment {
     }
 
     private void setupClickListeners() {
-        registerButton.setOnClickListener(v -> attemptRegister());
+        registerButton.setOnClickListener(v -> validateAndProceed());
         
         backButton.setOnClickListener(v -> navController.navigateUp());
         
@@ -77,7 +70,7 @@ public class RegisterFragment extends BaseFragment {
         );
     }
 
-    private void attemptRegister() {
+    private void validateAndProceed() {
         clearErrors();
 
         String name = getText(nameInput);
@@ -115,45 +108,12 @@ public class RegisterFragment extends BaseFragment {
             return;
         }
 
-        setLoading(true);
-
-        RegisterRequest request = new RegisterRequest();
-        request.setName(name);
-        request.setEmail(email);
-        request.setPassword(password);
-
-        apiService.register(request, new ApiCallback<AuthResponse>() {
-            @Override
-            public void onSuccess(AuthResponse response) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    setLoading(false);
-                    handleRegisterSuccess(response);
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    setLoading(false);
-                    showToast(error);
-                });
-            }
-        });
-    }
-
-    private void handleRegisterSuccess(AuthResponse response) {
-        sessionManager.saveAuthTokens(response.getAccessToken(), response.getRefreshToken());
-        sessionManager.saveUserInfo(
-            response.getUserId(),
-            response.getEmail(),
-            response.getName(),
-            response.getRole()
-        );
-        
-        showToast(getString(R.string.success_register));
-        navController.navigate(R.id.action_register_to_role_selection);
+        // Navigate to role selection with registration data
+        Bundle args = new Bundle();
+        args.putString("name", name);
+        args.putString("email", email);
+        args.putString("password", password);
+        navController.navigate(R.id.action_register_to_role_selection, args);
     }
 
     private void clearErrors() {
@@ -161,15 +121,6 @@ public class RegisterFragment extends BaseFragment {
         emailLayout.setError(null);
         passwordLayout.setError(null);
         confirmPasswordLayout.setError(null);
-    }
-
-    private void setLoading(boolean loading) {
-        registerButton.setVisibility(loading ? View.INVISIBLE : View.VISIBLE);
-        progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        nameInput.setEnabled(!loading);
-        emailInput.setEnabled(!loading);
-        passwordInput.setEnabled(!loading);
-        confirmPasswordInput.setEnabled(!loading);
     }
 
     private String getText(TextInputEditText input) {

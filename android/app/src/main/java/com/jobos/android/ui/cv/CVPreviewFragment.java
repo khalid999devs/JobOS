@@ -16,10 +16,10 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.cv.CVDTO;
+import com.jobos.android.data.model.cv.CVDTO;
 import java.util.List;
 
 public class CVPreviewFragment extends BaseFragment {
@@ -42,7 +42,8 @@ public class CVPreviewFragment extends BaseFragment {
     private TextView portfolioLink;
     private ProgressBar progressBar;
 
-    private Long cvId = null;
+    private String cvId = null;
+    private ApiService apiService;
     private CVDTO currentCV;
 
     @Nullable
@@ -54,11 +55,11 @@ public class CVPreviewFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiService = new ApiService();
         hideBottomNav();
 
         if (getArguments() != null) {
-            cvId = getArguments().getLong("cvId", -1);
-            if (cvId == -1) cvId = null;
+            cvId = getArguments().getString("cvId");
         }
 
         initViews(view);
@@ -94,7 +95,7 @@ public class CVPreviewFragment extends BaseFragment {
             if (id == R.id.action_edit) {
                 if (cvId != null) {
                     Bundle args = new Bundle();
-                    args.putLong("cvId", cvId);
+                    args.putString("cvId", cvId);
                     navController.navigate(R.id.cvEditorFragment, args);
                 }
                 return true;
@@ -124,7 +125,7 @@ public class CVPreviewFragment extends BaseFragment {
         }
 
         showLoading(true);
-        ApiService.getInstance(requireContext()).getCVDetails(sessionManager.getAccessToken(), cvId,
+        apiService.getCVDetails(sessionManager.getAccessToken(), cvId,
             new ApiCallback<CVDTO>() {
                 @Override
                 public void onSuccess(CVDTO result) {

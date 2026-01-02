@@ -15,10 +15,10 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.job.JobDTO;
+import com.jobos.android.data.model.job.JobDTO;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +59,8 @@ public class CreateJobFragment extends BaseFragment {
     private final String[] workModes = {"ONSITE", "REMOTE", "HYBRID"};
     private final String[] currencies = {"USD", "EUR", "GBP", "BDT", "INR"};
     private final String[] experienceLevels = {"ENTRY", "JUNIOR", "MID", "SENIOR", "LEAD", "EXECUTIVE"};
+    
+    private ApiService apiService;
 
     @Nullable
     @Override
@@ -70,6 +72,7 @@ public class CreateJobFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         hideBottomNav();
+        apiService = new ApiService();
         initViews(view);
         setupDropdowns();
         setupClickListeners();
@@ -256,7 +259,7 @@ public class CreateJobFragment extends BaseFragment {
             jobData.put("deadline", deadline);
         }
 
-        ApiService.getInstance(requireContext()).createJob(sessionManager.getAccessToken(), jobData, 
+        apiService.createJob(sessionManager.getAccessToken(), jobData, 
             new ApiCallback<JobDTO>() {
                 @Override
                 public void onSuccess(JobDTO result) {

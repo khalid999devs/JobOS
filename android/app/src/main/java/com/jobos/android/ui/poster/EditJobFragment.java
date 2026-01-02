@@ -15,10 +15,10 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.job.JobDTO;
+import com.jobos.android.data.model.job.JobDTO;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,7 +45,8 @@ public class EditJobFragment extends BaseFragment {
     private TextInputLayout descriptionLayout;
     private TextInputLayout locationLayout;
 
-    private long jobId = -1;
+    private String jobId = null;
+    private ApiService apiService;
     private JobDTO currentJob;
 
     private final String[] jobTypes = {"FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "FREELANCE"};
@@ -61,10 +62,11 @@ public class EditJobFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiService = new ApiService();
         hideBottomNav();
 
         if (getArguments() != null) {
-            jobId = getArguments().getLong("jobId", -1);
+            jobId = getArguments().getString("jobId");
         }
 
         initViews(view);
@@ -131,14 +133,14 @@ public class EditJobFragment extends BaseFragment {
     }
 
     private void loadJobDetails() {
-        if (jobId == -1) {
+        if (jobId == null || jobId.isEmpty()) {
             showToast("Invalid job");
             navController.popBackStack();
             return;
         }
 
         showLoading(true);
-        ApiService.getInstance(requireContext()).getJobDetails(sessionManager.getAccessToken(), jobId,
+        apiService.getJobDetails(sessionManager.getAccessToken(), jobId,
             new ApiCallback<JobDTO>() {
                 @Override
                 public void onSuccess(JobDTO result) {
@@ -186,9 +188,9 @@ public class EditJobFragment extends BaseFragment {
             salaryMaxInput.setText(String.valueOf(currentJob.getSalaryMax()));
         }
 
-        List<String> requirements = currentJob.getRequirements();
+        String requirements = currentJob.getRequirements();
         if (requirements != null && !requirements.isEmpty()) {
-            requirementsInput.setText(String.join("\n", requirements));
+            requirementsInput.setText(requirements);
         }
 
         List<String> skills = currentJob.getSkills();
@@ -265,7 +267,7 @@ public class EditJobFragment extends BaseFragment {
             jobData.put("skills", skillList);
         }
 
-        ApiService.getInstance(requireContext()).updateJob(sessionManager.getAccessToken(), jobId, jobData,
+        apiService.updateJob(sessionManager.getAccessToken(), jobId, jobData,
             new ApiCallback<JobDTO>() {
                 @Override
                 public void onSuccess(JobDTO result) {
@@ -299,10 +301,10 @@ public class EditJobFragment extends BaseFragment {
 
     private void deleteJob() {
         showLoading(true);
-        ApiService.getInstance(requireContext()).deleteJob(sessionManager.getAccessToken(), jobId,
-            new ApiCallback<Void>() {
+        apiService.deleteJob(sessionManager.getAccessToken(), jobId,
+            new ApiCallback<String>() {
                 @Override
-                public void onSuccess(Void result) {
+                public void onSuccess(String result) {
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);

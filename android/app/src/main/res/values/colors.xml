@@ -74,6 +74,7 @@
     <color name="job_status_draft_bg">#F5F5F5</color>
     
     <color name="on_surface_secondary">#757575</color>
+    <color name="on_background_secondary">#757575</color>
     
     <color name="shimmer_base">#E0E0E0</color>
     <color name="shimmer_highlight">#F5F5F5</color>

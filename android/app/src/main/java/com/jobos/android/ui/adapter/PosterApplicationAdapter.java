@@ -9,16 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.jobos.android.R;
-import com.jobos.shared.dto.application.ApplicationDTO;
-import java.text.SimpleDateFormat;
+import com.jobos.android.data.model.application.ApplicationDTO;
 import java.util.List;
-import java.util.Locale;
 
 public class PosterApplicationAdapter extends RecyclerView.Adapter<PosterApplicationAdapter.ViewHolder> {
 
     private final List<ApplicationDTO> applications;
     private final OnApplicationClickListener onClickListener;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
 
     public interface OnApplicationClickListener {
         void onClick(ApplicationDTO application);
@@ -68,7 +65,7 @@ public class PosterApplicationAdapter extends RecyclerView.Adapter<PosterApplica
             jobTitle.setText(application.getJobTitle());
             
             if (application.getCreatedAt() != null) {
-                appliedDate.setText(dateFormat.format(application.getCreatedAt()));
+                appliedDate.setText(application.getCreatedAt());
             }
 
             setupStatusBadge(application.getStatus());

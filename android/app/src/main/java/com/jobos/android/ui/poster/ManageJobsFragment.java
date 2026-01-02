@@ -15,11 +15,11 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.adapter.PosterJobAdapter;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.job.JobDTO;
+import com.jobos.android.data.model.job.JobDTO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +34,7 @@ public class ManageJobsFragment extends BaseFragment {
     private ExtendedFloatingActionButton fabCreateJob;
 
     private PosterJobAdapter adapter;
+    private ApiService apiService;
     private List<JobDTO> allJobs = new ArrayList<>();
     private List<JobDTO> filteredJobs = new ArrayList<>();
     private String currentFilter = "ALL";
@@ -47,6 +48,7 @@ public class ManageJobsFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiService = new ApiService();
         hideBottomNav();
         initViews(view);
         setupTabs();
@@ -95,12 +97,12 @@ public class ManageJobsFragment extends BaseFragment {
         adapter = new PosterJobAdapter(filteredJobs,
             job -> {
                 Bundle args = new Bundle();
-                args.putLong("jobId", job.getId());
+                args.putString("jobId", job.getId());
                 navController.navigate(R.id.applicantsListFragment, args);
             },
             job -> {
                 Bundle args = new Bundle();
-                args.putLong("jobId", job.getId());
+                args.putString("jobId", job.getId());
                 navController.navigate(R.id.editJobFragment, args);
             });
         jobsRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -114,7 +116,7 @@ public class ManageJobsFragment extends BaseFragment {
 
     private void loadJobs() {
         showLoading(true);
-        ApiService.getInstance(requireContext()).getMyPostedJobs(sessionManager.getAccessToken(), 
+        apiService.getMyPostedJobs(sessionManager.getAccessToken(), 
             new ApiCallback<List<JobDTO>>() {
                 @Override
                 public void onSuccess(List<JobDTO> result) {

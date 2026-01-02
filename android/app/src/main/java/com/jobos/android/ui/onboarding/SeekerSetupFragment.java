@@ -16,8 +16,8 @@ import com.jobos.android.R;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.profile.UpdateProfileRequest;
-import com.jobos.shared.dto.profile.ProfileResponse;
+import com.jobos.android.data.model.profile.UpdateProfileRequest;
+import com.jobos.android.data.model.profile.ProfileResponse;
 
 public class SeekerSetupFragment extends BaseFragment {
 

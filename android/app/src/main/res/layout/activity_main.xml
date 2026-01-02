@@ -32,11 +32,3 @@
         app:menu="@menu/menu_bottom_nav_seeker" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-            android:text="No notifications yet..."
-            android:textSize="14sp"
-            android:padding="10dp"
-            android:background="#F5F5F5"/>
-
-    </ScrollView>
-
-</LinearLayout>

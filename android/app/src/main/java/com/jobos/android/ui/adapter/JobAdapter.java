@@ -8,8 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.jobos.android.R;
-import com.jobos.shared.dto.job.JobDTO;
-import java.text.SimpleDateFormat;
+import com.jobos.android.data.model.job.JobDTO;
 import java.util.List;
 import java.util.Locale;
 
@@ -18,7 +17,6 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     private final List<JobDTO> jobs;
     private final OnJobClickListener onJobClick;
     private final OnBookmarkClickListener onBookmarkClick;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
     public interface OnJobClickListener {
         void onClick(JobDTO job);
@@ -90,10 +88,10 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             }
 
             if (job.getCreatedAt() != null) {
-                postedDate.setText(dateFormat.format(job.getCreatedAt()));
+                postedDate.setText(job.getCreatedAt());
             }
 
-            bookmarkButton.setImageResource(job.isSaved() ? R.drawable.ic_bookmark_filled : R.drawable.ic_bookmark_outline);
+            bookmarkButton.setImageResource(Boolean.TRUE.equals(job.getSaved()) ? R.drawable.ic_bookmark_filled : R.drawable.ic_bookmark_outline);
 
             itemView.setOnClickListener(v -> {
                 if (onJobClick != null) onJobClick.onClick(job);

@@ -17,7 +17,7 @@ import com.jobos.android.data.network.ApiService;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.ui.adapter.ApplicationAdapter;
-import com.jobos.shared.dto.application.ApplicationDTO;
+import com.jobos.android.data.model.application.ApplicationDTO;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -182,7 +182,7 @@ public class ApplicationsFragment extends BaseFragment {
 
     private void onApplicationClick(ApplicationDTO application) {
         Bundle args = new Bundle();
-        args.putLong("applicationId", application.getId());
+        args.putString("applicationId", application.getId());
         navController.navigate(R.id.action_applications_to_application_detail, args);
     }
 }

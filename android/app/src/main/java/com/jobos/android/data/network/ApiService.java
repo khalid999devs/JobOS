@@ -3,20 +3,21 @@ package com.jobos.android.data.network;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jobos.shared.dto.auth.AuthResponse;
-import com.jobos.shared.dto.auth.LoginRequest;
-import com.jobos.shared.dto.auth.RegisterRequest;
-import com.jobos.shared.dto.job.JobDTO;
-import com.jobos.shared.dto.job.JobSearchRequest;
-import com.jobos.shared.dto.job.CreateJobRequest;
-import com.jobos.shared.dto.application.ApplicationDTO;
-import com.jobos.shared.dto.application.CreateApplicationRequest;
-import com.jobos.shared.dto.cv.CVDTO;
-import com.jobos.shared.dto.cv.CreateCVRequest;
-import com.jobos.shared.dto.cv.UpdateCVRequest;
-import com.jobos.shared.dto.profile.ProfileResponse;
-import com.jobos.shared.dto.profile.UpdateProfileRequest;
-import com.jobos.shared.dto.notification.NotificationDTO;
+import com.jobos.android.config.ApiConfig;
+import com.jobos.android.data.model.auth.AuthResponse;
+import com.jobos.android.data.model.auth.LoginRequest;
+import com.jobos.android.data.model.auth.RegisterRequest;
+import com.jobos.android.data.model.job.JobDTO;
+import com.jobos.android.data.model.job.JobSearchRequest;
+import com.jobos.android.data.model.job.CreateJobRequest;
+import com.jobos.android.data.model.application.ApplicationDTO;
+import com.jobos.android.data.model.application.CreateApplicationRequest;
+import com.jobos.android.data.model.cv.CVDTO;
+import com.jobos.android.data.model.cv.CreateCVRequest;
+import com.jobos.android.data.model.cv.UpdateCVRequest;
+import com.jobos.android.data.model.profile.ProfileResponse;
+import com.jobos.android.data.model.profile.UpdateProfileRequest;
+import com.jobos.android.data.model.notification.NotificationDTO;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class ApiService {
 
     public void getProfile(String token, ApiCallback<ProfileResponse> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/profile")
+                .url(BASE_URL + "/api/users/me")
                 .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
@@ -128,29 +129,51 @@ public class ApiService {
     public void updateProfile(String token, UpdateProfileRequest request, ApiCallback<ProfileResponse> callback) {
         String json = toJson(request);
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/profile")
+                .url(BASE_URL + "/api/users/me")
                 .header("Authorization", "Bearer " + token)
-                .put(RequestBody.create(json, JSON))
+                .patch(RequestBody.create(json, JSON))
                 .build();
 
         executeAsync(httpRequest, ProfileResponse.class, callback);
     }
 
     public void searchJobs(JobSearchRequest request, ApiCallback<List<JobDTO>> callback) {
-        StringBuilder url = new StringBuilder(BASE_URL + "/api/jobs/search?");
-        if (request.getKeyword() != null) url.append("keyword=").append(request.getKeyword()).append("&");
-        if (request.getLocation() != null) url.append("location=").append(request.getLocation()).append("&");
-        if (request.getJobType() != null) url.append("jobType=").append(request.getJobType()).append("&");
-        if (request.getCategory() != null) url.append("category=").append(request.getCategory()).append("&");
-        url.append("page=").append(request.getPage()).append("&");
-        url.append("size=").append(request.getSize());
-
+        String json = toJson(request);
         Request httpRequest = new Request.Builder()
-                .url(url.toString())
-                .get()
+                .url(BASE_URL + "/api/jobs/search")
+                .post(RequestBody.create(json, JSON))
                 .build();
 
-        executeAsyncList(httpRequest, new TypeReference<List<JobDTO>>() {}, callback);
+        // Backend returns JobSearchResponse with jobs list
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        // Parse JobSearchResponse and extract jobs list
+                        Map<String, Object> searchResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object jobsObj = searchResponse.get("jobs");
+                        if (jobsObj != null) {
+                            String jobsJson = objectMapper.writeValueAsString(jobsObj);
+                            List<JobDTO> jobs = objectMapper.readValue(jobsJson, new TypeReference<List<JobDTO>>() {});
+                            callback.onSuccess(jobs);
+                        } else {
+                            callback.onSuccess(new java.util.ArrayList<>());
+                        }
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     public void getRecommendedJobs(String token, int page, int size, ApiCallback<List<JobDTO>> callback) {
@@ -163,9 +186,19 @@ public class ApiService {
         executeAsyncList(httpRequest, new TypeReference<List<JobDTO>>() {}, callback);
     }
 
-    public void getJobById(Long jobId, ApiCallback<JobDTO> callback) {
+    public void getJobById(String jobId, ApiCallback<JobDTO> callback) {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/jobs/" + jobId)
+                .get()
+                .build();
+
+        executeAsync(httpRequest, JobDTO.class, callback);
+    }
+
+    public void getJobDetails(String token, String jobId, ApiCallback<JobDTO> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/jobs/" + jobId)
+                .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
 
@@ -175,7 +208,7 @@ public class ApiService {
     public void createJob(String token, CreateJobRequest request, ApiCallback<JobDTO> callback) {
         String json = toJson(request);
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/jobs")
+                .url(BASE_URL + "/api/job-posts")
                 .header("Authorization", "Bearer " + token)
                 .post(RequestBody.create(json, JSON))
                 .build();
@@ -183,20 +216,42 @@ public class ApiService {
         executeAsync(httpRequest, JobDTO.class, callback);
     }
 
-    public void updateJob(String token, Long jobId, CreateJobRequest request, ApiCallback<JobDTO> callback) {
-        String json = toJson(request);
+    public void createJob(String token, Map<String, Object> jobData, ApiCallback<JobDTO> callback) {
+        String json = toJson(jobData);
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/jobs/" + jobId)
+                .url(BASE_URL + "/api/job-posts")
                 .header("Authorization", "Bearer " + token)
-                .put(RequestBody.create(json, JSON))
+                .post(RequestBody.create(json, JSON))
                 .build();
 
         executeAsync(httpRequest, JobDTO.class, callback);
     }
 
-    public void deleteJob(String token, Long jobId, ApiCallback<String> callback) {
+    public void updateJob(String token, String jobId, CreateJobRequest request, ApiCallback<JobDTO> callback) {
+        String json = toJson(request);
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/jobs/" + jobId)
+                .url(BASE_URL + "/api/job-posts/" + jobId)
+                .header("Authorization", "Bearer " + token)
+                .patch(RequestBody.create(json, JSON))
+                .build();
+
+        executeAsync(httpRequest, JobDTO.class, callback);
+    }
+
+    public void updateJob(String token, String jobId, Map<String, Object> jobData, ApiCallback<JobDTO> callback) {
+        String json = toJson(jobData);
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/job-posts/" + jobId)
+                .header("Authorization", "Bearer " + token)
+                .patch(RequestBody.create(json, JSON))
+                .build();
+
+        executeAsync(httpRequest, JobDTO.class, callback);
+    }
+
+    public void deleteJob(String token, String jobId, ApiCallback<String> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/job-posts/" + jobId)
                 .header("Authorization", "Bearer " + token)
                 .delete()
                 .build();
@@ -204,14 +259,56 @@ public class ApiService {
         executeAsyncString(httpRequest, callback);
     }
 
+    public void deleteJob(String token, String jobId, ApiCallback<Void> callback, boolean ignoreResponse) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/job-posts/" + jobId)
+                .header("Authorization", "Bearer " + token)
+                .delete()
+                .build();
+
+        executeAsyncVoid(httpRequest, callback);
+    }
+
     public void getMyPostedJobs(String token, int page, int size, ApiCallback<List<JobDTO>> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/jobs/my-jobs?page=" + page + "&size=" + size)
+                .url(BASE_URL + "/api/job-posts?page=" + page + "&size=" + size)
                 .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
 
-        executeAsyncList(httpRequest, new TypeReference<List<JobDTO>>() {}, callback);
+        // Backend returns paginated response with jobs list
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> pageResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object jobsObj = pageResponse.get("jobs");
+                        if (jobsObj != null) {
+                            String jobsJson = objectMapper.writeValueAsString(jobsObj);
+                            List<JobDTO> jobs = objectMapper.readValue(jobsJson, new TypeReference<List<JobDTO>>() {});
+                            callback.onSuccess(jobs);
+                        } else {
+                            callback.onSuccess(new java.util.ArrayList<>());
+                        }
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
+    }
+
+    public void getMyPostedJobs(String token, ApiCallback<List<JobDTO>> callback) {
+        getMyPostedJobs(token, 0, 100, callback);
     }
 
     public void applyForJob(String token, CreateApplicationRequest request, ApiCallback<ApplicationDTO> callback) {
@@ -235,7 +332,7 @@ public class ApiService {
         executeAsyncList(httpRequest, new TypeReference<List<ApplicationDTO>>() {}, callback);
     }
 
-    public void getApplicationById(String token, Long applicationId, ApiCallback<ApplicationDTO> callback) {
+    public void getApplicationById(String token, String applicationId, ApiCallback<ApplicationDTO> callback) {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/applications/" + applicationId)
                 .header("Authorization", "Bearer " + token)
@@ -245,17 +342,59 @@ public class ApiService {
         executeAsync(httpRequest, ApplicationDTO.class, callback);
     }
 
-    public void getApplicationsForJob(String token, Long jobId, int page, int size, ApiCallback<List<ApplicationDTO>> callback) {
+    public void getApplicationsForJob(String token, String jobId, int page, int size, ApiCallback<List<ApplicationDTO>> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/applications/job/" + jobId + "?page=" + page + "&size=" + size)
+                .url(BASE_URL + "/api/job-posts/" + jobId + "/applicants?page=" + page + "&size=" + size)
                 .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
 
-        executeAsyncList(httpRequest, new TypeReference<List<ApplicationDTO>>() {}, callback);
+        // Backend returns paginated response with applicants list
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> pageResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object applicantsObj = pageResponse.get("applicants");
+                        if (applicantsObj != null) {
+                            String applicantsJson = objectMapper.writeValueAsString(applicantsObj);
+                            List<ApplicationDTO> applications = objectMapper.readValue(applicantsJson, new TypeReference<List<ApplicationDTO>>() {});
+                            callback.onSuccess(applications);
+                        } else {
+                            callback.onSuccess(new java.util.ArrayList<>());
+                        }
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
-    public void updateApplicationStatus(String token, Long applicationId, String status, ApiCallback<ApplicationDTO> callback) {
+    public void getJobApplications(String token, String jobId, ApiCallback<List<ApplicationDTO>> callback) {
+        getApplicationsForJob(token, jobId, 0, 100, callback);
+    }
+
+    public void getApplicationDetails(String token, String applicationId, ApiCallback<ApplicationDTO> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/applications/" + applicationId)
+                .header("Authorization", "Bearer " + token)
+                .get()
+                .build();
+
+        executeAsync(httpRequest, ApplicationDTO.class, callback);
+    }
+
+    public void updateApplicationStatus(String token, String applicationId, String status, ApiCallback<ApplicationDTO> callback) {
         Map<String, String> body = new HashMap<>();
         body.put("status", status);
         String json = toJson(body);
@@ -263,7 +402,7 @@ public class ApiService {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/applications/" + applicationId + "/status")
                 .header("Authorization", "Bearer " + token)
-                .put(RequestBody.create(json, JSON))
+                .patch(RequestBody.create(json, JSON))
                 .build();
 
         executeAsync(httpRequest, ApplicationDTO.class, callback);
@@ -279,7 +418,7 @@ public class ApiService {
         executeAsyncList(httpRequest, new TypeReference<List<CVDTO>>() {}, callback);
     }
 
-    public void getCVById(String token, Long cvId, ApiCallback<CVDTO> callback) {
+    public void getCVById(String token, String cvId, ApiCallback<CVDTO> callback) {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/cvs/" + cvId)
                 .header("Authorization", "Bearer " + token)
@@ -300,18 +439,44 @@ public class ApiService {
         executeAsync(httpRequest, CVDTO.class, callback);
     }
 
-    public void updateCV(String token, Long cvId, UpdateCVRequest request, ApiCallback<CVDTO> callback) {
-        String json = toJson(request);
+    public void createCV(String token, Map<String, Object> cvData, ApiCallback<CVDTO> callback) {
+        String json = toJson(cvData);
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/cvs/" + cvId)
+                .url(BASE_URL + "/api/cvs")
                 .header("Authorization", "Bearer " + token)
-                .put(RequestBody.create(json, JSON))
+                .post(RequestBody.create(json, JSON))
                 .build();
 
         executeAsync(httpRequest, CVDTO.class, callback);
     }
 
-    public void deleteCV(String token, Long cvId, ApiCallback<String> callback) {
+    public void updateCV(String token, String cvId, UpdateCVRequest request, ApiCallback<CVDTO> callback) {
+        String json = toJson(request);
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/cvs/" + cvId)
+                .header("Authorization", "Bearer " + token)
+                .patch(RequestBody.create(json, JSON))
+                .build();
+
+        executeAsync(httpRequest, CVDTO.class, callback);
+    }
+
+    public void updateCV(String token, String cvId, Map<String, Object> cvData, ApiCallback<CVDTO> callback) {
+        String json = toJson(cvData);
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/cvs/" + cvId)
+                .header("Authorization", "Bearer " + token)
+                .patch(RequestBody.create(json, JSON))
+                .build();
+
+        executeAsync(httpRequest, CVDTO.class, callback);
+    }
+
+    public void getCVDetails(String token, String cvId, ApiCallback<CVDTO> callback) {
+        getCVById(token, cvId, callback);
+    }
+
+    public void deleteCV(String token, String cvId, ApiCallback<String> callback) {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/cvs/" + cvId)
                 .header("Authorization", "Bearer " + token)
@@ -321,9 +486,9 @@ public class ApiService {
         executeAsyncString(httpRequest, callback);
     }
 
-    public void saveJob(String token, Long jobId, ApiCallback<String> callback) {
+    public void saveJob(String token, String jobId, ApiCallback<String> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/saved-jobs/" + jobId)
+                .url(BASE_URL + "/api/jobs/" + jobId + "/save")
                 .header("Authorization", "Bearer " + token)
                 .post(RequestBody.create("", JSON))
                 .build();
@@ -331,9 +496,9 @@ public class ApiService {
         executeAsyncString(httpRequest, callback);
     }
 
-    public void unsaveJob(String token, Long jobId, ApiCallback<String> callback) {
+    public void unsaveJob(String token, String jobId, ApiCallback<String> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/saved-jobs/" + jobId)
+                .url(BASE_URL + "/api/jobs/" + jobId + "/unsave")
                 .header("Authorization", "Bearer " + token)
                 .delete()
                 .build();
@@ -361,11 +526,11 @@ public class ApiService {
         executeAsyncList(httpRequest, new TypeReference<List<NotificationDTO>>() {}, callback);
     }
 
-    public void markNotificationRead(String token, Long notificationId, ApiCallback<String> callback) {
+    public void markNotificationRead(String token, String notificationId, ApiCallback<String> callback) {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/notifications/" + notificationId + "/read")
                 .header("Authorization", "Bearer " + token)
-                .put(RequestBody.create("", JSON))
+                .patch(RequestBody.create("", JSON))
                 .build();
 
         executeAsyncString(httpRequest, callback);
@@ -375,7 +540,7 @@ public class ApiService {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/notifications/read-all")
                 .header("Authorization", "Bearer " + token)
-                .put(RequestBody.create("", JSON))
+                .patch(RequestBody.create("", JSON))
                 .build();
 
         executeAsyncString(httpRequest, callback);
@@ -393,6 +558,57 @@ public class ApiService {
                 .build();
 
         executeAsyncString(httpRequest, callback);
+    }
+
+    public void changePassword(String token, Map<String, String> passwordData, ApiCallback<String> callback) {
+        String json = toJson(passwordData);
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/profile/change-password")
+                .header("Authorization", "Bearer " + token)
+                .put(RequestBody.create(json, JSON))
+                .build();
+
+        executeAsyncString(httpRequest, callback);
+    }
+
+    public void setDefaultCV(String token, String cvId, ApiCallback<CVDTO> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/cvs/" + cvId + "/set-default")
+                .header("Authorization", "Bearer " + token)
+                .patch(RequestBody.create("", JSON))
+                .build();
+
+        executeAsync(httpRequest, CVDTO.class, callback);
+    }
+
+    public void getProfileStats(String token, ApiCallback<Map<String, Object>> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/profile/stats")
+                .header("Authorization", "Bearer " + token)
+                .get()
+                .build();
+
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> result = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        callback.onSuccess(result);
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     private <T> void executeAsync(Request request, Class<T> responseType, ApiCallback<T> callback) {
@@ -455,6 +671,25 @@ public class ApiService {
                 String body = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
                     callback.onSuccess(body);
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
+    }
+
+    private void executeAsyncVoid(Request request, ApiCallback<Void> callback) {
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
                 } else {
                     callback.onError(parseError(body));
                 }

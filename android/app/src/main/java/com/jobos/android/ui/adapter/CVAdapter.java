@@ -10,16 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import com.jobos.android.R;
-import com.jobos.shared.dto.cv.CVDTO;
-import java.text.SimpleDateFormat;
+import com.jobos.android.data.model.cv.CVDTO;
 import java.util.List;
-import java.util.Locale;
 
 public class CVAdapter extends RecyclerView.Adapter<CVAdapter.CVViewHolder> {
 
     private final List<CVDTO> cvList;
     private final OnCVActionListener listener;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
     public interface OnCVActionListener {
         void onEdit(CVDTO cv);
@@ -71,9 +68,9 @@ public class CVAdapter extends RecyclerView.Adapter<CVAdapter.CVViewHolder> {
             cvTitle.setText(cv.getTitle());
 
             if (cv.getUpdatedAt() != null) {
-                lastUpdated.setText("Updated " + dateFormat.format(cv.getUpdatedAt()));
+                lastUpdated.setText("Updated " + cv.getUpdatedAt());
             } else if (cv.getCreatedAt() != null) {
-                lastUpdated.setText("Created " + dateFormat.format(cv.getCreatedAt()));
+                lastUpdated.setText("Created " + cv.getCreatedAt());
             }
 
             editButton.setOnClickListener(v -> {

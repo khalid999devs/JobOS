@@ -16,8 +16,8 @@ import com.jobos.android.R;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.auth.LoginRequest;
-import com.jobos.shared.dto.auth.AuthResponse;
+import com.jobos.android.data.model.auth.LoginRequest;
+import com.jobos.android.data.model.auth.AuthResponse;
 
 public class LoginFragment extends BaseFragment {
 

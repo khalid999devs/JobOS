@@ -31,12 +31,26 @@ public class SessionManager {
     }
     
     public void saveUserInfo(Long userId, String email, String name, String role) {
-        editor.putLong(KEY_USER_ID, userId);
+        editor.putLong(KEY_USER_ID, userId != null ? userId : -1);
         editor.putString(KEY_USER_EMAIL, email);
         editor.putString(KEY_USER_NAME, name);
         editor.putString(KEY_USER_ROLE, role);
         editor.putBoolean(KEY_IS_LOGGED_IN, true);
         editor.apply();
+    }
+    
+    public void saveUserInfo(String idString, String email, String name, String role) {
+        // Handle String ID (from API responses)
+        Long userId = null;
+        if (idString != null && !idString.isEmpty()) {
+            try {
+                userId = Long.parseLong(idString);
+            } catch (NumberFormatException e) {
+                // UUID or non-numeric ID - store as -1 and keep string version
+                userId = -1L;
+            }
+        }
+        saveUserInfo(userId, email, name, role);
     }
     
     public void setProfileComplete(boolean complete) {
@@ -92,6 +106,10 @@ public class SessionManager {
     
     public boolean isPoster() {
         return "POSTER".equals(getUserRole());
+    }
+    
+    public SharedPreferences getPreferences() {
+        return prefs;
     }
     
     public void clearSession() {

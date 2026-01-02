@@ -20,8 +20,8 @@ import com.jobos.android.data.network.ApiService;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.ui.adapter.JobAdapter;
-import com.jobos.shared.dto.job.JobDTO;
-import com.jobos.shared.dto.job.JobSearchRequest;
+import com.jobos.android.data.model.job.JobDTO;
+import com.jobos.android.data.model.job.JobSearchRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -186,7 +186,7 @@ public class JobSearchFragment extends BaseFragment {
 
     private void onJobClick(JobDTO job) {
         Bundle args = new Bundle();
-        args.putLong("jobId", job.getId());
+        args.putString("jobId", job.getId());
         navController.navigate(R.id.action_job_search_to_job_detail, args);
     }
 

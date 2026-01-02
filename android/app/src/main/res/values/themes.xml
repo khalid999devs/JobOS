@@ -45,6 +45,11 @@
         <item name="cornerRadius">12dp</item>
     </style>
     
+    <style name="Widget.JobOS.Button.Secondary" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+    
     <style name="Widget.JobOS.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:textAllCaps">false</item>
         <item name="cornerRadius">12dp</item>

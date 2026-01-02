@@ -14,10 +14,11 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.jobos.android.R;
-import com.jobos.android.network.ApiCallback;
-import com.jobos.android.network.ApiService;
+import com.jobos.android.data.network.ApiCallback;
+import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
-import com.jobos.shared.dto.user.UserDTO;
+import com.jobos.android.data.model.profile.ProfileResponse;
+import java.util.Map;
 
 public class ProfileFragment extends BaseFragment {
 
@@ -39,6 +40,7 @@ public class ProfileFragment extends BaseFragment {
     private ProgressBar progressBar;
 
     private boolean isSeeker;
+    private ApiService apiService;
 
     @Nullable
     @Override
@@ -51,6 +53,7 @@ public class ProfileFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         showBottomNav();
         
+        apiService = new ApiService();
         isSeeker = "SEEKER".equals(sessionManager.getUserRole());
         
         initViews(view);
@@ -113,10 +116,10 @@ public class ProfileFragment extends BaseFragment {
     }
 
     private void loadProfileStats() {
-        ApiService.getInstance(requireContext()).getMyProfile(sessionManager.getAccessToken(),
-            new ApiCallback<UserDTO>() {
+        apiService.getProfileStats(sessionManager.getAccessToken(),
+            new ApiCallback<Map<String, Object>>() {
                 @Override
-                public void onSuccess(UserDTO result) {
+                public void onSuccess(Map<String, Object> result) {
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         displayStats(result);
@@ -129,28 +132,36 @@ public class ProfileFragment extends BaseFragment {
             });
     }
 
-    private void displayStats(UserDTO user) {
+    private void displayStats(Map<String, Object> stats) {
         statsCard.setVisibility(View.VISIBLE);
         
         if (isSeeker) {
-            statValue1.setText(String.valueOf(user.getApplicationCount() != null ? user.getApplicationCount() : 0));
+            statValue1.setText(String.valueOf(getIntValue(stats, "applicationCount")));
             statLabel1.setText("Applications");
             
-            statValue2.setText(String.valueOf(user.getSavedJobsCount() != null ? user.getSavedJobsCount() : 0));
+            statValue2.setText(String.valueOf(getIntValue(stats, "savedJobsCount")));
             statLabel2.setText("Saved Jobs");
             
-            statValue3.setText(String.valueOf(user.getCvCount() != null ? user.getCvCount() : 0));
+            statValue3.setText(String.valueOf(getIntValue(stats, "cvCount")));
             statLabel3.setText("CVs");
         } else {
-            statValue1.setText(String.valueOf(user.getPostedJobsCount() != null ? user.getPostedJobsCount() : 0));
+            statValue1.setText(String.valueOf(getIntValue(stats, "postedJobsCount")));
             statLabel1.setText("Jobs Posted");
             
-            statValue2.setText(String.valueOf(user.getActiveJobsCount() != null ? user.getActiveJobsCount() : 0));
+            statValue2.setText(String.valueOf(getIntValue(stats, "activeJobsCount")));
             statLabel2.setText("Active");
             
-            statValue3.setText(String.valueOf(user.getTotalApplicationsCount() != null ? user.getTotalApplicationsCount() : 0));
+            statValue3.setText(String.valueOf(getIntValue(stats, "totalApplicationsCount")));
             statLabel3.setText("Applications");
         }
+    }
+
+    private int getIntValue(Map<String, Object> map, String key) {
+        Object value = map.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return 0;
     }
 
     private void showLogoutConfirmation() {

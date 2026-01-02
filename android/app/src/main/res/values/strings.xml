@@ -32,6 +32,8 @@
     <string name="select_role">Select Your Role</string>
     <string name="role_seeker">Job Seeker</string>
     <string name="role_poster">Job Poster</string>
+    <string name="seeker">Seeker</string>
+    <string name="poster">Poster</string>
     <string name="role_seeker_desc">Find your dream job</string>
     <string name="role_poster_desc">Post jobs and find talent</string>
     <string name="continue_text">Continue</string>
@@ -162,6 +164,8 @@
     <string name="success_profile_updated">Profile updated successfully</string>
     <string name="success_cv_saved">CV saved successfully</string>
     <string name="success_application_submitted">Application submitted successfully</string>
+    <string name="success_application">Application submitted successfully!</string>
+    <string name="already_applied">Already Applied</string>
     
     <string name="confirm_logout">Are you sure you want to logout?</string>
     <string name="confirm_delete">Are you sure you want to delete this?</string>
@@ -173,4 +177,45 @@
     <string name="empty_cvs">No CVs created yet</string>
     <string name="empty_saved_jobs">No saved jobs</string>
     <string name="empty_applicants">No applicants yet</string>
+    
+    <string name="job_details">Job Details</string>
+    <string name="share">Share</string>
+    <string name="posted_by">Posted by</string>
+    <string name="apply_for_job">Apply for Job</string>
+    <string name="submit_application">Submit Application</string>
+    <string name="continue_btn">Continue</string>
+    <string name="close">Close</string>
+    <string name="applications">Applications</string>
+    <string name="views">Views</string>
+    <string name="greeting_default">Hello!</string>
+    <string name="hint_bio">Tell us about yourself</string>
+    <string name="hint_company_description">Describe your company</string>
+    <string name="hint_company_location">Company location</string>
+    <string name="hint_company_name">Your company name</string>
+    <string name="hint_cover_letter">Write your cover letter</string>
+    <string name="hint_experience_years">Years of experience</string>
+    <string name="hint_job_title_preference">Preferred job title</string>
+    <string name="hint_location">Your location</string>
+    <string name="hint_phone">Phone number</string>
+    <string name="hint_search_keyword">Search keywords</string>
+    <string name="hint_website">Website URL</string>
+    <string name="no_applications">No applications</string>
+    <string name="no_applications_hint">You haven\'t applied to any jobs yet</string>
+    <string name="no_jobs_found">No jobs found</string>
+    <string name="no_jobs_posted">No jobs posted yet</string>
+    <string name="no_recent_applications">No recent applications</string>
+    <string name="no_saved_jobs">No saved jobs</string>
+    <string name="no_saved_jobs_hint">Jobs you save will appear here</string>
+    <string name="posted_date">Posted %s</string>
+    <string name="recent_applications">Recent Applications</string>
+    <string name="recent_jobs">Recent Jobs</string>
+    <string name="recommended_jobs">Recommended Jobs</string>
+    <string name="saved_jobs">Saved Jobs</string>
+    <string name="see_all">See All</string>
+    <string name="setup_poster_subtitle">Tell us about your company</string>
+    <string name="setup_poster_title">Company Setup</string>
+    <string name="setup_seeker_subtitle">Help us find the right jobs for you</string>
+    <string name="setup_seeker_title">Profile Setup</string>
+    <string name="skip_for_now">Skip for now</string>
+    <string name="your_jobs">Your Jobs</string>
 </resources>

@@ -18,10 +18,10 @@ import com.jobos.android.data.network.ApiService;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.ui.adapter.CVSelectAdapter;
-import com.jobos.shared.dto.job.JobDTO;
-import com.jobos.shared.dto.cv.CVDTO;
-import com.jobos.shared.dto.application.CreateApplicationRequest;
-import com.jobos.shared.dto.application.ApplicationDTO;
+import com.jobos.android.data.model.job.JobDTO;
+import com.jobos.android.data.model.cv.CVDTO;
+import com.jobos.android.data.model.application.CreateApplicationRequest;
+import com.jobos.android.data.model.application.ApplicationDTO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,8 +38,8 @@ public class ApplyJobFragment extends BaseFragment {
     private ApiService apiService;
     private CVSelectAdapter cvAdapter;
     private List<CVDTO> cvList = new ArrayList<>();
-    private Long jobId;
-    private Long selectedCvId = null;
+    private String jobId;
+    private CVDTO selectedCv = null;
 
     @Nullable
     @Override
@@ -52,7 +52,7 @@ public class ApplyJobFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         
         if (getArguments() != null) {
-            jobId = getArguments().getLong("jobId", -1);
+            jobId = getArguments().getString("jobId");
         }
         
         apiService = new ApiService();
@@ -85,7 +85,7 @@ public class ApplyJobFragment extends BaseFragment {
     }
 
     private void loadJobDetails() {
-        if (jobId == null || jobId <= 0) return;
+        if (jobId == null || jobId.isEmpty()) return;
 
         apiService.getJobById(jobId, new ApiCallback<JobDTO>() {
             @Override
@@ -114,8 +114,8 @@ public class ApplyJobFragment extends BaseFragment {
                     cvAdapter.notifyDataSetChanged();
                     
                     if (!cvList.isEmpty()) {
-                        selectedCvId = cvList.get(0).getId();
-                        cvAdapter.setSelectedId(selectedCvId);
+                        selectedCv = cvList.get(0);
+                        cvAdapter.setSelectedId(selectedCv.getId());
                     }
                 });
             }
@@ -129,17 +129,17 @@ public class ApplyJobFragment extends BaseFragment {
     }
 
     private void onCVSelected(CVDTO cv) {
-        selectedCvId = cv.getId();
-        cvAdapter.setSelectedId(selectedCvId);
+        selectedCv = cv;
+        cvAdapter.setSelectedId(cv.getId());
     }
 
     private void submitApplication() {
-        if (jobId == null || jobId <= 0) {
+        if (jobId == null || jobId.isEmpty()) {
             showToast("Invalid job");
             return;
         }
 
-        if (selectedCvId == null) {
+        if (selectedCv == null) {
             showToast("Please select a CV");
             return;
         }
@@ -148,7 +148,9 @@ public class ApplyJobFragment extends BaseFragment {
 
         CreateApplicationRequest request = new CreateApplicationRequest();
         request.setJobId(jobId);
-        request.setCvId(selectedCvId);
+        // Use CV file URL for application
+        // For now, generate a placeholder URL based on CV id
+        request.setCvFileUrl("/api/cvs/" + selectedCv.getId() + "/file");
         
         String coverLetter = coverLetterInput.getText() != null ? 
             coverLetterInput.getText().toString().trim() : "";

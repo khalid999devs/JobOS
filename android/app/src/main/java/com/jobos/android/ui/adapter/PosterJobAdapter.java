@@ -9,17 +9,14 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.jobos.android.R;
-import com.jobos.shared.dto.job.JobDTO;
-import java.text.SimpleDateFormat;
+import com.jobos.android.data.model.job.JobDTO;
 import java.util.List;
-import java.util.Locale;
 
 public class PosterJobAdapter extends RecyclerView.Adapter<PosterJobAdapter.JobViewHolder> {
 
     private final List<JobDTO> jobs;
     private final OnJobClickListener onJobClick;
     private final OnJobEditListener onJobEdit;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
 
     public interface OnJobClickListener {
         void onClick(JobDTO job);
@@ -74,7 +71,7 @@ public class PosterJobAdapter extends RecyclerView.Adapter<PosterJobAdapter.JobV
             applicantsCount.setText(job.getApplicationCount() + " applicants");
             
             if (job.getCreatedAt() != null) {
-                postedDate.setText("Posted " + dateFormat.format(job.getCreatedAt()));
+                postedDate.setText("Posted " + job.getCreatedAt());
             }
 
             setupStatusBadge(job.getStatus());
