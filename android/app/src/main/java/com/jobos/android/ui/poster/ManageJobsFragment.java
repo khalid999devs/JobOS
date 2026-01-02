@@ -116,29 +116,45 @@ public class ManageJobsFragment extends BaseFragment {
 
     private void loadJobs() {
         showLoading(true);
-        apiService.getMyPostedJobs(sessionManager.getAccessToken(), 
-            new ApiCallback<List<JobDTO>>() {
-                @Override
-                public void onSuccess(List<JobDTO> result) {
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> {
-                        showLoading(false);
-                        allJobs.clear();
-                        allJobs.addAll(result);
-                        filterJobs();
-                    });
-                }
+        
+        getValidToken(new com.jobos.android.data.network.TokenManager.TokenCallback() {
+            @Override
+            public void onTokenReady(String accessToken) {
+                apiService.getMyPostedJobs(accessToken, 
+                    new ApiCallback<List<JobDTO>>() {
+                        @Override
+                        public void onSuccess(List<JobDTO> result) {
+                            if (!isAdded()) return;
+                            requireActivity().runOnUiThread(() -> {
+                                showLoading(false);
+                                allJobs.clear();
+                                allJobs.addAll(result);
+                                filterJobs();
+                            });
+                        }
 
-                @Override
-                public void onError(String error) {
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> {
-                        showLoading(false);
-                        showToast("Error loading jobs: " + error);
-                        updateEmptyState();
+                        @Override
+                        public void onError(String error) {
+                            if (!isAdded()) return;
+                            requireActivity().runOnUiThread(() -> {
+                                showLoading(false);
+                                handleAuthError(error, () -> loadJobs());
+                                updateEmptyState();
+                            });
+                        }
                     });
-                }
-            });
+            }
+
+            @Override
+            public void onTokenRefreshFailed(String error) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    showLoading(false);
+                    showToast("Session expired. Please login again.");
+                    navigateToLogin();
+                });
+            }
+        });
     }
 
     private void filterJobs() {

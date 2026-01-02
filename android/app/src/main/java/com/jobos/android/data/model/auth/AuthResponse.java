@@ -6,6 +6,7 @@ public class AuthResponse {
     private String refreshToken;
     private String userId;
     private String email;
+    private String name;
     private String role;
     private Boolean profileCompleted;
 
@@ -41,6 +42,17 @@ public class AuthResponse {
         this.email = email;
     }
 
+    public String getName() {
+        if (name != null && !name.isEmpty()) {
+            return name;
+        }
+        return email != null ? email.split("@")[0] : null;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getRole() {
         return role;
     }
@@ -55,9 +67,5 @@ public class AuthResponse {
 
     public void setProfileCompleted(Boolean profileCompleted) {
         this.profileCompleted = profileCompleted;
-    }
-
-    public String getName() {
-        return email != null ? email.split("@")[0] : null;
     }
 }

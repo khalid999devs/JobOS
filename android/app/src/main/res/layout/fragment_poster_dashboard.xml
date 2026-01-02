@@ -3,47 +3,57 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/secondary">
+        android:background="@color/secondary"
+        android:fitsSystemWindows="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_md">
+            android:paddingStart="@dimen/spacing_md"
+            android:paddingEnd="@dimen/spacing_md"
+            android:paddingTop="@dimen/spacing_lg"
+            android:paddingBottom="@dimen/spacing_md">
 
             <TextView
                 android:id="@+id/greeting_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/greeting_default"
-                android:textSize="@dimen/text_md"
+                android:textSize="@dimen/text_sm"
                 android:textColor="@color/on_secondary"
-                android:alpha="0.8"
+                android:alpha="0.85"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/notification_icon"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="@dimen/spacing_md" />
 
             <TextView
                 android:id="@+id/user_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_xl"
+                android:textSize="@dimen/text_xxl"
                 android:textColor="@color/on_secondary"
                 android:textStyle="bold"
+                android:layout_marginTop="@dimen/spacing_xs"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/notification_icon"
-                app:layout_constraintTop_toBottomOf="@id/greeting_text" />
+                app:layout_constraintTop_toBottomOf="@id/greeting_text"
+                android:layout_marginEnd="@dimen/spacing_md" />
 
             <ImageView
                 android:id="@+id/notification_icon"
-                android:layout_width="@dimen/icon_lg"
-                android:layout_height="@dimen/icon_lg"
+                android:layout_width="@dimen/icon_xl"
+                android:layout_height="@dimen/icon_xl"
+                android:padding="@dimen/spacing_sm"
                 android:src="@drawable/ic_notifications"
                 android:contentDescription="@string/notifications"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 app:tint="@color/on_secondary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

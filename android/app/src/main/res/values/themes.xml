@@ -100,4 +100,14 @@
     <style name="TextAppearance.JobOS.Label" parent="TextAppearance.Material3.LabelLarge">
         <item name="android:textColor">@color/text_secondary</item>
     </style>
+
+    <!-- Bottom Navigation Styles -->
+    <style name="BottomNavTextAppearance" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="BottomNavActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/primary_container</item>
+    </style>
 </resources>

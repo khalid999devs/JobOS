@@ -623,8 +623,16 @@ public class ApiService {
                 String body = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
                     try {
-                        T result = objectMapper.readValue(body, responseType);
-                        callback.onSuccess(result);
+                        Map<String, Object> apiResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object resultObj = apiResponse.get("result");
+                        if (resultObj != null) {
+                            String resultJson = objectMapper.writeValueAsString(resultObj);
+                            T result = objectMapper.readValue(resultJson, responseType);
+                            callback.onSuccess(result);
+                        } else {
+                            T result = objectMapper.readValue(body, responseType);
+                            callback.onSuccess(result);
+                        }
                     } catch (Exception e) {
                         callback.onError("Parse error: " + e.getMessage());
                     }
@@ -647,8 +655,16 @@ public class ApiService {
                 String body = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
                     try {
-                        T result = objectMapper.readValue(body, typeRef);
-                        callback.onSuccess(result);
+                        Map<String, Object> apiResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object resultObj = apiResponse.get("result");
+                        if (resultObj != null) {
+                            String resultJson = objectMapper.writeValueAsString(resultObj);
+                            T result = objectMapper.readValue(resultJson, typeRef);
+                            callback.onSuccess(result);
+                        } else {
+                            T result = objectMapper.readValue(body, typeRef);
+                            callback.onSuccess(result);
+                        }
                     } catch (Exception e) {
                         callback.onError("Parse error: " + e.getMessage());
                     }

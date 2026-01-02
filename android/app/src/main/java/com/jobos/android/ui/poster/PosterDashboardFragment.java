@@ -84,9 +84,9 @@ public class PosterDashboardFragment extends BaseFragment {
 
         String name = sessionManager.getUserName();
         if (name != null && !name.isEmpty()) {
-            userName.setText(name);
+            userName.setText("Hello, " + name);
         } else {
-            userName.setText(getString(R.string.poster));
+            userName.setText("Hello, " + getString(R.string.poster));
         }
 
         updateGreeting();
@@ -96,11 +96,11 @@ public class PosterDashboardFragment extends BaseFragment {
         int hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
         String greeting;
         if (hour < 12) {
-            greeting = "Good Morning";
+            greeting = "Good Morning ☀️";
         } else if (hour < 17) {
-            greeting = "Good Afternoon";
+            greeting = "Good Afternoon 🌤️";
         } else {
-            greeting = "Good Evening";
+            greeting = "Good Evening 🌙";
         }
         greetingText.setText(greeting);
     }
@@ -139,36 +139,49 @@ public class PosterDashboardFragment extends BaseFragment {
         if (!swipeRefresh.isRefreshing()) {
             progressBar.setVisibility(View.VISIBLE);
         }
-
         loadMyJobs();
     }
 
     private void loadMyJobs() {
-        String token = sessionManager.getAccessToken();
-        apiService.getMyPostedJobs(token, 0, 5, new ApiCallback<List<JobDTO>>() {
+        getValidToken(new com.jobos.android.data.network.TokenManager.TokenCallback() {
             @Override
-            public void onSuccess(List<JobDTO> result) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    jobs.clear();
-                    jobs.addAll(result);
-                    jobAdapter.notifyDataSetChanged();
-                    
-                    int activeCount = (int) result.stream().filter(j -> "ACTIVE".equals(j.getStatus())).count();
-                    activeJobsCount.setText(String.valueOf(activeCount));
-                    
-                    emptyJobs.setVisibility(jobs.isEmpty() ? View.VISIBLE : View.GONE);
-                    
-                    loadRecentApplications();
+            public void onTokenReady(String token) {
+                apiService.getMyPostedJobs(token, 0, 5, new ApiCallback<List<JobDTO>>() {
+                    @Override
+                    public void onSuccess(List<JobDTO> result) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            jobs.clear();
+                            jobs.addAll(result);
+                            jobAdapter.notifyDataSetChanged();
+                            
+                            int activeCount = (int) result.stream().filter(j -> "ACTIVE".equals(j.getStatus())).count();
+                            activeJobsCount.setText(String.valueOf(activeCount));
+                            
+                            emptyJobs.setVisibility(jobs.isEmpty() ? View.VISIBLE : View.GONE);
+                            
+                            loadRecentApplications();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            hideLoading();
+                            handleAuthError(error, () -> loadMyJobs());
+                        });
+                    }
                 });
             }
 
             @Override
-            public void onError(String error) {
+            public void onTokenRefreshFailed(String error) {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     hideLoading();
-                    showToast(error);
+                    showToast("Session expired. Please login again.");
+                    navigateToLogin();
                 });
             }
         });
@@ -180,29 +193,39 @@ public class PosterDashboardFragment extends BaseFragment {
             return;
         }
 
-        String token = sessionManager.getAccessToken();
-        String firstJobId = jobs.get(0).getId();
-        
-        apiService.getApplicationsForJob(token, firstJobId, 0, 5, new ApiCallback<List<ApplicationDTO>>() {
+        getValidToken(new com.jobos.android.data.network.TokenManager.TokenCallback() {
             @Override
-            public void onSuccess(List<ApplicationDTO> result) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    applications.clear();
-                    applications.addAll(result);
-                    applicationAdapter.notifyDataSetChanged();
-                    applicationsCount.setText(String.valueOf(result.size()));
-                    emptyApplications.setVisibility(applications.isEmpty() ? View.VISIBLE : View.GONE);
-                    hideLoading();
+            public void onTokenReady(String token) {
+                String firstJobId = jobs.get(0).getId();
+                
+                apiService.getApplicationsForJob(token, firstJobId, 0, 5, new ApiCallback<List<ApplicationDTO>>() {
+                    @Override
+                    public void onSuccess(List<ApplicationDTO> result) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            applications.clear();
+                            applications.addAll(result);
+                            applicationAdapter.notifyDataSetChanged();
+                            applicationsCount.setText(String.valueOf(result.size()));
+                            emptyApplications.setVisibility(applications.isEmpty() ? View.VISIBLE : View.GONE);
+                            hideLoading();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            hideLoading();
+                        });
+                    }
                 });
             }
 
             @Override
-            public void onError(String error) {
+            public void onTokenRefreshFailed(String error) {
                 if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    hideLoading();
-                });
+                requireActivity().runOnUiThread(PosterDashboardFragment.this::hideLoading);
             }
         });
     }
