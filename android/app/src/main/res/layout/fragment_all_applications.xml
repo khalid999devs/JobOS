@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/surface"
-            app:title="Manage Jobs"
+            app:title="Applications"
             app:titleTextColor="@color/on_surface"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge" />
 
@@ -26,8 +26,8 @@
             app:tabIndicatorColor="@color/primary"
             app:tabSelectedTextColor="@color/primary"
             app:tabTextColor="@color/on_surface_secondary"
-            app:tabMode="fixed"
-            app:tabGravity="fill" />
+            app:tabMode="scrollable"
+            app:tabGravity="start" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -37,7 +37,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/jobs_recycler"
+            android:id="@+id/applicants_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="@dimen/spacing_md"
@@ -56,7 +56,7 @@
             <ImageView
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/ic_work"
+                android:src="@drawable/ic_applicants"
                 android:alpha="0.5"
                 app:tint="@color/on_surface_secondary" />
 
@@ -65,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_lg"
-                android:text="No jobs found"
+                android:text="No applications yet"
                 android:textSize="@dimen/text_lg"
                 android:textStyle="bold"
                 android:textColor="@color/on_surface" />
@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_xs"
-                android:text="Create your first job posting"
+                android:text="Post jobs to start receiving applications"
                 android:textSize="@dimen/text_sm"
                 android:textColor="@color/on_surface_secondary"
                 android:gravity="center" />
@@ -90,18 +90,5 @@
             android:visibility="gone" />
 
     </FrameLayout>
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab_create_job"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="@dimen/spacing_md"
-        android:layout_marginBottom="55dp"
-        android:text="New Job"
-        android:textColor="@color/on_secondary"
-        app:icon="@drawable/ic_add"
-        app:iconTint="@color/on_secondary"
-        app:backgroundTint="@color/secondary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

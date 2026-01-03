@@ -96,7 +96,12 @@
         android:name="com.jobos.android.ui.onboarding.RoleSelectionFragment"
         android:label="@string/select_role">
         <argument
-            android:name="name"
+            android:name="firstName"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="lastName"
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />
@@ -398,6 +403,15 @@
         <argument
             android:name="jobId"
             app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/allApplicationsFragment"
+        android:name="com.jobos.android.ui.poster.AllApplicationsFragment"
+        android:label="Applications">
+        <action
+            android:id="@+id/action_all_applications_to_detail"
+            app:destination="@id/applicantDetailFragment" />
     </fragment>
 
     <fragment

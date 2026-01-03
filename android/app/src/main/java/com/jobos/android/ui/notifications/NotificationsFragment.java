@@ -11,21 +11,26 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.tabs.TabLayout;
 import com.jobos.android.R;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.notification.NotificationDTO;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationsFragment extends BaseFragment implements NotificationAdapter.OnNotificationClickListener {
 
     private MaterialToolbar toolbar;
+    private TabLayout tabLayout;
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
     private ProgressBar progressBar;
     private NotificationAdapter adapter;
     private ApiService apiService;
+    private List<NotificationDTO> allNotifications = new ArrayList<>();
+    private String currentFilter = "ALL";
 
     @Nullable
     @Override
@@ -36,21 +41,40 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        hideBottomNav();
+        showBottomNav();
         
         apiService = new ApiService();
         initViews(view);
+        setupTabs();
         setupRecyclerView();
         loadNotifications();
     }
 
     private void initViews(View view) {
         toolbar = view.findViewById(R.id.toolbar);
+        tabLayout = view.findViewById(R.id.tab_layout);
         recyclerView = view.findViewById(R.id.notifications_recycler);
         emptyState = view.findViewById(R.id.empty_state);
         progressBar = view.findViewById(R.id.progress_bar);
+    }
 
-        toolbar.setNavigationOnClickListener(v -> navController.popBackStack());
+    private void setupTabs() {
+        tabLayout.addTab(tabLayout.newTab().setText("All"));
+        tabLayout.addTab(tabLayout.newTab().setText("Unread"));
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                currentFilter = tab.getPosition() == 0 ? "ALL" : "UNREAD";
+                filterNotifications();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
     }
 
     private void setupRecyclerView() {
@@ -69,12 +93,8 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
-                        if (result == null || result.isEmpty()) {
-                            showEmptyState(true);
-                        } else {
-                            showEmptyState(false);
-                            adapter.setNotifications(result);
-                        }
+                        allNotifications = result != null ? result : new ArrayList<>();
+                        filterNotifications();
                     });
                 }
 
@@ -83,11 +103,33 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
-                        showEmptyState(true);
+                        allNotifications = new ArrayList<>();
+                        filterNotifications();
                         showToast("Error loading notifications");
                     });
                 }
             });
+    }
+
+    private void filterNotifications() {
+        List<NotificationDTO> filtered;
+        if ("UNREAD".equals(currentFilter)) {
+            filtered = new ArrayList<>();
+            for (NotificationDTO notif : allNotifications) {
+                if (notif.getRead() == null || !notif.getRead()) {
+                    filtered.add(notif);
+                }
+            }
+        } else {
+            filtered = new ArrayList<>(allNotifications);
+        }
+
+        if (filtered.isEmpty()) {
+            showEmptyState(true);
+        } else {
+            showEmptyState(false);
+            adapter.setNotifications(filtered);
+        }
     }
 
     @Override

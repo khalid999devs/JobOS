@@ -523,7 +523,39 @@ public class ApiService {
                 .get()
                 .build();
 
-        executeAsyncList(httpRequest, new TypeReference<List<NotificationDTO>>() {}, callback);
+        // Backend returns ApiResponse<Page<NotificationResponse>>
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> apiResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object resultObj = apiResponse.get("result");
+                        if (resultObj != null) {
+                            Map<String, Object> pageResult = objectMapper.convertValue(resultObj, new TypeReference<Map<String, Object>>() {});
+                            Object contentObj = pageResult.get("content");
+                            if (contentObj != null) {
+                                String contentJson = objectMapper.writeValueAsString(contentObj);
+                                List<NotificationDTO> notifications = objectMapper.readValue(contentJson, new TypeReference<List<NotificationDTO>>() {});
+                                callback.onSuccess(notifications);
+                                return;
+                            }
+                        }
+                        callback.onSuccess(new java.util.ArrayList<>());
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     public void markNotificationRead(String token, String notificationId, ApiCallback<String> callback) {
@@ -544,6 +576,42 @@ public class ApiService {
                 .build();
 
         executeAsyncString(httpRequest, callback);
+    }
+
+    public void getUnreadNotificationCount(String token, ApiCallback<Long> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/notifications/unread-count")
+                .header("Authorization", "Bearer " + token)
+                .get()
+                .build();
+
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> apiResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object resultObj = apiResponse.get("result");
+                        if (resultObj != null) {
+                            Long count = ((Number) resultObj).longValue();
+                            callback.onSuccess(count);
+                        } else {
+                            callback.onSuccess(0L);
+                        }
+                    } catch (Exception e) {
+                        callback.onSuccess(0L);
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     public void registerFcmToken(String token, String fcmToken, ApiCallback<String> callback) {
@@ -711,6 +779,17 @@ public class ApiService {
                 }
             }
         });
+    }
+
+    public void updatePreferences(String token, Object preferences, ApiCallback<ProfileResponse> callback) {
+        String json = toJson(preferences);
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/users/me/preferences")
+                .header("Authorization", "Bearer " + token)
+                .put(RequestBody.create(json, JSON))
+                .build();
+
+        executeAsync(httpRequest, ProfileResponse.class, callback);
     }
 
     private String parseError(String body) {

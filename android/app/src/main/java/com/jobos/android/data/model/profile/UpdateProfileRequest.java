@@ -21,6 +21,9 @@ public class UpdateProfileRequest {
     private String companyWebsite;
     private String website;
     private String companyDescription;
+    private String companySize;
+    private String industry;
+    private List<String> verificationDocuments;
     private Integer experienceYears;
     private String role;
 
@@ -156,6 +159,30 @@ public class UpdateProfileRequest {
 
     public void setCompanyDescription(String companyDescription) {
         this.companyDescription = companyDescription;
+    }
+
+    public String getCompanySize() {
+        return companySize;
+    }
+
+    public void setCompanySize(String companySize) {
+        this.companySize = companySize;
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    public List<String> getVerificationDocuments() {
+        return verificationDocuments;
+    }
+
+    public void setVerificationDocuments(List<String> verificationDocuments) {
+        this.verificationDocuments = verificationDocuments;
     }
 
     public Integer getExperienceYears() {

@@ -18,6 +18,8 @@ import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.auth.LoginRequest;
 import com.jobos.android.data.model.auth.AuthResponse;
+import com.jobos.android.data.local.UserDataManager;
+import com.jobos.android.data.model.profile.ProfileResponse;
 
 public class LoginFragment extends BaseFragment {
 
@@ -133,7 +135,33 @@ public class LoginFragment extends BaseFragment {
             response.getRole()
         );
 
-        String role = response.getRole();
+        // Load user profile and store in UserDataManager
+        loadUserProfile(response.getAccessToken(), response.getRole());
+    }
+
+    private void loadUserProfile(String token, String role) {
+        apiService.getProfile(token, new ApiCallback<ProfileResponse>() {
+            @Override
+            public void onSuccess(ProfileResponse profile) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    UserDataManager.getInstance().setCurrentUser(profile);
+                    navigateBasedOnRole(role);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    // Even if profile load fails, navigate to dashboard
+                    navigateBasedOnRole(role);
+                });
+            }
+        });
+    }
+
+    private void navigateBasedOnRole(String role) {
         if (role == null || role.isEmpty()) {
             navController.navigate(R.id.action_login_to_role_selection);
         } else if ("POSTER".equals(role)) {

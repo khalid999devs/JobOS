@@ -18,11 +18,13 @@ import com.jobos.android.ui.base.BaseFragment;
 
 public class RegisterFragment extends BaseFragment {
 
-    private TextInputLayout nameLayout;
+    private TextInputLayout firstNameLayout;
+    private TextInputLayout lastNameLayout;
     private TextInputLayout emailLayout;
     private TextInputLayout passwordLayout;
     private TextInputLayout confirmPasswordLayout;
-    private TextInputEditText nameInput;
+    private TextInputEditText firstNameInput;
+    private TextInputEditText lastNameInput;
     private TextInputEditText emailInput;
     private TextInputEditText passwordInput;
     private TextInputEditText confirmPasswordInput;
@@ -46,11 +48,13 @@ public class RegisterFragment extends BaseFragment {
     }
 
     private void initViews(View view) {
-        nameLayout = view.findViewById(R.id.name_layout);
+        firstNameLayout = view.findViewById(R.id.first_name_layout);
+        lastNameLayout = view.findViewById(R.id.last_name_layout);
         emailLayout = view.findViewById(R.id.email_layout);
         passwordLayout = view.findViewById(R.id.password_layout);
         confirmPasswordLayout = view.findViewById(R.id.confirm_password_layout);
-        nameInput = view.findViewById(R.id.name_input);
+        firstNameInput = view.findViewById(R.id.first_name_input);
+        lastNameInput = view.findViewById(R.id.last_name_input);
         emailInput = view.findViewById(R.id.email_input);
         passwordInput = view.findViewById(R.id.password_input);
         confirmPasswordInput = view.findViewById(R.id.confirm_password_input);
@@ -73,13 +77,19 @@ public class RegisterFragment extends BaseFragment {
     private void validateAndProceed() {
         clearErrors();
 
-        String name = getText(nameInput);
+        String firstName = getText(firstNameInput);
+        String lastName = getText(lastNameInput);
         String email = getText(emailInput);
         String password = getText(passwordInput);
         String confirmPassword = getText(confirmPasswordInput);
 
-        if (TextUtils.isEmpty(name)) {
-            nameLayout.setError(getString(R.string.error_required_field));
+        if (TextUtils.isEmpty(firstName)) {
+            firstNameLayout.setError("Required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(lastName)) {
+            lastNameLayout.setError("Required");
             return;
         }
 
@@ -108,16 +118,17 @@ public class RegisterFragment extends BaseFragment {
             return;
         }
 
-        // Navigate to role selection with registration data
         Bundle args = new Bundle();
-        args.putString("name", name);
+        args.putString("firstName", firstName);
+        args.putString("lastName", lastName);
         args.putString("email", email);
         args.putString("password", password);
         navController.navigate(R.id.action_register_to_role_selection, args);
     }
 
     private void clearErrors() {
-        nameLayout.setError(null);
+        firstNameLayout.setError(null);
+        lastNameLayout.setError(null);
         emailLayout.setError(null);
         passwordLayout.setError(null);
         confirmPasswordLayout.setError(null);

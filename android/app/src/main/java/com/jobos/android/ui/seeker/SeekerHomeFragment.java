@@ -20,6 +20,7 @@ import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.ui.adapter.JobAdapter;
 import com.jobos.android.data.model.job.JobDTO;
 import com.jobos.android.data.model.job.JobSearchRequest;
+import com.jobos.android.data.local.UserDataManager;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class SeekerHomeFragment extends BaseFragment {
     private TextView greetingText;
     private TextView userName;
     private ImageView notificationIcon;
+    private TextView notificationBadge;
     private MaterialCardView searchCard;
     private SwipeRefreshLayout swipeRefresh;
     private RecyclerView recommendedJobsRv;
@@ -64,6 +66,7 @@ public class SeekerHomeFragment extends BaseFragment {
         greetingText = view.findViewById(R.id.greeting_text);
         userName = view.findViewById(R.id.user_name);
         notificationIcon = view.findViewById(R.id.notification_icon);
+        notificationBadge = view.findViewById(R.id.notification_badge);
         searchCard = view.findViewById(R.id.search_card);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         recommendedJobsRv = view.findViewById(R.id.recommended_jobs_rv);
@@ -73,11 +76,12 @@ public class SeekerHomeFragment extends BaseFragment {
         seeAllRecommended = view.findViewById(R.id.see_all_recommended);
         seeAllRecent = view.findViewById(R.id.see_all_recent);
 
-        String name = sessionManager.getUserName();
-        if (name != null && !name.isEmpty()) {
-            userName.setText(name);
+        String fullName = UserDataManager.getInstance().getFullName();
+        if (fullName != null && !fullName.isEmpty()) {
+            userName.setText(fullName);
         } else {
-            userName.setText(getString(R.string.seeker));
+            String email = sessionManager.getUserEmail();
+            userName.setText(email != null ? email.split("@")[0] : getString(R.string.seeker));
         }
 
         updateGreeting();
@@ -132,6 +136,8 @@ public class SeekerHomeFragment extends BaseFragment {
         }
 
         String token = sessionManager.getAccessToken();
+        
+        loadNotificationCount();
         
         apiService.getRecommendedJobs(token, 0, 5, new ApiCallback<List<JobDTO>>() {
             @Override
@@ -232,5 +238,27 @@ public class SeekerHomeFragment extends BaseFragment {
                 public void onError(String error) {}
             });
         }
+    }
+
+    private void loadNotificationCount() {
+        apiService.getUnreadNotificationCount(sessionManager.getAccessToken(), new ApiCallback<Long>() {
+            @Override
+            public void onSuccess(Long count) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (count > 0) {
+                        notificationBadge.setVisibility(View.VISIBLE);
+                        notificationBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+                    } else {
+                        notificationBadge.setVisibility(View.GONE);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                // Silently fail for badge
+            }
+        });
     }
 }

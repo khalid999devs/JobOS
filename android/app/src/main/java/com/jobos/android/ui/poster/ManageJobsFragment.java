@@ -29,6 +29,7 @@ public class ManageJobsFragment extends BaseFragment {
     private TabLayout tabLayout;
     private RecyclerView jobsRecycler;
     private LinearLayout emptyState;
+    private TextView emptyTitle;
     private TextView emptyMessage;
     private ProgressBar progressBar;
     private ExtendedFloatingActionButton fabCreateJob;
@@ -49,7 +50,7 @@ public class ManageJobsFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiService = new ApiService();
-        hideBottomNav();
+        showBottomNav();
         initViews(view);
         setupTabs();
         setupRecyclerView();
@@ -62,6 +63,7 @@ public class ManageJobsFragment extends BaseFragment {
         tabLayout = view.findViewById(R.id.tab_layout);
         jobsRecycler = view.findViewById(R.id.jobs_recycler);
         emptyState = view.findViewById(R.id.empty_state);
+        emptyTitle = view.findViewById(R.id.empty_title);
         emptyMessage = view.findViewById(R.id.empty_message);
         progressBar = view.findViewById(R.id.progress_bar);
         fabCreateJob = view.findViewById(R.id.fab_create_job);
@@ -110,7 +112,6 @@ public class ManageJobsFragment extends BaseFragment {
     }
 
     private void setupClickListeners() {
-        toolbar.setNavigationOnClickListener(v -> navController.popBackStack());
         fabCreateJob.setOnClickListener(v -> navController.navigate(R.id.createJobFragment));
     }
 
@@ -179,10 +180,22 @@ public class ManageJobsFragment extends BaseFragment {
         
         if (isEmpty) {
             switch (currentFilter) {
-                case "ACTIVE": emptyMessage.setText("No active jobs"); break;
-                case "CLOSED": emptyMessage.setText("No closed jobs"); break;
-                case "DRAFT": emptyMessage.setText("No draft jobs"); break;
-                default: emptyMessage.setText("No jobs posted yet"); break;
+                case "ACTIVE":
+                    emptyTitle.setText("No active jobs");
+                    emptyMessage.setText("Jobs with active status will appear here");
+                    break;
+                case "CLOSED":
+                    emptyTitle.setText("No closed jobs");
+                    emptyMessage.setText("Closed job postings will appear here");
+                    break;
+                case "DRAFT":
+                    emptyTitle.setText("No draft jobs");
+                    emptyMessage.setText("Save drafts while creating jobs");
+                    break;
+                default:
+                    emptyTitle.setText("No jobs found");
+                    emptyMessage.setText("Create your first job posting");
+                    break;
             }
         }
     }

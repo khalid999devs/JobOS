@@ -9,7 +9,7 @@
         android:icon="@drawable/ic_jobs"
         android:title="@string/nav_my_jobs" />
     <item
-        android:id="@+id/applicantsListFragment"
+        android:id="@+id/allApplicationsFragment"
         android:icon="@drawable/ic_applicants"
         android:title="@string/nav_applicants" />
     <item

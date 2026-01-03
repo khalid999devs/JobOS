@@ -5,12 +5,15 @@ public class RegisterRequest {
     private String email;
     private String password;
     private String role;
-    private String name;
+    private String firstName;
+    private String lastName;
 
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String email, String password, String role) {
+    public RegisterRequest(String firstName, String lastName, String email, String password, String role) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.role = role;
@@ -40,11 +43,26 @@ public class RegisterRequest {
         this.role = role;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFullName() {
+        if (firstName != null && lastName != null) {
+            return firstName + " " + lastName;
+        }
+        return firstName != null ? firstName : "";
     }
 }

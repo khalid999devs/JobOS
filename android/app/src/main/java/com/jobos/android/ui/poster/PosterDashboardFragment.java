@@ -21,6 +21,7 @@ import com.jobos.android.ui.adapter.PosterJobAdapter;
 import com.jobos.android.ui.adapter.PosterApplicationAdapter;
 import com.jobos.android.data.model.job.JobDTO;
 import com.jobos.android.data.model.application.ApplicationDTO;
+import com.jobos.android.data.local.UserDataManager;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class PosterDashboardFragment extends BaseFragment {
     private TextView greetingText;
     private TextView userName;
     private ImageView notificationIcon;
+    private TextView notificationBadge;
     private TextView activeJobsCount;
     private TextView applicationsCount;
     private TextView viewsCount;
@@ -69,6 +71,7 @@ public class PosterDashboardFragment extends BaseFragment {
         greetingText = view.findViewById(R.id.greeting_text);
         userName = view.findViewById(R.id.user_name);
         notificationIcon = view.findViewById(R.id.notification_icon);
+        notificationBadge = view.findViewById(R.id.notification_badge);
         activeJobsCount = view.findViewById(R.id.active_jobs_count);
         applicationsCount = view.findViewById(R.id.applications_count);
         viewsCount = view.findViewById(R.id.views_count);
@@ -82,11 +85,13 @@ public class PosterDashboardFragment extends BaseFragment {
         seeAllApplications = view.findViewById(R.id.see_all_applications);
         seeAllJobs = view.findViewById(R.id.see_all_jobs);
 
-        String name = sessionManager.getUserName();
-        if (name != null && !name.isEmpty()) {
-            userName.setText("Hello, " + name);
+        String fullName = UserDataManager.getInstance().getFullName();
+        if (fullName != null && !fullName.isEmpty()) {
+            userName.setText("Hello, " + fullName);
         } else {
-            userName.setText("Hello, " + getString(R.string.poster));
+            String email = sessionManager.getUserEmail();
+            String displayName = email != null ? email.split("@")[0] : getString(R.string.poster);
+            userName.setText("Hello, " + displayName);
         }
 
         updateGreeting();
@@ -140,6 +145,29 @@ public class PosterDashboardFragment extends BaseFragment {
             progressBar.setVisibility(View.VISIBLE);
         }
         loadMyJobs();
+        loadNotificationCount();
+    }
+
+    private void loadNotificationCount() {
+        apiService.getUnreadNotificationCount(sessionManager.getAccessToken(), new ApiCallback<Long>() {
+            @Override
+            public void onSuccess(Long count) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (count > 0) {
+                        notificationBadge.setVisibility(View.VISIBLE);
+                        notificationBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+                    } else {
+                        notificationBadge.setVisibility(View.GONE);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                // Silently fail for badge
+            }
+        });
     }
 
     private void loadMyJobs() {

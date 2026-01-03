@@ -15,6 +15,7 @@ import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.auth.RegisterRequest;
 import com.jobos.android.data.model.auth.AuthResponse;
+import com.jobos.android.data.local.UserDataManager;
 
 public class RoleSelectionFragment extends BaseFragment {
 
@@ -26,8 +27,8 @@ public class RoleSelectionFragment extends BaseFragment {
     private String selectedRole = null;
     private ApiService apiService;
     
-    // Registration data from RegisterFragment
-    private String regName;
+    private String regFirstName;
+    private String regLastName;
     private String regEmail;
     private String regPassword;
     private boolean isNewRegistration = false;
@@ -44,9 +45,9 @@ public class RoleSelectionFragment extends BaseFragment {
         
         apiService = new ApiService();
         
-        // Get registration data from arguments
         if (getArguments() != null) {
-            regName = getArguments().getString("name");
+            regFirstName = getArguments().getString("firstName");
+            regLastName = getArguments().getString("lastName");
             regEmail = getArguments().getString("email");
             regPassword = getArguments().getString("password");
             isNewRegistration = regEmail != null && regPassword != null;
@@ -90,10 +91,8 @@ public class RoleSelectionFragment extends BaseFragment {
         if (selectedRole == null) return;
 
         if (isNewRegistration) {
-            // New user registration flow - call register API with role
             performRegistration();
         } else {
-            // Existing user updating role - shouldn't happen normally
             showToast("Invalid state - please restart registration");
         }
     }
@@ -101,11 +100,7 @@ public class RoleSelectionFragment extends BaseFragment {
     private void performRegistration() {
         setLoading(true);
         
-        RegisterRequest request = new RegisterRequest();
-        request.setName(regName);
-        request.setEmail(regEmail);
-        request.setPassword(regPassword);
-        request.setRole(selectedRole);
+        RegisterRequest request = new RegisterRequest(regFirstName, regLastName, regEmail, regPassword, selectedRole);
         
         apiService.register(request, new ApiCallback<AuthResponse>() {
             @Override
@@ -138,14 +133,14 @@ public class RoleSelectionFragment extends BaseFragment {
         );
         
         showToast(getString(R.string.success_register));
-        navigateToDashboard();
+        navigateToSetup();
     }
     
-    private void navigateToDashboard() {
+    private void navigateToSetup() {
         if ("POSTER".equals(selectedRole)) {
-            navController.navigate(R.id.action_role_to_poster_dashboard);
+            navController.navigate(R.id.action_role_to_poster_setup);
         } else {
-            navController.navigate(R.id.action_role_to_seeker_home);
+            navController.navigate(R.id.action_role_to_seeker_setup);
         }
     }
     

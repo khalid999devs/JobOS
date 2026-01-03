@@ -5,12 +5,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.jobos.android.R;
@@ -18,11 +18,13 @@ import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.profile.ProfileResponse;
+import com.jobos.android.data.local.UserDataManager;
 import java.util.Map;
 
 public class ProfileFragment extends BaseFragment {
 
-    private MaterialToolbar toolbar;
+    private ImageView backButton;
+    private ImageView editButton;
     private TextView userName;
     private TextView userEmail;
     private MaterialCardView statsCard;
@@ -58,12 +60,13 @@ public class ProfileFragment extends BaseFragment {
         
         initViews(view);
         setupClickListeners();
-        displayUserInfo();
+        loadUserProfile();
         loadProfileStats();
     }
 
     private void initViews(View view) {
-        toolbar = view.findViewById(R.id.toolbar);
+        backButton = view.findViewById(R.id.back_button);
+        editButton = view.findViewById(R.id.edit_button);
         userName = view.findViewById(R.id.user_name);
         userEmail = view.findViewById(R.id.user_email);
         statsCard = view.findViewById(R.id.stats_card);
@@ -86,15 +89,9 @@ public class ProfileFragment extends BaseFragment {
     }
 
     private void setupClickListeners() {
-        toolbar.setNavigationOnClickListener(v -> navController.popBackStack());
+        backButton.setOnClickListener(v -> navController.popBackStack());
 
-        toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_edit) {
-                navController.navigate(R.id.editProfileFragment);
-                return true;
-            }
-            return false;
-        });
+        editButton.setOnClickListener(v -> navController.navigate(R.id.editProfileFragment));
 
         editProfileItem.setOnClickListener(v -> navController.navigate(R.id.editProfileFragment));
         
@@ -107,12 +104,41 @@ public class ProfileFragment extends BaseFragment {
         logoutButton.setOnClickListener(v -> showLogoutConfirmation());
     }
 
-    private void displayUserInfo() {
-        String name = sessionManager.getUserName();
-        String email = sessionManager.getUserEmail();
+    private void loadUserProfile() {
+        progressBar.setVisibility(View.VISIBLE);
+        apiService.getProfile(sessionManager.getAccessToken(), new ApiCallback<ProfileResponse>() {
+            @Override
+            public void onSuccess(ProfileResponse response) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    UserDataManager.getInstance().setCurrentUser(response);
+                    displayUserInfo();
+                });
+            }
 
-        userName.setText(name != null ? name : "User");
-        userEmail.setText(email != null ? email : "");
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    displayUserInfo();
+                });
+            }
+        });
+    }
+
+    private void displayUserInfo() {
+        UserDataManager userManager = UserDataManager.getInstance();
+        String fullName = userManager.getFullName();
+        String email = userManager.getEmail();
+
+        if (fullName.isEmpty()) {
+            fullName = email.split("@")[0];
+        }
+
+        userName.setText(fullName);
+        userEmail.setText(email);
     }
 
     private void loadProfileStats() {
@@ -175,6 +201,7 @@ public class ProfileFragment extends BaseFragment {
 
     private void logout() {
         sessionManager.clearSession();
+        UserDataManager.getInstance().clear();
         navController.navigate(R.id.loginFragment);
     }
 }
