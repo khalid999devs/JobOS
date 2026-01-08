@@ -137,12 +137,17 @@ public class ApiService {
         executeAsync(httpRequest, ProfileResponse.class, callback);
     }
 
-    public void searchJobs(JobSearchRequest request, ApiCallback<List<JobDTO>> callback) {
+    public void searchJobs(String token, JobSearchRequest request, ApiCallback<List<JobDTO>> callback) {
         String json = toJson(request);
-        Request httpRequest = new Request.Builder()
+        Request.Builder builder = new Request.Builder()
                 .url(BASE_URL + "/api/jobs/search")
-                .post(RequestBody.create(json, JSON))
-                .build();
+                .post(RequestBody.create(json, JSON));
+        
+        if (token != null && !token.isEmpty()) {
+            builder.header("Authorization", "Bearer " + token);
+        }
+        
+        Request httpRequest = builder.build();
 
         // Backend returns JobSearchResponse with jobs list
         client.newCall(httpRequest).enqueue(new Callback() {
@@ -174,6 +179,11 @@ public class ApiService {
                 }
             }
         });
+    }
+    
+    // Backwards compatibility overload
+    public void searchJobs(JobSearchRequest request, ApiCallback<List<JobDTO>> callback) {
+        searchJobs(null, request, callback);
     }
 
     public void getRecommendedJobs(String token, int page, int size, ApiCallback<List<JobDTO>> callback) {
@@ -324,12 +334,39 @@ public class ApiService {
 
     public void getMyApplications(String token, int page, int size, ApiCallback<List<ApplicationDTO>> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/applications/my-applications?page=" + page + "&size=" + size)
+                .url(BASE_URL + "/api/applications?page=" + page + "&size=" + size)
                 .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
 
-        executeAsyncList(httpRequest, new TypeReference<List<ApplicationDTO>>() {}, callback);
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> pageResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object applicationsObj = pageResponse.get("applications");
+                        if (applicationsObj != null) {
+                            String applicationsJson = objectMapper.writeValueAsString(applicationsObj);
+                            List<ApplicationDTO> applications = objectMapper.readValue(applicationsJson, new TypeReference<List<ApplicationDTO>>() {});
+                            callback.onSuccess(applications);
+                        } else {
+                            callback.onSuccess(new java.util.ArrayList<>());
+                        }
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     public void getApplicationById(String token, String applicationId, ApiCallback<ApplicationDTO> callback) {
@@ -415,7 +452,34 @@ public class ApiService {
                 .get()
                 .build();
 
-        executeAsyncList(httpRequest, new TypeReference<List<CVDTO>>() {}, callback);
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> pageResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object contentObj = pageResponse.get("content");
+                        if (contentObj != null) {
+                            String contentJson = objectMapper.writeValueAsString(contentObj);
+                            List<CVDTO> cvs = objectMapper.readValue(contentJson, new TypeReference<List<CVDTO>>() {});
+                            callback.onSuccess(cvs);
+                        } else {
+                            callback.onSuccess(new java.util.ArrayList<>());
+                        }
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     public void getCVById(String token, String cvId, ApiCallback<CVDTO> callback) {
@@ -498,7 +562,7 @@ public class ApiService {
 
     public void unsaveJob(String token, String jobId, ApiCallback<String> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/jobs/" + jobId + "/unsave")
+                .url(BASE_URL + "/api/jobs/" + jobId + "/save")
                 .header("Authorization", "Bearer " + token)
                 .delete()
                 .build();
@@ -508,12 +572,39 @@ public class ApiService {
 
     public void getSavedJobs(String token, int page, int size, ApiCallback<List<JobDTO>> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/saved-jobs?page=" + page + "&size=" + size)
+                .url(BASE_URL + "/api/jobs/saved?page=" + page + "&size=" + size)
                 .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
 
-        executeAsyncList(httpRequest, new TypeReference<List<JobDTO>>() {}, callback);
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        Map<String, Object> pageResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        Object jobsObj = pageResponse.get("jobs");
+                        if (jobsObj != null) {
+                            String jobsJson = objectMapper.writeValueAsString(jobsObj);
+                            List<JobDTO> jobs = objectMapper.readValue(jobsJson, new TypeReference<List<JobDTO>>() {});
+                            callback.onSuccess(jobs);
+                        } else {
+                            callback.onSuccess(new java.util.ArrayList<>());
+                        }
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     public void getNotifications(String token, int page, int size, ApiCallback<List<NotificationDTO>> callback) {
@@ -616,7 +707,7 @@ public class ApiService {
 
     public void registerFcmToken(String token, String fcmToken, ApiCallback<String> callback) {
         Map<String, String> body = new HashMap<>();
-        body.put("token", fcmToken);
+        body.put("fcmToken", fcmToken);
         String json = toJson(body);
 
         Request httpRequest = new Request.Builder()
@@ -631,9 +722,9 @@ public class ApiService {
     public void changePassword(String token, Map<String, String> passwordData, ApiCallback<String> callback) {
         String json = toJson(passwordData);
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/profile/change-password")
+                .url(BASE_URL + "/api/auth/change-password")
                 .header("Authorization", "Bearer " + token)
-                .put(RequestBody.create(json, JSON))
+                .post(RequestBody.create(json, JSON))
                 .build();
 
         executeAsyncString(httpRequest, callback);
@@ -641,7 +732,7 @@ public class ApiService {
 
     public void setDefaultCV(String token, String cvId, ApiCallback<CVDTO> callback) {
         Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/cvs/" + cvId + "/set-default")
+                .url(BASE_URL + "/api/cvs/" + cvId + "/default")
                 .header("Authorization", "Bearer " + token)
                 .patch(RequestBody.create("", JSON))
                 .build();
@@ -808,5 +899,41 @@ public class ApiService {
         } catch (Exception e) {
             return "{}";
         }
+    }
+
+    // CV Template APIs
+    public void getCVTemplates(String token, String category, ApiCallback<List<com.jobos.android.data.model.cv.CVTemplateDTO>> callback) {
+        String url = BASE_URL + "/api/cv-templates";
+        if (category != null && !category.isEmpty()) {
+            url += "?category=" + category;
+        }
+        
+        Request httpRequest = new Request.Builder()
+                .url(url)
+                .header("Authorization", "Bearer " + token)
+                .get()
+                .build();
+
+        executeAsyncList(httpRequest, new TypeReference<List<com.jobos.android.data.model.cv.CVTemplateDTO>>() {}, callback);
+    }
+
+    public void getCVTemplateById(String token, String templateId, ApiCallback<com.jobos.android.data.model.cv.CVTemplateDTO> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/cv-templates/" + templateId)
+                .header("Authorization", "Bearer " + token)
+                .get()
+                .build();
+
+        executeAsync(httpRequest, com.jobos.android.data.model.cv.CVTemplateDTO.class, callback);
+    }
+
+    public void unlockCVTemplate(String token, String templateId, ApiCallback<com.jobos.android.data.model.cv.CVTemplateDTO> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/cv-templates/" + templateId + "/unlock")
+                .header("Authorization", "Bearer " + token)
+                .post(RequestBody.create("", JSON))
+                .build();
+
+        executeAsync(httpRequest, com.jobos.android.data.model.cv.CVTemplateDTO.class, callback);
     }
 }

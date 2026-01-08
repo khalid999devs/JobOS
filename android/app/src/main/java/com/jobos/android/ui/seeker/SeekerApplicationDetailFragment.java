@@ -1,4 +1,4 @@
-package com.jobos.android.ui.poster;
+package com.jobos.android.ui.seeker;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,47 +12,40 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.jobos.android.R;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.application.ApplicationDTO;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
-public class ApplicantDetailFragment extends BaseFragment {
+/**
+ * Fragment for seekers to view their application details.
+ * This is a read-only view - seekers cannot update application status.
+ */
+public class SeekerApplicationDetailFragment extends BaseFragment {
 
     private MaterialToolbar toolbar;
-    private TextView applicantName;
-    private TextView applicantEmail;
-    private TextView statusBadge;
     private TextView jobTitle;
+    private TextView companyName;
+    private TextView statusBadge;
     private TextView appliedDate;
+    private TextView statusDescription;
     private MaterialCardView coverLetterCard;
     private TextView coverLetter;
     private MaterialCardView cvCard;
     private TextView cvName;
     private MaterialButton viewCvButton;
-    private ChipGroup statusChipGroup;
-    private Chip chipReviewing;
-    private Chip chipShortlisted;
-    private Chip chipHired;
-    private Chip chipRejected;
-    private MaterialButton updateStatusButton;
+    private MaterialButton viewJobButton;
     private ProgressBar progressBar;
 
     private String applicationId = null;
     private ApiService apiService;
     private ApplicationDTO currentApplication;
-    private String selectedStatus;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_applicant_detail, container, false);
+        return inflater.inflate(R.layout.fragment_seeker_application_detail, container, false);
     }
 
     @Override
@@ -72,56 +65,36 @@ public class ApplicantDetailFragment extends BaseFragment {
 
     private void initViews(View view) {
         toolbar = view.findViewById(R.id.toolbar);
-        applicantName = view.findViewById(R.id.applicant_name);
-        applicantEmail = view.findViewById(R.id.applicant_email);
-        statusBadge = view.findViewById(R.id.status_badge);
         jobTitle = view.findViewById(R.id.job_title);
+        companyName = view.findViewById(R.id.company_name);
+        statusBadge = view.findViewById(R.id.status_badge);
         appliedDate = view.findViewById(R.id.applied_date);
+        statusDescription = view.findViewById(R.id.status_description);
         coverLetterCard = view.findViewById(R.id.cover_letter_card);
         coverLetter = view.findViewById(R.id.cover_letter);
         cvCard = view.findViewById(R.id.cv_card);
         cvName = view.findViewById(R.id.cv_name);
         viewCvButton = view.findViewById(R.id.view_cv_button);
-        statusChipGroup = view.findViewById(R.id.status_chip_group);
-        chipReviewing = view.findViewById(R.id.chip_reviewing);
-        chipShortlisted = view.findViewById(R.id.chip_shortlisted);
-        chipHired = view.findViewById(R.id.chip_hired);
-        chipRejected = view.findViewById(R.id.chip_rejected);
-        updateStatusButton = view.findViewById(R.id.update_status_button);
+        viewJobButton = view.findViewById(R.id.view_job_button);
         progressBar = view.findViewById(R.id.progress_bar);
     }
 
     private void setupClickListeners() {
         toolbar.setNavigationOnClickListener(v -> navController.popBackStack());
 
-        statusChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (!checkedIds.isEmpty()) {
-                int checkedId = checkedIds.get(0);
-                if (checkedId == R.id.chip_reviewing) {
-                    selectedStatus = "REVIEWED";
-                } else if (checkedId == R.id.chip_shortlisted) {
-                    selectedStatus = "SHORTLISTED";
-                } else if (checkedId == R.id.chip_hired) {
-                    selectedStatus = "ACCEPTED";
-                } else if (checkedId == R.id.chip_rejected) {
-                    selectedStatus = "REJECTED";
-                }
-            }
-        });
-
-        updateStatusButton.setOnClickListener(v -> {
-            if (selectedStatus == null || selectedStatus.isEmpty()) {
-                showToast("Please select a status");
-                return;
-            }
-            updateApplicationStatus();
-        });
-
         viewCvButton.setOnClickListener(v -> {
             if (currentApplication != null && currentApplication.getCvId() != null) {
                 Bundle args = new Bundle();
                 args.putString("cvId", currentApplication.getCvId());
                 navController.navigate(R.id.cvPreviewFragment, args);
+            }
+        });
+
+        viewJobButton.setOnClickListener(v -> {
+            if (currentApplication != null && currentApplication.getJobId() != null) {
+                Bundle args = new Bundle();
+                args.putString("jobId", currentApplication.getJobId());
+                navController.navigate(R.id.jobDetailFragment, args);
             }
         });
     }
@@ -160,42 +133,31 @@ public class ApplicantDetailFragment extends BaseFragment {
     private void displayApplicationDetails() {
         if (currentApplication == null) return;
 
-        applicantName.setText(currentApplication.getApplicantName());
-        applicantEmail.setText(currentApplication.getApplicantEmail());
         jobTitle.setText(currentApplication.getJobTitle());
+        
+        String company = currentApplication.getCompanyName();
+        if (company != null && !company.isEmpty()) {
+            companyName.setText(company);
+            companyName.setVisibility(View.VISIBLE);
+        }
         
         if (currentApplication.getCreatedAt() != null) {
             appliedDate.setText("Applied on " + currentApplication.getCreatedAt());
         }
 
         setupStatusBadge(currentApplication.getStatus());
-        selectedStatus = currentApplication.getStatus();
-        selectCurrentStatusChip(currentApplication.getStatus());
+        setupStatusDescription(currentApplication.getStatus());
 
         String coverLetterText = currentApplication.getCoverLetter();
         if (coverLetterText != null && !coverLetterText.isEmpty()) {
             coverLetter.setText(coverLetterText);
             coverLetterCard.setVisibility(View.VISIBLE);
-        } else {
-            coverLetterCard.setVisibility(View.GONE);
         }
 
         String cvTitle = currentApplication.getCvTitle();
         if (cvTitle != null && !cvTitle.isEmpty()) {
             cvName.setText(cvTitle);
             cvCard.setVisibility(View.VISIBLE);
-        } else {
-            cvCard.setVisibility(View.GONE);
-        }
-    }
-
-    private void selectCurrentStatusChip(String status) {
-        if (status == null) return;
-        switch (status) {
-            case "REVIEWED": chipReviewing.setChecked(true); break;
-            case "SHORTLISTED": chipShortlisted.setChecked(true); break;
-            case "ACCEPTED": chipHired.setChecked(true); break;
-            case "REJECTED": chipRejected.setChecked(true); break;
         }
     }
 
@@ -239,35 +201,37 @@ public class ApplicantDetailFragment extends BaseFragment {
         statusBadge.setBackgroundColor(ContextCompat.getColor(requireContext(), bgColor));
     }
 
-    private void updateApplicationStatus() {
-        showLoading(true);
-        apiService.updateApplicationStatus(
-            sessionManager.getAccessToken(), applicationId, selectedStatus, 
-            new ApiCallback<ApplicationDTO>() {
-                @Override
-                public void onSuccess(ApplicationDTO result) {
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> {
-                        showLoading(false);
-                        currentApplication = result;
-                        setupStatusBadge(result.getStatus());
-                        showToast("Status updated successfully");
-                    });
-                }
-
-                @Override
-                public void onError(String error) {
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> {
-                        showLoading(false);
-                        showToast("Error updating status: " + error);
-                    });
-                }
-            });
+    private void setupStatusDescription(String status) {
+        if (status == null) status = "PENDING";
+        
+        String description;
+        switch (status) {
+            case "REVIEWED":
+                description = "Your application has been reviewed by the employer. They are still evaluating candidates.";
+                break;
+            case "SHORTLISTED":
+                description = "Congratulations! You've been shortlisted for this position. The employer may contact you soon for the next steps.";
+                break;
+            case "ACCEPTED":
+                description = "Great news! You've been accepted for this position. The employer should contact you with further details.";
+                break;
+            case "REJECTED":
+                description = "Unfortunately, your application was not selected for this position. Don't give up - keep applying to other opportunities!";
+                break;
+            default:
+                description = "Your application has been submitted and is awaiting review by the employer.";
+                break;
+        }
+        statusDescription.setText(description);
     }
 
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        updateStatusButton.setEnabled(!show);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        showBottomNav();
     }
 }

@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.jobos.android.R;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.data.network.ApiCallback;
@@ -22,6 +23,7 @@ import java.util.List;
 
 public class SavedJobsFragment extends BaseFragment {
 
+    private MaterialToolbar toolbar;
     private SwipeRefreshLayout swipeRefresh;
     private RecyclerView jobsRv;
     private LinearLayout emptyContainer;
@@ -46,11 +48,13 @@ public class SavedJobsFragment extends BaseFragment {
         
         apiService = new ApiService();
         initViews(view);
+        setupToolbar();
         setupRecyclerView();
         loadSavedJobs();
     }
 
     private void initViews(View view) {
+        toolbar = view.findViewById(R.id.toolbar);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         jobsRv = view.findViewById(R.id.jobs_rv);
         emptyContainer = view.findViewById(R.id.empty_container);
@@ -62,6 +66,14 @@ public class SavedJobsFragment extends BaseFragment {
             jobs.clear();
             adapter.notifyDataSetChanged();
             loadSavedJobs();
+        });
+    }
+
+    private void setupToolbar() {
+        toolbar.setNavigationOnClickListener(v -> {
+            if (navController != null) {
+                navController.navigateUp();
+            }
         });
     }
 

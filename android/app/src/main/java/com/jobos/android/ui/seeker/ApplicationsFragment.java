@@ -39,7 +39,7 @@ public class ApplicationsFragment extends BaseFragment {
     private boolean hasMoreData = true;
     private String currentFilter = "ALL";
 
-    private final String[] TABS = {"All", "Pending", "Reviewing", "Shortlisted", "Rejected"};
+    private final String[] TABS = {"All", "Pending", "Reviewed", "Shortlisted", "Accepted"};
 
     @Nullable
     @Override

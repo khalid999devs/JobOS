@@ -1,6 +1,11 @@
 package com.jobos.android.data.model.cv;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DTO for CV data that supports both:
@@ -12,6 +17,9 @@ import java.util.List;
  * fallbacks to extract data from sections when direct fields are not set.
  */
 public class CVDTO {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private String id;
     private String title;
@@ -159,9 +167,110 @@ public class CVDTO {
         return null;
     }
 
+    // Parse JSON content from section and get a specific field
+    private String getFieldFromSection(String sectionType, String fieldName) {
+        String content = getSectionContent(sectionType);
+        if (content == null || content.isEmpty()) return null;
+        try {
+            Map<String, Object> contentMap = objectMapper.readValue(content, 
+                new TypeReference<Map<String, Object>>() {});
+            Object value = contentMap.get(fieldName);
+            return value != null ? value.toString() : null;
+        } catch (Exception e) {
+            // Content might be plain text, not JSON
+            return content;
+        }
+    }
+
+    // Parse JSON content from section and get a list field
+    private List<String> getListFromSection(String sectionType, String fieldName) {
+        String content = getSectionContent(sectionType);
+        if (content == null || content.isEmpty()) return null;
+        try {
+            Map<String, Object> contentMap = objectMapper.readValue(content, 
+                new TypeReference<Map<String, Object>>() {});
+            Object value = contentMap.get(fieldName);
+            if (value instanceof List) {
+                List<String> result = new ArrayList<>();
+                for (Object item : (List<?>) value) {
+                    if (item instanceof String) {
+                        result.add((String) item);
+                    } else if (item instanceof Map) {
+                        // Handle complex objects - extract display text
+                        result.add(formatComplexItem((Map<?, ?>) item));
+                    } else {
+                        result.add(item.toString());
+                    }
+                }
+                return result.isEmpty() ? null : result;
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // Format a complex item (map) into a readable string
+    private String formatComplexItem(Map<?, ?> item) {
+        StringBuilder sb = new StringBuilder();
+        // Try common field patterns for experience/education
+        if (item.containsKey("title") || item.containsKey("position")) {
+            Object titleVal = item.get("title");
+            if (titleVal == null) titleVal = item.get("position");
+            if (titleVal != null) sb.append(titleVal);
+        }
+        if (item.containsKey("company") || item.containsKey("organization")) {
+            Object compVal = item.get("company");
+            if (compVal == null) compVal = item.get("organization");
+            if (compVal != null) {
+                if (sb.length() > 0) sb.append(" at ");
+                sb.append(compVal);
+            }
+        }
+        if (item.containsKey("institution") || item.containsKey("school")) {
+            Object instVal = item.get("institution");
+            if (instVal == null) instVal = item.get("school");
+            if (instVal != null) {
+                if (sb.length() > 0) sb.append(" - ");
+                sb.append(instVal);
+            }
+        }
+        if (item.containsKey("degree")) {
+            Object degreeVal = item.get("degree");
+            if (degreeVal != null) {
+                if (sb.length() > 0) sb.append(" | ");
+                sb.append(degreeVal);
+            }
+        }
+        if (item.containsKey("startDate") || item.containsKey("endDate")) {
+            Object startVal = item.get("startDate");
+            Object endVal = item.get("endDate");
+            if (startVal != null || endVal != null) {
+                if (sb.length() > 0) sb.append(" (");
+                if (startVal != null) sb.append(startVal);
+                if (startVal != null && endVal != null) sb.append(" - ");
+                if (endVal != null) sb.append(endVal);
+                if (startVal != null || endVal != null) sb.append(")");
+            }
+        }
+        if (sb.length() == 0) {
+            // Fallback: just concatenate all string values
+            for (Object val : item.values()) {
+                if (val instanceof String && !((String) val).isEmpty()) {
+                    if (sb.length() > 0) sb.append(" | ");
+                    sb.append(val);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
     public String getFullName() {
         if (fullName != null) return fullName;
-        return getSectionContent("PERSONAL_INFO");
+        // Try to get from PERSONAL_INFO section
+        String name = getFieldFromSection("PERSONAL_INFO", "fullName");
+        if (name == null) name = getFieldFromSection("PERSONAL_INFO", "name");
+        return name;
     }
 
     public void setFullName(String fullName) {
@@ -170,7 +279,9 @@ public class CVDTO {
 
     public String getEmail() {
         if (email != null) return email;
-        return getSectionContent("CONTACT");
+        // Try to get from PERSONAL_INFO section first
+        String emailVal = getFieldFromSection("PERSONAL_INFO", "email");
+        return emailVal;
     }
 
     public void setEmail(String email) {
@@ -178,7 +289,8 @@ public class CVDTO {
     }
 
     public String getPhone() {
-        return phone;
+        if (phone != null) return phone;
+        return getFieldFromSection("PERSONAL_INFO", "phone");
     }
 
     public void setPhone(String phone) {
@@ -186,7 +298,8 @@ public class CVDTO {
     }
 
     public String getAddress() {
-        return address;
+        if (address != null) return address;
+        return getFieldFromSection("PERSONAL_INFO", "address");
     }
 
     public void setAddress(String address) {
@@ -195,7 +308,11 @@ public class CVDTO {
 
     public String getSummary() {
         if (summary != null) return summary;
-        return getSectionContent("SUMMARY");
+        // Try to get text content from SUMMARY section
+        String summaryContent = getFieldFromSection("SUMMARY", "text");
+        if (summaryContent == null) summaryContent = getFieldFromSection("SUMMARY", "summary");
+        if (summaryContent == null) summaryContent = getSectionContent("SUMMARY");
+        return summaryContent;
     }
 
     public void setSummary(String summary) {
@@ -203,7 +320,11 @@ public class CVDTO {
     }
 
     public List<String> getSkills() {
-        return skills;
+        if (skills != null && !skills.isEmpty()) return skills;
+        // Try to get from SKILLS section
+        List<String> skillsList = getListFromSection("SKILLS", "skills");
+        if (skillsList == null) skillsList = getListFromSection("SKILLS", "items");
+        return skillsList;
     }
 
     public void setSkills(List<String> skills) {
@@ -211,7 +332,12 @@ public class CVDTO {
     }
 
     public List<String> getEducation() {
-        return education;
+        if (education != null && !education.isEmpty()) return education;
+        // Try to get from EDUCATION section
+        List<String> eduList = getListFromSection("EDUCATION", "entries");
+        if (eduList == null) eduList = getListFromSection("EDUCATION", "items");
+        if (eduList == null) eduList = getListFromSection("EDUCATION", "education");
+        return eduList;
     }
 
     public void setEducation(List<String> education) {
@@ -219,7 +345,12 @@ public class CVDTO {
     }
 
     public List<String> getExperience() {
-        return experience;
+        if (experience != null && !experience.isEmpty()) return experience;
+        // Try to get from EXPERIENCE section
+        List<String> expList = getListFromSection("EXPERIENCE", "entries");
+        if (expList == null) expList = getListFromSection("EXPERIENCE", "items");
+        if (expList == null) expList = getListFromSection("EXPERIENCE", "experience");
+        return expList;
     }
 
     public void setExperience(List<String> experience) {

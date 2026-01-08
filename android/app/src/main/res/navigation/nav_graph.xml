@@ -230,16 +230,26 @@
         android:label="@string/my_applications">
         <action
             android:id="@+id/action_applications_to_detail"
-            app:destination="@id/applicationDetailFragment" />
+            app:destination="@id/seekerApplicationDetailFragment" />
         <action
             android:id="@+id/action_applications_to_application_detail"
-            app:destination="@id/applicationDetailFragment" />
+            app:destination="@id/seekerApplicationDetailFragment" />
     </fragment>
 
     <fragment
+        android:id="@+id/seekerApplicationDetailFragment"
+        android:name="com.jobos.android.ui.seeker.SeekerApplicationDetailFragment"
+        android:label="Application Details">
+        <argument
+            android:name="applicationId"
+            app:argType="string" />
+    </fragment>
+
+    <!-- Poster Application Detail - for poster to manage applicants -->
+    <fragment
         android:id="@+id/applicationDetailFragment"
         android:name="com.jobos.android.ui.poster.ApplicantDetailFragment"
-        android:label="Application Details">
+        android:label="Applicant Details">
         <argument
             android:name="applicationId"
             app:argType="string" />

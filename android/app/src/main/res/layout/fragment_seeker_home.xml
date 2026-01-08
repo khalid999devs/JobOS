@@ -3,39 +3,48 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/surface">
+        android:background="@color/primary"
+        android:fitsSystemWindows="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_md">
+            android:paddingStart="@dimen/spacing_md"
+            android:paddingEnd="@dimen/spacing_md"
+            android:paddingTop="@dimen/spacing_lg"
+            android:paddingBottom="@dimen/spacing_md">
 
             <TextView
                 android:id="@+id/greeting_text"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/greeting_default"
-                android:textSize="@dimen/text_lg"
-                android:textColor="@color/on_surface_secondary"
+                android:textSize="@dimen/text_sm"
+                android:textColor="@color/on_primary"
+                android:alpha="0.85"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/notification_icon"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintEnd_toStartOf="@id/notification_container"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="@dimen/spacing_md" />
 
             <TextView
                 android:id="@+id/user_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_xl"
-                android:textColor="@color/on_surface"
+                android:textSize="@dimen/text_xxl"
+                android:textColor="@color/on_primary"
                 android:textStyle="bold"
+                android:layout_marginTop="@dimen/spacing_xs"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/notification_container"
-                app:layout_constraintTop_toBottomOf="@id/greeting_text" />
+                app:layout_constraintTop_toBottomOf="@id/greeting_text"
+                android:layout_marginEnd="@dimen/spacing_md" />
 
             <FrameLayout
                 android:id="@+id/notification_container"
@@ -47,17 +56,21 @@
 
                 <ImageView
                     android:id="@+id/notification_icon"
-                    android:layout_width="@dimen/icon_lg"
-                    android:layout_height="@dimen/icon_lg"
+                    android:layout_width="@dimen/icon_xl"
+                    android:layout_height="@dimen/icon_xl"
+                    android:padding="@dimen/spacing_sm"
                     android:src="@drawable/ic_notifications"
                     android:contentDescription="@string/notifications"
-                    app:tint="@color/on_surface" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/on_primary" />
 
                 <TextView
                     android:id="@+id/notification_badge"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:layout_gravity="top|end"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="2dp"
                     android:background="@drawable/bg_badge"
                     android:gravity="center"
                     android:textColor="@android:color/white"
@@ -77,14 +90,15 @@
             android:layout_marginHorizontal="@dimen/spacing_md"
             android:layout_marginBottom="@dimen/spacing_md"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/surface_variant">
+            app:cardCornerRadius="@dimen/corner_lg"
+            app:cardBackgroundColor="@color/on_primary">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="@dimen/spacing_sm">
+                android:padding="@dimen/spacing_md">
 
                 <ImageView
                     android:layout_width="@dimen/icon_md"
@@ -150,7 +164,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/see_all"
                         android:textSize="@dimen/text_sm"
-                        android:textColor="@color/primary" />
+                        android:textColor="@color/primary"
+                        android:padding="@dimen/spacing_xs" />
 
                 </LinearLayout>
 
@@ -165,7 +180,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_lg"
+                    android:layout_marginTop="@dimen/spacing_xl"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
@@ -184,7 +199,8 @@
                         android:layout_height="wrap_content"
                         android:text="@string/see_all"
                         android:textSize="@dimen/text_sm"
-                        android:textColor="@color/primary" />
+                        android:textColor="@color/primary"
+                        android:padding="@dimen/spacing_xs" />
 
                 </LinearLayout>
 
@@ -196,16 +212,44 @@
                     android:clipToPadding="false"
                     android:nestedScrollingEnabled="false" />
 
-                <TextView
-                    android:id="@+id/empty_text"
+                <LinearLayout
+                    android:id="@+id/empty_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_xxl"
                     android:gravity="center"
-                    android:text="@string/no_jobs_found"
-                    android:textSize="@dimen/text_md"
-                    android:textColor="@color/on_background_secondary"
-                    android:visibility="gone" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_xl"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/ic_search"
+                        android:alpha="0.5"
+                        app:tint="@color/on_surface_secondary" />
+
+                    <TextView
+                        android:id="@+id/empty_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_lg"
+                        android:text="@string/no_jobs_found"
+                        android:textSize="@dimen/text_lg"
+                        android:textStyle="bold"
+                        android:textColor="@color/on_surface" />
+
+                    <TextView
+                        android:id="@+id/empty_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:text="@string/try_searching"
+                        android:textSize="@dimen/text_sm"
+                        android:textColor="@color/on_surface_secondary"
+                        android:gravity="center" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

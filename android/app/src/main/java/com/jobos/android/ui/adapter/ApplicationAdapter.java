@@ -85,10 +85,10 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
             String displayText;
 
             switch (status) {
-                case "REVIEWING":
+                case "REVIEWED":
                     bgColor = R.color.status_reviewing_bg;
                     textColor = R.color.status_reviewing;
-                    displayText = "Reviewing";
+                    displayText = "Reviewed";
                     break;
                 case "SHORTLISTED":
                     bgColor = R.color.status_shortlisted_bg;
@@ -100,10 +100,10 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
                     textColor = R.color.status_rejected;
                     displayText = "Rejected";
                     break;
-                case "HIRED":
+                case "ACCEPTED":
                     bgColor = R.color.status_hired_bg;
                     textColor = R.color.status_hired;
-                    displayText = "Hired";
+                    displayText = "Accepted";
                     break;
                 default:
                     bgColor = R.color.status_pending_bg;

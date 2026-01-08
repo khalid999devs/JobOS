@@ -7,34 +7,43 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.jobos.android.R;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.adapter.CVAdapter;
+import com.jobos.android.adapter.CVTemplateAdapter;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.cv.CVDTO;
+import com.jobos.android.data.model.cv.CVTemplateDTO;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CVListFragment extends BaseFragment implements CVAdapter.OnCVActionListener {
+public class CVListFragment extends BaseFragment implements CVAdapter.OnCVActionListener, CVTemplateAdapter.OnTemplateActionListener {
 
     private MaterialToolbar toolbar;
-    private RecyclerView cvRecycler;
-    private LinearLayout emptyState;
-    private MaterialButton emptyCreateCvButton;
-    private ExtendedFloatingActionButton fabCreateCv;
+    private SwipeRefreshLayout swipeRefresh;
+    private RecyclerView cvList;
+    private RecyclerView templatesList;
+    private LinearLayout emptyContainer;
+    private LinearLayout templatesSection;
+    private ProgressBar templatesProgress;
+    private TextView seeAllTemplates;
+    private FloatingActionButton fabAddCv;
     private ProgressBar progressBar;
 
     private CVAdapter adapter;
+    private CVTemplateAdapter templateAdapter;
     private ApiService apiService;
-    private final List<CVDTO> cvList = new ArrayList<>();
+    private final List<CVDTO> cvs = new ArrayList<>();
+    private final List<CVTemplateDTO> templates = new ArrayList<>();
 
     @Nullable
     @Override
@@ -49,33 +58,56 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
         hideBottomNav();
         initViews(view);
         setupRecyclerView();
+        setupTemplatesRecyclerView();
         setupClickListeners();
         loadCVs();
+        loadTemplates();
     }
 
     private void initViews(View view) {
         toolbar = view.findViewById(R.id.toolbar);
-        cvRecycler = view.findViewById(R.id.cv_recycler);
-        emptyState = view.findViewById(R.id.empty_state);
-        emptyCreateCvButton = view.findViewById(R.id.empty_create_cv_button);
-        fabCreateCv = view.findViewById(R.id.fab_create_cv);
+        swipeRefresh = view.findViewById(R.id.swipe_refresh);
+        cvList = view.findViewById(R.id.cv_list);
+        templatesList = view.findViewById(R.id.templates_list);
+        emptyContainer = view.findViewById(R.id.empty_container);
+        templatesSection = view.findViewById(R.id.templates_section);
+        templatesProgress = view.findViewById(R.id.templates_progress);
+        seeAllTemplates = view.findViewById(R.id.see_all_templates);
+        fabAddCv = view.findViewById(R.id.fab_add_cv);
         progressBar = view.findViewById(R.id.progress_bar);
     }
 
     private void setupRecyclerView() {
-        adapter = new CVAdapter(cvList, this);
-        cvRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        cvRecycler.setAdapter(adapter);
+        adapter = new CVAdapter(cvs, this);
+        cvList.setLayoutManager(new LinearLayoutManager(requireContext()));
+        cvList.setAdapter(adapter);
+    }
+
+    private void setupTemplatesRecyclerView() {
+        templateAdapter = new CVTemplateAdapter(this);
+        templatesList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        templatesList.setAdapter(templateAdapter);
     }
 
     private void setupClickListeners() {
         toolbar.setNavigationOnClickListener(v -> navController.popBackStack());
-        fabCreateCv.setOnClickListener(v -> navController.navigate(R.id.cvEditorFragment));
-        emptyCreateCvButton.setOnClickListener(v -> navController.navigate(R.id.cvEditorFragment));
+        fabAddCv.setOnClickListener(v -> navController.navigate(R.id.cvEditorFragment));
+        swipeRefresh.setOnRefreshListener(() -> {
+            loadCVs();
+            loadTemplates();
+        });
+        if (seeAllTemplates != null) {
+            seeAllTemplates.setOnClickListener(v -> {
+                // Navigate to templates list or show all templates
+                showToast("All templates");
+            });
+        }
     }
 
     private void loadCVs() {
-        showLoading(true);
+        if (!swipeRefresh.isRefreshing()) {
+            showLoading(true);
+        }
         apiService.getMyCVs(sessionManager.getAccessToken(),
             new ApiCallback<List<CVDTO>>() {
                 @Override
@@ -83,8 +115,9 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
-                        cvList.clear();
-                        cvList.addAll(result);
+                        swipeRefresh.setRefreshing(false);
+                        cvs.clear();
+                        cvs.addAll(result);
                         adapter.notifyDataSetChanged();
                         updateEmptyState();
                     });
@@ -95,6 +128,7 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
                     if (!isAdded()) return;
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
+                        swipeRefresh.setRefreshing(false);
                         showToast("Error loading CVs: " + error);
                         updateEmptyState();
                     });
@@ -103,10 +137,9 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     }
 
     private void updateEmptyState() {
-        boolean isEmpty = cvList.isEmpty();
-        emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-        cvRecycler.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-        fabCreateCv.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        boolean isEmpty = cvs.isEmpty();
+        emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        cvList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
     }
 
     private void showLoading(boolean show) {
@@ -174,6 +207,90 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
                         showLoading(false);
                         showToast("CV deleted");
                         loadCVs();
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        showToast("Error: " + error);
+                    });
+                }
+            });
+    }
+
+    private void loadTemplates() {
+        if (templatesProgress != null) {
+            templatesProgress.setVisibility(View.VISIBLE);
+        }
+        apiService.getCVTemplates(sessionManager.getAccessToken(), null,
+            new ApiCallback<List<CVTemplateDTO>>() {
+                @Override
+                public void onSuccess(List<CVTemplateDTO> result) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        if (templatesProgress != null) {
+                            templatesProgress.setVisibility(View.GONE);
+                        }
+                        templates.clear();
+                        if (result != null) {
+                            templates.addAll(result);
+                        }
+                        templateAdapter.setTemplates(templates);
+                        if (templatesSection != null) {
+                            templatesSection.setVisibility(templates.isEmpty() ? View.GONE : View.VISIBLE);
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        if (templatesProgress != null) {
+                            templatesProgress.setVisibility(View.GONE);
+                        }
+                        // Don't show error for templates, just hide section
+                        if (templatesSection != null) {
+                            templatesSection.setVisibility(View.GONE);
+                        }
+                    });
+                }
+            });
+    }
+
+    @Override
+    public void onUseTemplate(CVTemplateDTO template) {
+        // Navigate to CV editor with template
+        Bundle args = new Bundle();
+        args.putString("templateId", template.getId());
+        args.putString("templateName", template.getName());
+        navController.navigate(R.id.cvEditorFragment, args);
+    }
+
+    @Override
+    public void onUnlockTemplate(CVTemplateDTO template) {
+        new AlertDialog.Builder(requireContext())
+            .setTitle("Unlock Template")
+            .setMessage("Unlock \"" + template.getName() + "\" for " + template.getCreditCost() + " credits?")
+            .setPositiveButton("Unlock", (dialog, which) -> unlockTemplate(template))
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+
+    private void unlockTemplate(CVTemplateDTO template) {
+        showLoading(true);
+        apiService.unlockCVTemplate(sessionManager.getAccessToken(), template.getId(),
+            new ApiCallback<CVTemplateDTO>() {
+                @Override
+                public void onSuccess(CVTemplateDTO result) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        showToast("Template unlocked!");
+                        loadTemplates();
                     });
                 }
 

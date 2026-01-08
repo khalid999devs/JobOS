@@ -101,7 +101,8 @@ public class JobDetailFragment extends BaseFragment {
     private void loadJobDetails() {
         progressBar.setVisibility(View.VISIBLE);
 
-        apiService.getJobById(jobId, new ApiCallback<JobDTO>() {
+        String token = sessionManager.getAccessToken();
+        apiService.getJobDetails(token, jobId, new ApiCallback<JobDTO>() {
             @Override
             public void onSuccess(JobDTO job) {
                 if (!isAdded()) return;

@@ -73,18 +73,18 @@ public class AllApplicationsFragment extends BaseFragment {
     private void setupTabs() {
         tabLayout.addTab(tabLayout.newTab().setText("All"));
         tabLayout.addTab(tabLayout.newTab().setText("Pending"));
-        tabLayout.addTab(tabLayout.newTab().setText("Reviewing"));
+        tabLayout.addTab(tabLayout.newTab().setText("Reviewed"));
         tabLayout.addTab(tabLayout.newTab().setText("Shortlisted"));
-        tabLayout.addTab(tabLayout.newTab().setText("Rejected"));
+        tabLayout.addTab(tabLayout.newTab().setText("Accepted"));
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 switch (tab.getPosition()) {
                     case 1: currentFilter = "PENDING"; break;
-                    case 2: currentFilter = "REVIEWING"; break;
+                    case 2: currentFilter = "REVIEWED"; break;
                     case 3: currentFilter = "SHORTLISTED"; break;
-                    case 4: currentFilter = "REJECTED"; break;
+                    case 4: currentFilter = "ACCEPTED"; break;
                     default: currentFilter = "ALL"; break;
                 }
                 filterApplications();

@@ -218,4 +218,19 @@
     <string name="setup_seeker_title">Profile Setup</string>
     <string name="skip_for_now">Skip for now</string>
     <string name="your_jobs">Your Jobs</string>
+    
+    <string name="search_jobs_hint">Search by title, company, or keyword</string>
+    <string name="find_your_dream_job">Find Your Dream Job</string>
+    <string name="search_jobs_description">Search thousands of jobs and find your perfect match</string>
+    <string name="try_different_search">Try adjusting your search or filters</string>
+    <string name="no_cvs">No CVs Yet</string>
+    <string name="no_cvs_hint">Create your first CV to start applying for jobs</string>
+    <string name="add_cv">Add CV</string>
+    <string name="all">All</string>
+    <string name="pending">Pending</string>
+    <string name="reviewed">Reviewed</string>
+    <string name="shortlisted">Shortlisted</string>
+    <string name="accepted">Accepted</string>
+    <string name="rejected">Rejected</string>
+    <string name="try_searching">Search for jobs to get started</string>
 </resources>

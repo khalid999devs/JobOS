@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -34,7 +35,7 @@ public class SeekerHomeFragment extends BaseFragment {
     private SwipeRefreshLayout swipeRefresh;
     private RecyclerView recommendedJobsRv;
     private RecyclerView recentJobsRv;
-    private TextView emptyText;
+    private LinearLayout emptyContainer;
     private ProgressBar progressBar;
     private TextView seeAllRecommended;
     private TextView seeAllRecent;
@@ -71,7 +72,7 @@ public class SeekerHomeFragment extends BaseFragment {
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
         recommendedJobsRv = view.findViewById(R.id.recommended_jobs_rv);
         recentJobsRv = view.findViewById(R.id.recent_jobs_rv);
-        emptyText = view.findViewById(R.id.empty_text);
+        emptyContainer = view.findViewById(R.id.empty_container);
         progressBar = view.findViewById(R.id.progress_bar);
         seeAllRecommended = view.findViewById(R.id.see_all_recommended);
         seeAllRecent = view.findViewById(R.id.see_all_recent);
@@ -138,27 +139,7 @@ public class SeekerHomeFragment extends BaseFragment {
         String token = sessionManager.getAccessToken();
         
         loadNotificationCount();
-        
-        apiService.getRecommendedJobs(token, 0, 5, new ApiCallback<List<JobDTO>>() {
-            @Override
-            public void onSuccess(List<JobDTO> jobs) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    recommendedJobs.clear();
-                    recommendedJobs.addAll(jobs);
-                    recommendedAdapter.notifyDataSetChanged();
-                    loadRecentJobs();
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    loadRecentJobs();
-                });
-            }
-        });
+        loadRecentJobs();
     }
 
     private void loadRecentJobs() {
@@ -166,7 +147,8 @@ public class SeekerHomeFragment extends BaseFragment {
         request.setPage(0);
         request.setSize(10);
 
-        apiService.searchJobs(request, new ApiCallback<List<JobDTO>>() {
+        String token = sessionManager.getAccessToken();
+        apiService.searchJobs(token, request, new ApiCallback<List<JobDTO>>() {
             @Override
             public void onSuccess(List<JobDTO> jobs) {
                 if (!isAdded()) return;
@@ -174,6 +156,13 @@ public class SeekerHomeFragment extends BaseFragment {
                     recentJobs.clear();
                     recentJobs.addAll(jobs);
                     recentAdapter.notifyDataSetChanged();
+                    
+                    if (jobs.size() >= 5) {
+                        recommendedJobs.clear();
+                        recommendedJobs.addAll(jobs.subList(0, Math.min(5, jobs.size())));
+                        recommendedAdapter.notifyDataSetChanged();
+                    }
+                    
                     hideLoading();
                     updateEmptyState();
                 });
@@ -198,7 +187,7 @@ public class SeekerHomeFragment extends BaseFragment {
 
     private void updateEmptyState() {
         boolean isEmpty = recommendedJobs.isEmpty() && recentJobs.isEmpty();
-        emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
     }
 
     private void onJobClick(JobDTO job) {

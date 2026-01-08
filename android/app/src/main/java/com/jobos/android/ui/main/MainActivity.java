@@ -48,13 +48,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         bottomNavigation = findViewById(R.id.bottom_navigation);
+        if (bottomNavigation != null) {
+            bottomNavigation.setVisibility(View.GONE);
+        }
         
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            updateBottomNavigationVisibility(destination);
-        });
+        if (navController != null) {
+            navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+                updateBottomNavigationVisibility(destination);
+            });
+        }
     }
 
+    private String currentMenuRole = null;
+
     private void updateBottomNavigationVisibility(NavDestination destination) {
+        if (bottomNavigation == null) return;
+        
         int destId = destination.getId();
         
         if (noBottomNavDestinations.contains(destId)) {
@@ -62,30 +71,39 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        bottomNavigation.setVisibility(View.VISIBLE);
-        
         String userRole = sessionManager.getUserRole();
-        if ("POSTER".equals(userRole)) {
-            bottomNavigation.getMenu().clear();
-            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_poster);
-        } else {
-            bottomNavigation.getMenu().clear();
-            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_seeker);
+        if (userRole == null || userRole.isEmpty()) {
+            bottomNavigation.setVisibility(View.GONE);
+            return;
         }
         
-        NavigationUI.setupWithNavController(bottomNavigation, navController);
+        bottomNavigation.setVisibility(View.VISIBLE);
+        
+        if (!userRole.equals(currentMenuRole)) {
+            currentMenuRole = userRole;
+            bottomNavigation.getMenu().clear();
+            if ("POSTER".equals(userRole)) {
+                bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_poster);
+            } else {
+                bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_seeker);
+            }
+            NavigationUI.setupWithNavController(bottomNavigation, navController);
+        }
     }
 
     public void updateBottomNavForRole(String role) {
         if (bottomNavigation == null) return;
         
-        bottomNavigation.getMenu().clear();
-        if ("POSTER".equals(role)) {
-            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_poster);
-        } else {
-            bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_seeker);
+        if (role != null && !role.equals(currentMenuRole)) {
+            currentMenuRole = role;
+            bottomNavigation.getMenu().clear();
+            if ("POSTER".equals(role)) {
+                bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_poster);
+            } else {
+                bottomNavigation.inflateMenu(R.menu.menu_bottom_nav_seeker);
+            }
+            NavigationUI.setupWithNavController(bottomNavigation, navController);
         }
-        NavigationUI.setupWithNavController(bottomNavigation, navController);
     }
 
     public void showBottomNavigation() {

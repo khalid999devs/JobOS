@@ -87,7 +87,8 @@ public class ApplyJobFragment extends BaseFragment {
     private void loadJobDetails() {
         if (jobId == null || jobId.isEmpty()) return;
 
-        apiService.getJobById(jobId, new ApiCallback<JobDTO>() {
+        String token = sessionManager.getAccessToken();
+        apiService.getJobDetails(token, jobId, new ApiCallback<JobDTO>() {
             @Override
             public void onSuccess(JobDTO job) {
                 if (!isAdded()) return;
