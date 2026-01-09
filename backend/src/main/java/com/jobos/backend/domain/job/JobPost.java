@@ -40,6 +40,10 @@ public class JobPost {
     private Boolean isRemote = false;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private WorkMode workMode = WorkMode.ONSITE;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private JobType jobType;
 
@@ -157,6 +161,14 @@ public class JobPost {
 
     public void setIsRemote(Boolean isRemote) {
         this.isRemote = isRemote;
+    }
+
+    public WorkMode getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(WorkMode workMode) {
+        this.workMode = workMode;
     }
 
     public JobType getJobType() {

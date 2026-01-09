@@ -32,6 +32,7 @@ public class JobPostResponse {
     private LocalDateTime updatedAt;
     private LocalDateTime closedAt;
     private Boolean isSaved;
+    private Boolean hasApplied;
 
     public String getId() {
         return id;
@@ -239,5 +240,13 @@ public class JobPostResponse {
 
     public void setIsSaved(Boolean isSaved) {
         this.isSaved = isSaved;
+    }
+
+    public Boolean getHasApplied() {
+        return hasApplied;
+    }
+
+    public void setHasApplied(Boolean hasApplied) {
+        this.hasApplied = hasApplied;
     }
 }

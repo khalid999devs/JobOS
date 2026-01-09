@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.jobos.desktop.controller.credits.CreditsController"
+            fitToWidth="true" styleClass="page-container">
+    <VBox spacing="24">
+        <padding>
+            <Insets topRightBottomLeft="24"/>
+        </padding>
+        
+        <VBox spacing="4">
+            <Label text="Credits &amp; Plans" styleClass="h2"/>
+            <Label text="Manage your credits and subscription" styleClass="label-secondary"/>
+        </VBox>
+        
+        <!-- Stats Cards -->
+        <HBox spacing="16">
+            <VBox styleClass="card" spacing="8" HBox.hgrow="ALWAYS">
+                <padding><Insets topRightBottomLeft="20"/></padding>
+                <Label text="💰" style="-fx-font-size: 24px;"/>
+                <Label fx:id="creditsBalance" text="0" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                <Label text="Available Credits" styleClass="label-secondary"/>
+            </VBox>
+            <VBox styleClass="card" spacing="8" HBox.hgrow="ALWAYS">
+                <padding><Insets topRightBottomLeft="20"/></padding>
+                <Label text="📊" style="-fx-font-size: 24px;"/>
+                <Label fx:id="usedCredits" text="0" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #F59E0B;"/>
+                <Label text="Used This Month" styleClass="label-secondary"/>
+            </VBox>
+            <VBox styleClass="card" spacing="8" HBox.hgrow="ALWAYS">
+                <padding><Insets topRightBottomLeft="20"/></padding>
+                <Label text="👑" style="-fx-font-size: 24px;"/>
+                <Label fx:id="planLabel" text="FREE" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #3B82F6;"/>
+                <Label text="Current Plan" styleClass="label-secondary"/>
+            </VBox>
+        </HBox>
+        
+        <!-- Subscription Plans -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Subscription Plans" styleClass="h4"/>
+            <Label text="Choose the plan that best fits your needs" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+            <HBox fx:id="plansContainer" spacing="16" style="-fx-padding: 8 0 0 0;">
+                <!-- Plans will be loaded dynamically -->
+            </HBox>
+        </VBox>
+        
+        <!-- Purchase Credits -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Buy Extra Credits" styleClass="h4"/>
+            <Label text="Need more credits? Purchase additional credits anytime" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+            
+            <HBox spacing="16">
+                <VBox styleClass="card" spacing="12" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <padding><Insets topRightBottomLeft="20"/></padding>
+                    <Label text="Starter" style="-fx-text-fill: #6B7280; -fx-font-weight: bold;"/>
+                    <Label text="10 Credits" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <Label text="$9.99" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                    <Button text="Buy Now" styleClass="button-secondary" maxWidth="Infinity" onAction="#onPurchase10"/>
+                </VBox>
+                
+                <VBox spacing="12" alignment="CENTER" HBox.hgrow="ALWAYS" 
+                      style="-fx-background-color: #F0FDFA; -fx-background-radius: 8; -fx-border-color: #0F766E; -fx-border-radius: 8; -fx-border-width: 2;">
+                    <padding><Insets topRightBottomLeft="20"/></padding>
+                    <Label text="POPULAR" style="-fx-background-color: #0F766E; -fx-text-fill: white; -fx-padding: 2 8; -fx-background-radius: 4; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <Label text="50 Credits" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <Label text="$39.99" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                    <Button text="Buy Now" styleClass="button-primary" maxWidth="Infinity" onAction="#onPurchase50"/>
+                </VBox>
+                
+                <VBox styleClass="card" spacing="12" alignment="CENTER" HBox.hgrow="ALWAYS">
+                    <padding><Insets topRightBottomLeft="20"/></padding>
+                    <Label text="Pro" style="-fx-text-fill: #6B7280; -fx-font-weight: bold;"/>
+                    <Label text="100 Credits" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <Label text="$69.99" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                    <Button text="Buy Now" styleClass="button-secondary" maxWidth="Infinity" onAction="#onPurchase100"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Transaction History -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Transaction History" styleClass="h4"/>
+            <VBox fx:id="transactionsList" spacing="8"/>
+            <HBox fx:id="paginationContainer" alignment="CENTER" spacing="16"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

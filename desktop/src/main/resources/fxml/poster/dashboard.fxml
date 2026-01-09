@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.poster.PosterDashboardController"
+      spacing="28" style="-fx-background-color: #FAFAFA;">
+    <padding>
+        <Insets top="32" right="32" bottom="32" left="32"/>
+    </padding>
+    
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <VBox spacing="6" HBox.hgrow="ALWAYS">
+            <Label fx:id="welcomeLabel" text="Welcome back!" style="-fx-text-fill: #111827; -fx-font-size: 26px; -fx-font-weight: 700;"/>
+            <Label text="This is your main dashboard. View your recruitment activity and manage job posts." style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+        </VBox>
+        <Button onAction="#onCreateJob" styleClass="button-primary-teal">
+            <graphic>
+                <HBox spacing="8" alignment="CENTER">
+                    <FontIcon iconLiteral="fas-plus" iconSize="14" iconColor="white"/>
+                    <Label text="Post New Job" style="-fx-text-fill: white; -fx-font-weight: 600;"/>
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+    
+    <!-- Stats Cards -->
+    <HBox fx:id="statsContainer" spacing="20">
+        <!-- Bot Status / Active Jobs -->
+        <VBox styleClass="stat-card-modern" HBox.hgrow="ALWAYS" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #DCFCE7; -fx-background-radius: 10; -fx-min-width: 44; -fx-min-height: 44;">
+                    <FontIcon iconLiteral="fas-check-circle" iconSize="20" iconColor="#16A34A"/>
+                </StackPane>
+                <VBox spacing="2">
+                    <Label fx:id="activeJobsLabel" text="0" style="-fx-text-fill: #111827; -fx-font-size: 24px; -fx-font-weight: 700;"/>
+                    <Label text="Active Jobs" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Total Jobs -->
+        <VBox styleClass="stat-card-modern" HBox.hgrow="ALWAYS" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #E0F2FE; -fx-background-radius: 10; -fx-min-width: 44; -fx-min-height: 44;">
+                    <FontIcon iconLiteral="fas-briefcase" iconSize="20" iconColor="#0284C7"/>
+                </StackPane>
+                <VBox spacing="2">
+                    <Label fx:id="totalJobsLabel" text="0" style="-fx-text-fill: #111827; -fx-font-size: 24px; -fx-font-weight: 700;"/>
+                    <Label text="Total Jobs" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Applications -->
+        <VBox styleClass="stat-card-modern" HBox.hgrow="ALWAYS" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #FEF3C7; -fx-background-radius: 10; -fx-min-width: 44; -fx-min-height: 44;">
+                    <FontIcon iconLiteral="fas-cloud-upload-alt" iconSize="20" iconColor="#D97706"/>
+                </StackPane>
+                <VBox spacing="2">
+                    <Label fx:id="totalApplicationsLabel" text="0" style="-fx-text-fill: #111827; -fx-font-size: 24px; -fx-font-weight: 700;"/>
+                    <Label text="Applications" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Credits -->
+        <VBox styleClass="stat-card-modern" HBox.hgrow="ALWAYS" spacing="12">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #F3E8FF; -fx-background-radius: 10; -fx-min-width: 44; -fx-min-height: 44;">
+                    <FontIcon iconLiteral="fas-sync-alt" iconSize="20" iconColor="#9333EA"/>
+                </StackPane>
+                <VBox spacing="2">
+                    <Label fx:id="creditsLabel" text="0" style="-fx-text-fill: #111827; -fx-font-size: 24px; -fx-font-weight: 700;"/>
+                    <Label text="Credits Balance" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </HBox>
+    
+    <!-- Key Metrics Section -->
+    <VBox spacing="16">
+        <Label text="Key Metrics (Last 30 Days)" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
+        <HBox spacing="16">
+            <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                <Label text="JOBS POSTED" style="-fx-text-fill: #0F766E; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                <Label fx:id="jobsPostedMetric" text="0" style="-fx-text-fill: #111827; -fx-font-size: 28px; -fx-font-weight: 700;"/>
+            </VBox>
+            <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                <Label text="VIEWS RECEIVED" style="-fx-text-fill: #0F766E; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                <Label fx:id="viewsMetric" text="0" style="-fx-text-fill: #111827; -fx-font-size: 28px; -fx-font-weight: 700;"/>
+            </VBox>
+            <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                <Label text="APPLICATIONS" style="-fx-text-fill: #0F766E; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                <Label fx:id="applicationsMetric" text="0" style="-fx-text-fill: #111827; -fx-font-size: 28px; -fx-font-weight: 700;"/>
+            </VBox>
+            <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+                <Label text="HIRED" style="-fx-text-fill: #0F766E; -fx-font-size: 11px; -fx-font-weight: 700;"/>
+                <Label fx:id="hiredMetric" text="0" style="-fx-text-fill: #111827; -fx-font-size: 28px; -fx-font-weight: 700;"/>
+            </VBox>
+        </HBox>
+        <Hyperlink text="View detailed metrics" style="-fx-text-fill: #0F766E;"/>
+    </VBox>
+    
+    <!-- Quick Actions -->
+    <HBox spacing="16">
+        <Button onAction="#onViewJobs" styleClass="button-outline-teal">
+            <graphic>
+                <HBox spacing="8" alignment="CENTER">
+                    <FontIcon iconLiteral="fas-folder-open" iconSize="14" iconColor="#0F766E"/>
+                    <Label text="View All Jobs" style="-fx-text-fill: #0F766E;"/>
+                </HBox>
+            </graphic>
+        </Button>
+        <Button onAction="#onViewApplicants" styleClass="button-outline-teal">
+            <graphic>
+                <HBox spacing="8" alignment="CENTER">
+                    <FontIcon iconLiteral="fas-user-friends" iconSize="14" iconColor="#0F766E"/>
+                    <Label text="View Applicants" style="-fx-text-fill: #0F766E;"/>
+                </HBox>
+            </graphic>
+        </Button>
+        <Button onAction="#onBuyCredits" styleClass="button-outline-teal">
+            <graphic>
+                <HBox spacing="8" alignment="CENTER">
+                    <FontIcon iconLiteral="fas-coins" iconSize="14" iconColor="#0F766E"/>
+                    <Label text="Buy Credits" style="-fx-text-fill: #0F766E;"/>
+                </HBox>
+            </graphic>
+        </Button>
+    </HBox>
+    
+    <!-- Recent Jobs & Applicants -->
+    <HBox spacing="24">
+        <VBox spacing="16" styleClass="card-modern" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Recent Job Posts" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;" HBox.hgrow="ALWAYS"/>
+                <Hyperlink text="View all" onAction="#onViewJobs" style="-fx-text-fill: #0F766E;"/>
+            </HBox>
+            <VBox fx:id="myJobsContainer" spacing="12">
+            </VBox>
+        </VBox>
+        
+        <VBox spacing="16" styleClass="card-modern" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Recent Applicants" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;" HBox.hgrow="ALWAYS"/>
+                <Hyperlink text="View all" onAction="#onViewApplicants" style="-fx-text-fill: #0F766E;"/>
+            </HBox>
+            <VBox fx:id="recentApplicationsList" spacing="12">
+            </VBox>
+        </VBox>
+    </HBox>
+    
+    <!-- Tip -->
+    <Label text="Tip: Keep your job posts up to date to attract more qualified candidates." style="-fx-text-fill: #9CA3AF; -fx-font-size: 12px; -fx-text-alignment: center;"/>
+</VBox>

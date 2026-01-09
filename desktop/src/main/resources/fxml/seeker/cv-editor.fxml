@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.seeker.CvEditorController"
+      style="-fx-background-color: #FAFAFA;">
+    
+    <!-- Main Editor Layout -->
+    <BorderPane>
+        
+        <!-- Top Bar -->
+        <top>
+            <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: white; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0; -fx-padding: 12 20;">
+                
+                <Button onAction="#onBack" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-arrow-left" iconSize="14" iconColor="#6B7280"/>
+                    </graphic>
+                </Button>
+                
+                <TextField fx:id="titleField" promptText="CV Title" prefWidth="300"
+                           style="-fx-background-color: transparent; -fx-border-width: 0; -fx-font-size: 18px; -fx-font-weight: 600;"/>
+                
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <Label fx:id="lastSavedLabel" text="All changes saved" style="-fx-text-fill: #059669; -fx-font-size: 12px;"/>
+                
+                <ComboBox fx:id="visibilityCombo" prefWidth="120" styleClass="filter-combo"/>
+                
+                <Button fx:id="previewBtn" text="Preview" onAction="#onPreview"
+                        style="-fx-background-color: #F3F4F6; -fx-text-fill: #374151; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-eye" iconSize="12" iconColor="#6B7280"/>
+                    </graphic>
+                </Button>
+                
+                <Button fx:id="saveBtn" text="Save" onAction="#onSave"
+                        style="-fx-background-color: #0F766E; -fx-text-fill: white; -fx-padding: 8 20; -fx-background-radius: 8; -fx-cursor: hand;">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-save" iconSize="12" iconColor="white"/>
+                    </graphic>
+                </Button>
+                
+            </HBox>
+        </top>
+        
+        <!-- Main Content - 3 Pane Layout -->
+        <center>
+            <HBox>
+                
+                <!-- Left Sidebar - Sections List -->
+                <VBox prefWidth="280" spacing="0" style="-fx-background-color: white; -fx-border-color: #E5E7EB; -fx-border-width: 0 1 0 0;">
+                    
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 16;">
+                        <Label text="Sections" style="-fx-text-fill: #111827; -fx-font-size: 14px; -fx-font-weight: 600;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button onAction="#onAddSection" style="-fx-background-color: #F0FDFA; -fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand;">
+                            <graphic>
+                                <HBox alignment="CENTER" spacing="4">
+                                    <FontIcon iconLiteral="fas-plus" iconSize="10" iconColor="#0F766E"/>
+                                    <Label text="Add" style="-fx-text-fill: #0F766E; -fx-font-size: 12px;"/>
+                                </HBox>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                    
+                    <Separator/>
+                    
+                    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-width: 0;" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="sectionsList" spacing="8" style="-fx-padding: 12;">
+                            <!-- Section items will be loaded here -->
+                        </VBox>
+                    </ScrollPane>
+                    
+                    <!-- Template info -->
+                    <VBox style="-fx-background-color: #F9FAFB; -fx-padding: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1 0 0 0;">
+                        <Label text="Template" style="-fx-text-fill: #9CA3AF; -fx-font-size: 11px;"/>
+                        <Label fx:id="templateLabel" text="Custom Template" style="-fx-text-fill: #374151; -fx-font-size: 13px;"/>
+                    </VBox>
+                    
+                </VBox>
+                
+                <!-- Center - Editor Content -->
+                <ScrollPane fitToWidth="true" style="-fx-background-color: #FAFAFA; -fx-border-width: 0;" HBox.hgrow="ALWAYS">
+                    <VBox fx:id="editorContent" style="-fx-background-color: #FAFAFA;">
+                        <!-- Section editor will be loaded here -->
+                        <VBox alignment="CENTER" spacing="12" style="-fx-padding: 80;">
+                            <FontIcon iconLiteral="fas-mouse-pointer" iconSize="32" iconColor="#D1D5DB"/>
+                            <Label text="Select a section to edit" style="-fx-text-fill: #9CA3AF; -fx-font-size: 14px;"/>
+                            <Label text="Or add a new section from the left panel" style="-fx-text-fill: #D1D5DB; -fx-font-size: 12px;"/>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+                
+                <!-- Right Sidebar - Properties (Optional) -->
+                <VBox fx:id="propertiesPanel" prefWidth="0" visible="false" managed="false">
+                    <!-- Properties panel can be added for advanced features -->
+                </VBox>
+                
+            </HBox>
+        </center>
+        
+    </BorderPane>
+    
+    <!-- Loading Overlay -->
+    <VBox fx:id="loadingContainer" alignment="CENTER" spacing="12" 
+          style="-fx-background-color: rgba(255,255,255,0.9);"
+          visible="false" managed="false">
+        <ProgressIndicator prefWidth="40" prefHeight="40"/>
+        <Label text="Loading CV..." style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+    </VBox>
+    
+    <!-- Preview Overlay -->
+    <StackPane fx:id="previewContainer" style="-fx-background-color: rgba(0,0,0,0.5);" 
+               visible="false" managed="false">
+        <VBox maxWidth="900" maxHeight="700" style="-fx-background-color: white; -fx-background-radius: 12;">
+            <HBox alignment="CENTER_LEFT" style="-fx-padding: 16; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0;">
+                <Label text="CV Preview" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#onClosePreview" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-times" iconSize="14" iconColor="#6B7280"/>
+                    </graphic>
+                </Button>
+            </HBox>
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-border-width: 0;">
+                <VBox fx:id="previewContent" spacing="8" style="-fx-padding: 40; -fx-background-color: white;">
+                    <!-- Preview content will be loaded here -->
+                </VBox>
+            </ScrollPane>
+        </VBox>
+    </StackPane>
+    
+</StackPane>
+

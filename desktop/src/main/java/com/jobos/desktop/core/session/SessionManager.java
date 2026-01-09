@@ -1,17 +1,28 @@
 package com.jobos.desktop.core.session;
 
+import com.jobos.desktop.core.config.Constants;
 import com.jobos.desktop.model.UserRole;
+import com.jobos.shared.dto.profile.ProfileResponse;
+
+import java.util.prefs.Preferences;
 
 public class SessionManager {
-    private static SessionManager instance;
     
-    private String accessToken;
-    private String refreshToken;
+    private static SessionManager instance;
+    private final Preferences prefs;
+    private final TokenStore tokenStore;
+    
     private String userId;
     private String email;
     private UserRole userRole;
+    private ProfileResponse profile;
+    private boolean profileCompleted;
     
-    private SessionManager() {}
+    private SessionManager() {
+        prefs = Preferences.userNodeForPackage(SessionManager.class);
+        tokenStore = TokenStore.getInstance();
+        loadFromPrefs();
+    }
     
     public static SessionManager getInstance() {
         if (instance == null) {
@@ -20,32 +31,103 @@ public class SessionManager {
         return instance;
     }
     
-    public void login(String accessToken, String refreshToken, String userId, String email, UserRole role) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+    private void loadFromPrefs() {
+        userId = prefs.get(Constants.Prefs.USER_ID, null);
+        email = prefs.get(Constants.Prefs.USER_EMAIL, null);
+        String roleStr = prefs.get(Constants.Prefs.USER_ROLE, null);
+        userRole = UserRole.fromString(roleStr);
+        profileCompleted = prefs.getBoolean("profileCompleted", false);
+    }
+    
+    public void login(String userId, String email, String role, String accessToken, String refreshToken, boolean profileCompleted) {
         this.userId = userId;
         this.email = email;
-        this.userRole = role;
+        this.userRole = UserRole.fromString(role);
+        this.profileCompleted = profileCompleted;
+        
+        if (userId != null) prefs.put(Constants.Prefs.USER_ID, userId);
+        if (email != null) prefs.put(Constants.Prefs.USER_EMAIL, email);
+        if (role != null) prefs.put(Constants.Prefs.USER_ROLE, role);
+        prefs.putBoolean("profileCompleted", profileCompleted);
+        
+        tokenStore.saveTokens(accessToken, refreshToken);
+        
+        flushPrefs();
+    }
+    
+    public void updateProfile(ProfileResponse profile) {
+        this.profile = profile;
+        if (profile != null) {
+            if (profile.getId() != null && !profile.getId().isEmpty()) {
+                this.userId = profile.getId();
+                prefs.put(Constants.Prefs.USER_ID, userId);
+            }
+            if (profile.getEmail() != null) {
+                this.email = profile.getEmail();
+                prefs.put(Constants.Prefs.USER_EMAIL, email);
+            }
+            if (profile.getRole() != null) {
+                this.userRole = UserRole.fromString(profile.getRole());
+                prefs.put(Constants.Prefs.USER_ROLE, profile.getRole());
+            }
+            if (profile.getProfileCompleted() != null) {
+                this.profileCompleted = profile.getProfileCompleted();
+                prefs.putBoolean("profileCompleted", profileCompleted);
+            }
+            flushPrefs();
+        }
+    }
+    
+    private void flushPrefs() {
+        try {
+            prefs.flush();
+        } catch (Exception ignored) {}
+    }
+    
+    public void setProfileCompleted(boolean completed) {
+        this.profileCompleted = completed;
+        prefs.putBoolean("profileCompleted", completed);
+        flushPrefs();
+    }
+    
+    public boolean isProfileCompleted() {
+        return profileCompleted;
     }
     
     public void logout() {
-        this.accessToken = null;
-        this.refreshToken = null;
-        this.userId = null;
-        this.email = null;
-        this.userRole = null;
+        userId = null;
+        email = null;
+        userRole = null;
+        profile = null;
+        profileCompleted = false;
+        
+        prefs.remove(Constants.Prefs.USER_ID);
+        prefs.remove(Constants.Prefs.USER_EMAIL);
+        prefs.remove(Constants.Prefs.USER_ROLE);
+        prefs.remove("profileCompleted");
+        
+        tokenStore.clearTokens();
+        flushPrefs();
     }
     
     public boolean isAuthenticated() {
-        return accessToken != null && userId != null;
+        if (!tokenStore.hasTokens()) {
+            return false;
+        }
+        if (userId == null || userRole == null) {
+            loadFromPrefs();
+        }
+        return userId != null && userRole != null;
     }
     
-    public String getAccessToken() {
-        return accessToken;
-    }
-    
-    public String getRefreshToken() {
-        return refreshToken;
+    public boolean hasStoredSession() {
+        if (!tokenStore.hasTokens()) {
+            return false;
+        }
+        if (userId == null || userRole == null) {
+            loadFromPrefs();
+        }
+        return tokenStore.hasTokens();
     }
     
     public String getUserId() {
@@ -57,10 +139,21 @@ public class SessionManager {
     }
     
     public UserRole getUserRole() {
+        if (userRole == null) {
+            loadFromPrefs();
+        }
         return userRole;
     }
     
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
+    public ProfileResponse getProfile() {
+        return profile;
+    }
+    
+    public void setProfile(ProfileResponse profile) {
+        updateProfile(profile);
+    }
+    
+    public TokenStore getTokenStore() {
+        return tokenStore;
     }
 }

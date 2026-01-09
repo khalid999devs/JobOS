@@ -152,6 +152,23 @@ public class JobSearchService {
                 predicates.add(criteriaBuilder.equal(root.get("isRemote"), searchRequest.getIsRemote()));
             }
 
+            if (searchRequest.getWorkModes() != null && !searchRequest.getWorkModes().isEmpty()) {
+                List<WorkMode> workModes = searchRequest.getWorkModes().stream()
+                        .map(mode -> {
+                            try {
+                                return WorkMode.valueOf(mode.toUpperCase());
+                            } catch (IllegalArgumentException e) {
+                                return null;
+                            }
+                        })
+                        .filter(mode -> mode != null)
+                        .collect(Collectors.toList());
+
+                if (!workModes.isEmpty()) {
+                    predicates.add(root.get("workMode").in(workModes));
+                }
+            }
+
             if (searchRequest.getJobTypes() != null && !searchRequest.getJobTypes().isEmpty()) {
                 List<JobType> jobTypes = searchRequest.getJobTypes().stream()
                         .map(type -> {
@@ -270,6 +287,7 @@ public class JobSearchService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "ONSITE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());

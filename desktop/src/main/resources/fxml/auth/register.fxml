@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.auth.RegisterController"
+      style="-fx-background-color: white;">
+    
+    <ScrollPane fitToWidth="true" fitToHeight="true" HBox.hgrow="ALWAYS" 
+                style="-fx-background-color: white; -fx-background: white; -fx-min-width: 480; -fx-max-width: 520;">
+        <VBox alignment="CENTER" spacing="0" style="-fx-background-color: white;">
+            <padding>
+                <Insets top="32" right="60" bottom="32" left="60"/>
+            </padding>
+            
+            <VBox alignment="CENTER_LEFT" spacing="24" maxWidth="380">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="JobOS" style="-fx-text-fill: #111827; -fx-font-size: 22px; -fx-font-weight: 800;"/>
+                </HBox>
+                
+                <VBox spacing="6">
+                    <Label text="Create Account" style="-fx-text-fill: #111827; -fx-font-size: 26px; -fx-font-weight: 700;"/>
+                    <Label text="Get started with JobOS - your complete job management platform." styleClass="label-secondary" wrapText="true"/>
+                </VBox>
+                
+                <VBox spacing="16">
+                    <HBox spacing="12">
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="First Name" styleClass="form-label"/>
+                            <TextField fx:id="firstNameField" promptText="First name"/>
+                        </VBox>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label text="Last Name" styleClass="form-label"/>
+                            <TextField fx:id="lastNameField" promptText="Last name"/>
+                        </VBox>
+                    </HBox>
+                    
+                    <VBox spacing="6">
+                        <Label text="Email" styleClass="form-label"/>
+                        <TextField fx:id="emailField" promptText="you@example.com"/>
+                    </VBox>
+                    
+                    <VBox spacing="6">
+                        <Label text="Password" styleClass="form-label"/>
+                        <PasswordField fx:id="passwordField" promptText="Min 8 characters"/>
+                    </VBox>
+                    
+                    <VBox spacing="6">
+                        <Label text="Confirm Password" styleClass="form-label"/>
+                        <PasswordField fx:id="confirmPasswordField" promptText="Confirm password"/>
+                    </VBox>
+                    
+                    <VBox spacing="6">
+                        <Label text="I am a" styleClass="form-label"/>
+                        <ComboBox fx:id="roleComboBox" promptText="Select your role" maxWidth="Infinity"/>
+                    </VBox>
+                </VBox>
+                
+                <VBox spacing="12">
+                    <Label fx:id="errorLabel" styleClass="form-error" visible="false" managed="false" wrapText="true"/>
+                    <Button fx:id="registerButton" text="Create Account" onAction="#onRegister" styleClass="button-primary-teal" maxWidth="Infinity"/>
+                </VBox>
+                
+                <HBox alignment="CENTER" spacing="4">
+                    <Label text="Already have an account?" styleClass="label-tertiary"/>
+                    <Hyperlink text="Sign in" onAction="#onSignIn" style="-fx-text-fill: #0F766E; -fx-font-weight: 600;"/>
+                </HBox>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+    
+    <StackPane HBox.hgrow="ALWAYS" styleClass="auth-hero-panel">
+        <VBox alignment="CENTER" spacing="24" maxWidth="420">
+            <padding>
+                <Insets topRightBottomLeft="60"/>
+            </padding>
+            
+            <Label text="Join Thousands of Professionals" styleClass="auth-hero-title" wrapText="true"/>
+            
+            <VBox spacing="8" styleClass="auth-testimonial-card">
+                <Label text="I found my dream job within two weeks of signing up! The platform made the entire process seamless and efficient." styleClass="auth-hero-quote" wrapText="true"/>
+                
+                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-padding: 12 0 0 0;">
+                    <StackPane style="-fx-background-color: white; -fx-background-radius: 20; -fx-min-width: 40; -fx-min-height: 40;">
+                        <Label text="SK" style="-fx-text-fill: #0F766E; -fx-font-weight: 700;"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label text="Sarah Kim" style="-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14px;"/>
+                        <Label text="Software Engineer" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            
+            <HBox alignment="CENTER" spacing="40" style="-fx-padding: 20 0 0 0;">
+                <VBox alignment="CENTER" spacing="4">
+                    <Label text="10K+" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: 700;"/>
+                    <Label text="Jobs Posted" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4">
+                    <Label text="5K+" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: 700;"/>
+                    <Label text="Hired" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;"/>
+                </VBox>
+                <VBox alignment="CENTER" spacing="4">
+                    <Label text="1K+" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: 700;"/>
+                    <Label text="Companies" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 12px;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </StackPane>
+</HBox>

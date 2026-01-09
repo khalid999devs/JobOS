@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.common.EditProfileController"
+      fitToWidth="true" style="-fx-background-color: transparent; -fx-border-width: 0;">
+    
+    <VBox spacing="24" style="-fx-background-color: #FAFAFA;">
+        <padding>
+            <Insets top="32" right="32" bottom="32" left="32"/>
+        </padding>
+        
+        <VBox spacing="8">
+            <Label text="Edit Profile" style="-fx-text-fill: #111827; -fx-font-size: 26px; -fx-font-weight: 700;"/>
+            <Label text="Update your personal information and preferences" style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+        </VBox>
+        
+        <!-- Profile Photo & Basic Info Section -->
+        <VBox styleClass="card-modern" spacing="20">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #F0FDFA; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-user" iconSize="18" iconColor="#0F766E"/>
+                </StackPane>
+                <Label text="Profile Information" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            
+            <Label fx:id="profileErrorLabel" styleClass="error-text" visible="false" managed="false"/>
+            
+            <VBox spacing="12">
+                <Label text="Profile Photo" styleClass="form-label"/>
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <StackPane fx:id="avatarContainer" style="-fx-min-width: 80; -fx-min-height: 80;">
+                        <Circle fx:id="avatarCircle" radius="40" style="-fx-fill: #0F766E;"/>
+                        <Label fx:id="avatarInitials" text="U" style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: 600;"/>
+                        <ImageView fx:id="avatarImage" fitWidth="80" fitHeight="80" preserveRatio="true" visible="false">
+                            <clip><Circle centerX="40" centerY="40" radius="40"/></clip>
+                        </ImageView>
+                    </StackPane>
+                    <VBox spacing="8">
+                        <Button text="Upload Photo" onAction="#onUploadPhoto" styleClass="button-outline-teal" prefWidth="150"/>
+                        <Label text="JPG, PNG or GIF (max. 5MB)" style="-fx-text-fill: #9CA3AF; -fx-font-size: 11px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            
+            <HBox spacing="16">
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="First Name" styleClass="form-label"/>
+                    <TextField fx:id="firstNameField" promptText="Enter first name"/>
+                </VBox>
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="Last Name" styleClass="form-label"/>
+                    <TextField fx:id="lastNameField" promptText="Enter last name"/>
+                </VBox>
+            </HBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Email" styleClass="form-label"/>
+                <TextField fx:id="emailField" editable="false" style="-fx-opacity: 0.6;"/>
+            </VBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Phone" styleClass="form-label"/>
+                <TextField fx:id="phoneField" promptText="Enter phone number"/>
+            </VBox>
+            
+            <HBox spacing="16">
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="Location" styleClass="form-label"/>
+                    <TextField fx:id="locationField" promptText="City, Country"/>
+                </VBox>
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="Timezone" styleClass="form-label"/>
+                    <ComboBox fx:id="timezoneCombo" promptText="Select timezone" maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Bio" styleClass="form-label"/>
+                <TextArea fx:id="bioField" promptText="Tell us about yourself..." prefRowCount="3" wrapText="true"/>
+            </VBox>
+            
+            <Button fx:id="saveBasicInfoBtn" text="Save Basic Info" onAction="#onSaveBasicInfo" styleClass="button-primary-teal"/>
+        </VBox>
+        
+        <!-- Job Seeker Preferences (shown only for seekers) -->
+        <VBox fx:id="seekerPreferencesSection" styleClass="card-modern" spacing="20" visible="false" managed="false">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #DBEAFE; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-briefcase" iconSize="18" iconColor="#2563EB"/>
+                </StackPane>
+                <Label text="Job Preferences" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Desired Job Titles" styleClass="form-label"/>
+                <TextField fx:id="desiredRolesField" promptText="e.g., Software Engineer, Full Stack Developer (comma separated)"/>
+            </VBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Skills" styleClass="form-label"/>
+                <TextField fx:id="skillsField" promptText="e.g., Java, React, Python (comma separated)"/>
+            </VBox>
+            
+            <HBox spacing="16">
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="Minimum Salary (USD)" styleClass="form-label"/>
+                    <TextField fx:id="minSalaryField" promptText="e.g., 50000"/>
+                </VBox>
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="Maximum Salary (USD)" styleClass="form-label"/>
+                    <TextField fx:id="maxSalaryField" promptText="e.g., 100000"/>
+                </VBox>
+            </HBox>
+            
+            <VBox spacing="8">
+                <Label text="Job Type Preference" styleClass="form-label"/>
+                <HBox spacing="12">
+                    <CheckBox fx:id="fullTimeCheck" text="Full-time"/>
+                    <CheckBox fx:id="partTimeCheck" text="Part-time"/>
+                    <CheckBox fx:id="contractCheck" text="Contract"/>
+                    <CheckBox fx:id="internshipCheck" text="Internship"/>
+                </HBox>
+            </VBox>
+            
+            <Button text="Save Preferences" onAction="#onSaveSeekerPreferences" styleClass="button-primary-teal"/>
+        </VBox>
+        
+        <!-- Job Poster Profile (shown only for posters) -->
+        <VBox fx:id="posterProfileSection" styleClass="card-modern" spacing="20" visible="false" managed="false">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #FEF3C7; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-building" iconSize="18" iconColor="#D97706"/>
+                </StackPane>
+                <Label text="Company Information" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Company Name" styleClass="form-label"/>
+                <TextField fx:id="companyNameField" promptText="Enter company name"/>
+            </VBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Company Website" styleClass="form-label"/>
+                <TextField fx:id="companyWebsiteField" promptText="https://example.com"/>
+            </VBox>
+            
+            <VBox styleClass="form-field">
+                <Label text="Industry" styleClass="form-label"/>
+                <ComboBox fx:id="industryCombo" promptText="Select industry" maxWidth="Infinity"/>
+            </VBox>
+            
+            <VBox spacing="8">
+                <Label text="Company Size" styleClass="form-label"/>
+                <HBox spacing="8">
+                    <ToggleButton fx:id="size1to10" text="1-10"/>
+                    <ToggleButton fx:id="size11to50" text="11-50"/>
+                    <ToggleButton fx:id="size51to200" text="51-200"/>
+                    <ToggleButton fx:id="size201to500" text="201-500"/>
+                    <ToggleButton fx:id="size500Plus" text="500+"/>
+                </HBox>
+            </VBox>
+            
+            <Button text="Save Company Info" onAction="#onSavePosterProfile" styleClass="button-primary-teal"/>
+        </VBox>
+        
+    </VBox>
+</ScrollPane>

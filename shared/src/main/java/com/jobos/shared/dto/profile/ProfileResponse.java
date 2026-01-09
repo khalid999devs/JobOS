@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class ProfileResponse {
+    private String id;
     private String email;
     private String role;
     private String firstName;
@@ -19,6 +20,14 @@ public class ProfileResponse {
     
     private SeekerPreferencesData seekerPreferences;
     private PosterProfileData posterProfile;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public static class SeekerPreferencesData {
         private List<String> desiredRoles;

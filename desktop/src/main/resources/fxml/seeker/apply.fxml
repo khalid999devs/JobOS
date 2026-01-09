@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.jobos.desktop.controller.seeker.ApplyController"
+           style="-fx-background-color: #FAFAFA;">
+    
+    <VBox spacing="0">
+        <VBox style="-fx-background-color: white; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0;">
+            <padding>
+                <Insets top="20" right="28" bottom="20" left="28"/>
+            </padding>
+            
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Button onAction="#onBack" styleClass="button-icon-back">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-arrow-left" iconSize="14" iconColor="#6B7280"/>
+                    </graphic>
+                </Button>
+                <VBox spacing="2">
+                    <Label text="Apply for Job" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                    <Label fx:id="jobTitleLabel" text="Loading..." style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <VBox fx:id="contentContainer" spacing="24" style="-fx-padding: 24 28;" VBox.vgrow="ALWAYS">
+            <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <StackPane style="-fx-background-color: #E0F2FE; -fx-background-radius: 6; -fx-min-width: 28; -fx-min-height: 28;">
+                        <Label text="1" style="-fx-text-fill: #0284C7; -fx-font-weight: 700;"/>
+                    </StackPane>
+                    <Label text="Select your CV" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
+                </HBox>
+                
+                <VBox spacing="8">
+                    <Label text="Choose a CV to submit with your application" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                    <ComboBox fx:id="cvCombo" promptText="Select a CV..." styleClass="cv-combo" maxWidth="Infinity"/>
+                    <HBox alignment="CENTER_LEFT" spacing="6">
+                        <FontIcon iconLiteral="fas-info-circle" iconSize="12" iconColor="#9CA3AF"/>
+                        <Label text="Don't have a CV?" style="-fx-text-fill: #9CA3AF; -fx-font-size: 12px;"/>
+                        <Button onAction="#onCreateCV" styleClass="link-button" text="Create one now"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+            
+            <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <StackPane style="-fx-background-color: #DCFCE7; -fx-background-radius: 6; -fx-min-width: 28; -fx-min-height: 28;">
+                        <Label text="2" style="-fx-text-fill: #16A34A; -fx-font-weight: 700;"/>
+                    </StackPane>
+                    <Label text="Cover Letter (Optional)" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
+                </HBox>
+                
+                <VBox spacing="8">
+                    <Label text="Tell the employer why you're the perfect fit for this role" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                    <TextArea fx:id="coverLetterArea" promptText="Write your cover letter here..." 
+                              styleClass="cover-letter-input" prefRowCount="8" wrapText="true"/>
+                    <HBox alignment="CENTER_RIGHT">
+                        <Label fx:id="charCountLabel" text="0 / 2000" style="-fx-text-fill: #9CA3AF; -fx-font-size: 11px;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+            
+            <Region VBox.vgrow="ALWAYS"/>
+            
+            <HBox alignment="CENTER_RIGHT" spacing="12" style="-fx-padding: 0 0 16 0;">
+                <Button onAction="#onBack" styleClass="button-secondary" text="Cancel"/>
+                <Button fx:id="submitBtn" onAction="#onSubmit" styleClass="button-primary-teal" disable="true">
+                    <graphic>
+                        <HBox spacing="8" alignment="CENTER">
+                            <FontIcon iconLiteral="fas-paper-plane" iconSize="14" iconColor="white"/>
+                            <Label text="Submit Application" style="-fx-text-fill: white; -fx-font-weight: 600;"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+    </VBox>
+    
+    <VBox fx:id="loadingContainer" alignment="CENTER" spacing="12" style="-fx-background-color: #FAFAFA;" visible="false">
+        <ProgressIndicator style="-fx-progress-color: #0F766E;"/>
+        <Label fx:id="loadingLabel" text="Loading..." style="-fx-text-fill: #6B7280;"/>
+    </VBox>
+    
+    <VBox fx:id="successContainer" alignment="CENTER" spacing="20" style="-fx-background-color: #FAFAFA;" visible="false">
+        <StackPane style="-fx-background-color: #DCFCE7; -fx-background-radius: 32; -fx-min-width: 64; -fx-min-height: 64;">
+            <FontIcon iconLiteral="fas-check" iconSize="28" iconColor="#16A34A"/>
+        </StackPane>
+        <VBox alignment="CENTER" spacing="8">
+            <Label text="Application Submitted!" style="-fx-text-fill: #111827; -fx-font-size: 20px; -fx-font-weight: 700;"/>
+            <Label text="Your application has been sent to the employer" style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+        </VBox>
+        <HBox spacing="12" alignment="CENTER" style="-fx-padding: 12 0 0 0;">
+            <Button onAction="#onViewApplications" styleClass="button-outline-teal" text="View My Applications"/>
+            <Button onAction="#onBrowseMore" styleClass="button-primary-teal" text="Browse More Jobs"/>
+        </HBox>
+    </VBox>
+</StackPane>

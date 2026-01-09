@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.seeker.CvsController"
+      fitToWidth="true" fitToHeight="true"
+      style="-fx-background-color: transparent; -fx-border-width: 0;">
+    
+    <VBox spacing="0" style="-fx-background-color: #FAFAFA;">
+        
+        <!-- Templates Section - Google Docs Style Header -->
+        <VBox fx:id="templatesSection" spacing="16" style="-fx-background-color: #F3F4F6; -fx-padding: 20 32 24 32;">
+            
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <Label text="Start a new CV" style="-fx-text-fill: #374151; -fx-font-size: 15px; -fx-font-weight: 500;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ComboBox fx:id="categoryFilter" promptText="Template gallery" styleClass="filter-combo" prefWidth="160"/>
+            </HBox>
+            
+            <ScrollPane fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="NEVER"
+                        style="-fx-background-color: transparent; -fx-border-width: 0; -fx-padding: 0;">
+                <HBox fx:id="templatesList" spacing="16" style="-fx-padding: 8 4 8 4;">
+                    <!-- Blank document + templates will be loaded here dynamically -->
+                </HBox>
+            </ScrollPane>
+            
+        </VBox>
+        
+        <!-- My CVs Section - Recent Documents Style -->
+        <VBox fx:id="myCvsSection" spacing="16" style="-fx-padding: 24 32;">
+            
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="2" HBox.hgrow="ALWAYS">
+                    <Label text="Recent documents" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 500;"/>
+                    <Label fx:id="cvsCountLabel" text="0 CVs" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                </VBox>
+                <Button onAction="#onRefresh" style="-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 8;">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="#6B7280"/>
+                    </graphic>
+                    <tooltip><Tooltip text="Refresh"/></tooltip>
+                </Button>
+            </HBox>
+            
+            <!-- Loading State -->
+            <VBox fx:id="loadingContainer" alignment="CENTER" spacing="12" 
+                  style="-fx-padding: 48;" visible="false" managed="false">
+                <ProgressIndicator prefWidth="36" prefHeight="36"/>
+                <Label text="Loading your CVs..." style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+            </VBox>
+            
+            <!-- Empty State -->
+            <VBox fx:id="emptyContainer" alignment="CENTER" spacing="16" 
+                  style="-fx-padding: 64; -fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 8;"
+                  visible="false" managed="false">
+                <FontIcon iconLiteral="fas-file-alt" iconSize="48" iconColor="#D1D5DB"/>
+                <Label text="No CVs yet" style="-fx-text-fill: #374151; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                <Label text="Create your first CV using a template above" 
+                       style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+            </VBox>
+            
+            <!-- CVs Grid - Recent Documents Grid -->
+            <FlowPane fx:id="cvsList" hgap="20" vgap="20" prefWrapLength="1000">
+                <!-- CV cards with thumbnails will be loaded here dynamically -->
+            </FlowPane>
+            
+        </VBox>
+        
+    </VBox>
+</ScrollPane>
+

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.jobos.desktop.controller.shell.AppShellController"
+            stylesheets="@/css/components.css"
+            style="-fx-background-color: #FAFAFA;">
+    
+    <left>
+        <VBox fx:id="sidebar" styleClass="sidebar" spacing="6">
+            <padding>
+                <Insets top="16" right="14" bottom="16" left="14"/>
+            </padding>
+            
+            <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 6 6 20 6;">
+                <StackPane style="-fx-background-color: #0F766E; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32;">
+                    <FontIcon iconLiteral="fas-briefcase" iconSize="14" iconColor="white"/>
+                </StackPane>
+                <Label text="JobOS" style="-fx-text-fill: #111827; -fx-font-size: 18px; -fx-font-weight: 700;"/>
+            </HBox>
+            
+            <Label text="MENU" style="-fx-text-fill: #9CA3AF; -fx-font-size: 10px; -fx-font-weight: 600; -fx-padding: 0 6 6 6;"/>
+            
+            <VBox fx:id="navItems" spacing="3" VBox.vgrow="ALWAYS"/>
+            
+            <VBox spacing="3" style="-fx-padding: 12 0 0 0;">
+                <Button fx:id="logoutNav" onAction="#onLogout" styleClass="sidebar-item-logout" maxWidth="Infinity" alignment="CENTER_LEFT">
+                    <graphic>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <FontIcon iconLiteral="fas-sign-out-alt" iconSize="14" iconColor="#EF4444"/>
+                            <Label text="Logout" style="-fx-text-fill: #EF4444; -fx-font-size: 13px;"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+            </VBox>
+        </VBox>
+    </left>
+    
+    <center>
+        <VBox style="-fx-background-color: #FAFAFA;">
+            <HBox fx:id="headerBar" styleClass="topbar-modern" alignment="CENTER_RIGHT" spacing="12">
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <HBox alignment="CENTER" spacing="6" styleClass="credits-pill" onMouseClicked="#onCredits">
+                    <FontIcon iconLiteral="fas-coins" iconSize="13" iconColor="#0F766E"/>
+                    <Label fx:id="creditsLabel" text="0" style="-fx-text-fill: #0F766E; -fx-font-size: 13px; -fx-font-weight: 600;"/>
+                    <Label fx:id="planLabel" text="FREE" styleClass="plan-tag"/>
+                </HBox>
+                
+                <Button onAction="#onNotifications" styleClass="topbar-icon-btn">
+                    <graphic>
+                        <StackPane>
+                            <FontIcon iconLiteral="far-bell" iconSize="18" iconColor="#6B7280"/>
+                            <StackPane fx:id="notificationBadgeContainer"/>
+                        </StackPane>
+                    </graphic>
+                </Button>
+                
+                <Button onAction="#onSettings" styleClass="topbar-icon-btn">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-cog" iconSize="18" iconColor="#6B7280"/>
+                    </graphic>
+                </Button>
+                
+                <HBox alignment="CENTER" style="-fx-cursor: hand;" onMouseClicked="#onProfile">
+                    <StackPane styleClass="avatar-circle">
+                        <Label fx:id="avatarLabel" text="U" style="-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: 600;"/>
+                    </StackPane>
+                </HBox>
+            </HBox>
+            
+            <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS"
+                       style="-fx-background-color: #FAFAFA; -fx-background: #FAFAFA;">
+                <StackPane fx:id="contentArea" style="-fx-background-color: #FAFAFA;"/>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.jobos.desktop.controller.poster.PosterApplicationDetailController"
+            fitToWidth="true" styleClass="page-container">
+    <VBox fx:id="contentContainer" spacing="24">
+        <padding>
+            <Insets topRightBottomLeft="24"/>
+        </padding>
+        
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="16">
+            <Button text="← Back" styleClass="button-secondary" onAction="#onBack"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusLabel" text="PENDING"/>
+        </HBox>
+        
+        <!-- Applicant Info Card -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <VBox alignment="CENTER" prefWidth="64" prefHeight="64" 
+                      style="-fx-background-color: #0F766E; -fx-background-radius: 32;">
+                    <Label fx:id="applicantName" text="JD" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                </VBox>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label fx:id="applicantEmail" text="Loading..." styleClass="label-secondary"/>
+                    <Label fx:id="appliedDateLabel" text="" styleClass="label-muted"/>
+                </VBox>
+            </HBox>
+            
+            <Separator/>
+            
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Applied for:" styleClass="label-muted"/>
+                    <Label fx:id="jobTitleLabel" text="Loading..." styleClass="h4"/>
+                </VBox>
+                <Button text="View Job" styleClass="button-secondary" onAction="#onViewJob"/>
+            </HBox>
+        </VBox>
+        
+        <!-- Status Update -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Update Status" styleClass="h4"/>
+            
+            <HBox spacing="16" alignment="CENTER_LEFT">
+                <Label text="Status:" styleClass="label-secondary"/>
+                <ComboBox fx:id="statusCombo" prefWidth="200"/>
+            </HBox>
+        </VBox>
+        
+        <!-- Cover Letter -->
+        <VBox styleClass="card" spacing="12">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Cover Letter" styleClass="h4"/>
+            <VBox fx:id="coverLetterContainer" spacing="8"/>
+        </VBox>
+        
+        <!-- CV -->
+        <VBox styleClass="card" spacing="12">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="CV / Resume" styleClass="h4"/>
+            <VBox fx:id="cvContainer" spacing="8"/>
+        </VBox>
+        
+        <!-- Additional Answers -->
+        <VBox styleClass="card" spacing="12">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Additional Answers" styleClass="h4"/>
+            <VBox fx:id="answersContainer" spacing="8"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

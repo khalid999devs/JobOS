@@ -7,6 +7,7 @@ public class JobSearchRequest {
     private String keywords;
     private String location;
     private Boolean isRemote;
+    private List<String> workModes;
     private List<String> jobTypes;
     private List<String> experienceLevels;
     private Integer salaryMin;
@@ -40,6 +41,14 @@ public class JobSearchRequest {
 
     public void setIsRemote(Boolean isRemote) {
         this.isRemote = isRemote;
+    }
+
+    public List<String> getWorkModes() {
+        return workModes;
+    }
+
+    public void setWorkModes(List<String> workModes) {
+        this.workModes = workModes;
     }
 
     public List<String> getJobTypes() {
