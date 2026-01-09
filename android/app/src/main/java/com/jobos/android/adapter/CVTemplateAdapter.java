@@ -3,7 +3,6 @@ package com.jobos.android.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -11,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.google.android.material.button.MaterialButton;
 import com.jobos.android.R;
 import com.jobos.android.data.model.cv.CVTemplateDTO;
@@ -22,6 +23,7 @@ public class CVTemplateAdapter extends RecyclerView.Adapter<CVTemplateAdapter.Vi
 
     private List<CVTemplateDTO> templates = new ArrayList<>();
     private OnTemplateActionListener listener;
+    private boolean useGridLayout = true; // Default to grid layout for thumbnail view
 
     public interface OnTemplateActionListener {
         void onUseTemplate(CVTemplateDTO template);
@@ -32,6 +34,11 @@ public class CVTemplateAdapter extends RecyclerView.Adapter<CVTemplateAdapter.Vi
         this.listener = listener;
     }
 
+    public void setUseGridLayout(boolean useGrid) {
+        this.useGridLayout = useGrid;
+        notifyDataSetChanged();
+    }
+
     public void setTemplates(List<CVTemplateDTO> templates) {
         this.templates = templates != null ? templates : new ArrayList<>();
         notifyDataSetChanged();
@@ -40,8 +47,8 @@ public class CVTemplateAdapter extends RecyclerView.Adapter<CVTemplateAdapter.Vi
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_cv_template, parent, false);
+        int layoutRes = useGridLayout ? R.layout.item_cv_template_grid : R.layout.item_cv_template_list;
+        View view = LayoutInflater.from(parent.getContext()).inflate(layoutRes, parent, false);
         return new ViewHolder(view);
     }
 
@@ -57,33 +64,54 @@ public class CVTemplateAdapter extends RecyclerView.Adapter<CVTemplateAdapter.Vi
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView templatePreview;
-        LinearLayout templatePlaceholder;
+        // Common views
         ImageView templateIcon;
-        LinearLayout premiumBadge;
-        FrameLayout lockedOverlay;
         TextView templateName;
+        TextView templateDescription;
         TextView templateCategory;
         LinearLayout creditContainer;
         TextView creditCost;
         MaterialButton btnUseTemplate;
+        
+        // Grid layout specific views
+        ImageView templateThumbnail;
+        LinearLayout placeholderContainer;
+        LinearLayout premiumOverlay;
+        
+        // List layout specific view
+        ImageView premiumBadge;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            templatePreview = itemView.findViewById(R.id.template_preview);
-            templatePlaceholder = itemView.findViewById(R.id.template_placeholder);
+            // Common views
             templateIcon = itemView.findViewById(R.id.template_icon);
-            premiumBadge = itemView.findViewById(R.id.premium_badge);
-            lockedOverlay = itemView.findViewById(R.id.locked_overlay);
             templateName = itemView.findViewById(R.id.template_name);
+            templateDescription = itemView.findViewById(R.id.template_description);
             templateCategory = itemView.findViewById(R.id.template_category);
             creditContainer = itemView.findViewById(R.id.credit_container);
             creditCost = itemView.findViewById(R.id.credit_cost);
             btnUseTemplate = itemView.findViewById(R.id.btn_use_template);
+            
+            // Grid specific
+            templateThumbnail = itemView.findViewById(R.id.template_thumbnail);
+            placeholderContainer = itemView.findViewById(R.id.placeholder_container);
+            premiumOverlay = itemView.findViewById(R.id.premium_overlay);
+            
+            // List specific
+            premiumBadge = itemView.findViewById(R.id.premium_badge);
         }
 
         void bind(CVTemplateDTO template) {
             templateName.setText(template.getName());
+            
+            // Set description
+            String description = template.getDescription();
+            if (description != null && !description.isEmpty()) {
+                templateDescription.setText(description);
+                templateDescription.setVisibility(View.VISIBLE);
+            } else {
+                templateDescription.setVisibility(View.GONE);
+            }
             
             // Set category
             String category = template.getCategory();
@@ -93,18 +121,32 @@ public class CVTemplateAdapter extends RecyclerView.Adapter<CVTemplateAdapter.Vi
                 templateCategory.setText("Professional");
             }
 
-            // Load preview image or show placeholder
-            String previewUrl = template.getPreviewImageUrl();
-            if (previewUrl != null && !previewUrl.isEmpty()) {
-                // For now, just show placeholder since we don't have an image loader
-                // In future, you can add Glide/Picasso/Coil dependency for image loading
-                templatePlaceholder.setVisibility(View.VISIBLE);
-                templatePreview.setVisibility(View.GONE);
-                setIconColor(template.getCategory());
-            } else {
-                templatePlaceholder.setVisibility(View.VISIBLE);
-                templatePreview.setVisibility(View.GONE);
-                // Set different icon colors based on category
+            // Load thumbnail image (grid layout)
+            if (useGridLayout && templateThumbnail != null) {
+                String previewUrl = template.getPreviewImageUrl();
+                if (previewUrl != null && !previewUrl.isEmpty()) {
+                    templateThumbnail.setVisibility(View.VISIBLE);
+                    if (placeholderContainer != null) {
+                        placeholderContainer.setVisibility(View.GONE);
+                    }
+                    
+                    Glide.with(itemView.getContext())
+                            .load(previewUrl)
+                            .transition(DrawableTransitionOptions.withCrossFade())
+                            .centerCrop()
+                            .placeholder(R.drawable.ic_document)
+                            .error(R.drawable.ic_document)
+                            .into(templateThumbnail);
+                } else {
+                    templateThumbnail.setVisibility(View.GONE);
+                    if (placeholderContainer != null) {
+                        placeholderContainer.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+
+            // Set icon color based on category (for list layout or placeholder)
+            if (templateIcon != null) {
                 setIconColor(template.getCategory());
             }
 
@@ -114,35 +156,29 @@ public class CVTemplateAdapter extends RecyclerView.Adapter<CVTemplateAdapter.Vi
             boolean isPremium = isPremiumValue != null && isPremiumValue;
             boolean isUnlocked = isUnlockedValue != null && isUnlockedValue;
             
-            if (isPremium) {
-                premiumBadge.setVisibility(View.VISIBLE);
-                
-                if (!isUnlocked) {
-                    // Show locked state
-                    lockedOverlay.setVisibility(View.VISIBLE);
-                    creditContainer.setVisibility(View.VISIBLE);
-                    creditCost.setText(template.getCreditCost() + " Credits");
-                    btnUseTemplate.setText("Unlock");
-                    btnUseTemplate.setOnClickListener(v -> {
-                        if (listener != null) {
-                            listener.onUnlockTemplate(template);
-                        }
-                    });
-                } else {
-                    // Premium but unlocked
-                    lockedOverlay.setVisibility(View.GONE);
-                    creditContainer.setVisibility(View.GONE);
-                    btnUseTemplate.setText("Use");
-                    btnUseTemplate.setOnClickListener(v -> {
-                        if (listener != null) {
-                            listener.onUseTemplate(template);
-                        }
-                    });
-                }
+            // Grid layout premium badge
+            if (premiumOverlay != null) {
+                premiumOverlay.setVisibility(isPremium ? View.VISIBLE : View.GONE);
+            }
+            
+            // List layout premium badge
+            if (premiumBadge != null) {
+                premiumBadge.setVisibility(isPremium ? View.VISIBLE : View.GONE);
+            }
+            
+            if (isPremium && !isUnlocked) {
+                // Show locked state
+                creditContainer.setVisibility(View.VISIBLE);
+                Integer cost = template.getCreditCost();
+                creditCost.setText((cost != null ? cost : 0) + " Credits");
+                btnUseTemplate.setText("Unlock");
+                btnUseTemplate.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onUnlockTemplate(template);
+                    }
+                });
             } else {
-                // Free template
-                premiumBadge.setVisibility(View.GONE);
-                lockedOverlay.setVisibility(View.GONE);
+                // Free or unlocked template
                 creditContainer.setVisibility(View.GONE);
                 btnUseTemplate.setText("Use");
                 btnUseTemplate.setOnClickListener(v -> {
@@ -167,6 +203,8 @@ public class CVTemplateAdapter extends RecyclerView.Adapter<CVTemplateAdapter.Vi
         }
 
         private void setIconColor(String category) {
+            if (templateIcon == null) return;
+            
             int color;
             if (category == null) {
                 color = itemView.getContext().getResources().getColor(R.color.primary, null);

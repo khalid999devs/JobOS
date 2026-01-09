@@ -39,20 +39,52 @@ public class ApiService {
 
     private final OkHttpClient client;
     private final ObjectMapper objectMapper;
+    private AuthInterceptor authInterceptor;
+    private static ApiService instance;
+    private android.content.Context context;
 
     public ApiService() {
+        this(null);
+    }
+
+    public ApiService(android.content.Context context) {
+        this.context = context;
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        client = new OkHttpClient.Builder()
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
-                .addInterceptor(logging)
-                .build();
+                .addInterceptor(logging);
+
+        // Add auth interceptor for automatic token refresh on 401
+        if (context != null) {
+            authInterceptor = new AuthInterceptor(context);
+            builder.addInterceptor(authInterceptor);
+        }
+
+        client = builder.build();
 
         objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    public static ApiService getInstance(android.content.Context context) {
+        if (instance == null) {
+            synchronized (ApiService.class) {
+                if (instance == null) {
+                    instance = new ApiService(context.getApplicationContext());
+                }
+            }
+        }
+        return instance;
+    }
+
+    public void setAuthEventListener(AuthInterceptor.AuthEventListener listener) {
+        if (authInterceptor != null) {
+            authInterceptor.setAuthEventListener(listener);
+        }
     }
 
     public void login(LoginRequest request, ApiCallback<AuthResponse> callback) {
@@ -719,6 +751,38 @@ public class ApiService {
         executeAsyncString(httpRequest, callback);
     }
 
+    /**
+     * Update FCM token - used by FirebaseMessagingService
+     */
+    public void updateFcmToken(String token, String fcmToken, ApiCallback<Void> callback) {
+        Map<String, String> body = new HashMap<>();
+        body.put("fcmToken", fcmToken);
+        String json = toJson(body);
+
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/notifications/fcm-token")
+                .header("Authorization", "Bearer " + token)
+                .post(RequestBody.create(json, JSON))
+                .build();
+
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(null);
+                } else {
+                    callback.onError("Failed: " + response.code());
+                }
+                response.close();
+            }
+        });
+    }
+
     public void changePassword(String token, Map<String, String> passwordData, ApiCallback<String> callback) {
         String json = toJson(passwordData);
         Request httpRequest = new Request.Builder()
@@ -814,15 +878,25 @@ public class ApiService {
                 String body = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
                     try {
-                        Map<String, Object> apiResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
-                        Object resultObj = apiResponse.get("result");
-                        if (resultObj != null) {
-                            String resultJson = objectMapper.writeValueAsString(resultObj);
-                            T result = objectMapper.readValue(resultJson, typeRef);
-                            callback.onSuccess(result);
-                        } else {
+                        // Check if response is a direct array or an object with "result" field
+                        String trimmedBody = body.trim();
+                        if (trimmedBody.startsWith("[")) {
+                            // Direct array response
                             T result = objectMapper.readValue(body, typeRef);
                             callback.onSuccess(result);
+                        } else {
+                            // Object response - try to get "result" field
+                            Map<String, Object> apiResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                            Object resultObj = apiResponse.get("result");
+                            if (resultObj != null) {
+                                String resultJson = objectMapper.writeValueAsString(resultObj);
+                                T result = objectMapper.readValue(resultJson, typeRef);
+                                callback.onSuccess(result);
+                            } else {
+                                // No "result" field, try parsing as the expected type directly
+                                T result = objectMapper.readValue(body, typeRef);
+                                callback.onSuccess(result);
+                            }
                         }
                     } catch (Exception e) {
                         callback.onError("Parse error: " + e.getMessage());

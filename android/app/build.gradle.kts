@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.jackson.databind)
+    implementation(libs.glide)
     
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.database)

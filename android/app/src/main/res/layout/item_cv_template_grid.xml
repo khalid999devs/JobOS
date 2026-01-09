@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/spacing_xs"
+    app:cardCornerRadius="@dimen/corner_radius_md"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Template Preview/Thumbnail -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@color/surface_variant">
+
+            <!-- Placeholder icon when no thumbnail -->
+            <LinearLayout
+                android:id="@+id/placeholder_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@color/surface_variant">
+
+                <ImageView
+                    android:id="@+id/template_icon"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_document"
+                    app:tint="@color/on_surface_secondary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="Preview"
+                    android:textColor="@color/on_surface_secondary"
+                    android:textSize="@dimen/text_sm" />
+
+            </LinearLayout>
+
+            <!-- Actual thumbnail image -->
+            <ImageView
+                android:id="@+id/template_thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <!-- Premium Badge Overlay -->
+            <LinearLayout
+                android:id="@+id/premium_overlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/spacing_sm"
+                android:background="@drawable/badge_background_premium"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingVertical="4dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_star"
+                    app:tint="@android:color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Premium"
+                    android:textColor="@android:color/white"
+                    android:textSize="@dimen/text_xs"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- Category Badge -->
+            <TextView
+                android:id="@+id/template_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="@dimen/spacing_sm"
+                android:background="@drawable/badge_background"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingVertical="4dp"
+                android:text="Professional"
+                android:textColor="@color/primary"
+                android:textSize="@dimen/text_xs" />
+
+        </FrameLayout>
+
+        <!-- Template Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_md">
+
+            <TextView
+                android:id="@+id/template_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Template Name"
+                android:textColor="@color/on_surface"
+                android:textSize="@dimen/text_md"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/template_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="Template description goes here"
+                android:textColor="@color/on_surface_secondary"
+                android:textSize="@dimen/text_sm" />
+
+            <!-- Action buttons row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- Credit cost (for locked premium templates) -->
+                <LinearLayout
+                    android:id="@+id/credit_container"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_credit"
+                        app:tint="@color/warning" />
+
+                    <TextView
+                        android:id="@+id/credit_cost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="25 Credits"
+                        android:textColor="@color/warning"
+                        android:textSize="@dimen/text_sm" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_use_template"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Use"
+                    android:textSize="@dimen/text_sm"
+                    app:cornerRadius="@dimen/corner_radius_sm" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

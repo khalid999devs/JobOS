@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_download"
+        android:icon="@drawable/ic_download"
+        android:title="Download PDF"
+        app:iconTint="@color/on_surface"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_edit"
         android:icon="@drawable/ic_edit"
         android:title="Edit"

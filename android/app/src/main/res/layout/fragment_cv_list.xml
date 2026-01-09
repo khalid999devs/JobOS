@@ -14,165 +14,106 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/surface"
-            app:navigationIcon="@drawable/ic_arrow_back"
             app:title="@string/my_cvs"
             app:titleTextColor="@color/on_surface"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge" />
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface"
+            app:tabIndicatorColor="@color/primary"
+            app:tabSelectedTextColor="@color/primary"
+            app:tabTextColor="@color/on_surface_secondary"
+            app:tabMode="fixed"
+            app:tabGravity="fill" />
+
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.core.widget.NestedScrollView
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/cv_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="@dimen/spacing_md"
+                android:clipToPadding="false" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- Templates RecyclerView (shown when Templates tab is selected) -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/templates_swipe_refresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:visibility="gone">
 
-            <LinearLayout
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/templates_list"
                 android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="@dimen/spacing_md"
+                android:clipToPadding="false" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <LinearLayout
+            android:id="@+id/empty_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_xl"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/empty_icon"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_document"
+                android:alpha="0.5"
+                app:tint="@color/on_surface_secondary" />
+
+            <TextView
+                android:id="@+id/empty_title"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_marginTop="@dimen/spacing_lg"
+                android:text="@string/no_cvs"
+                android:textSize="@dimen/text_lg"
+                android:textStyle="bold"
+                android:textColor="@color/on_surface" />
 
-                <!-- My CVs Section -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/spacing_md">
+            <TextView
+                android:id="@+id/empty_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:text="@string/no_cvs_hint"
+                android:textSize="@dimen/text_sm"
+                android:textColor="@color/on_surface_secondary"
+                android:gravity="center" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="My CVs"
-                        android:textSize="@dimen/text_lg"
-                        android:textStyle="bold"
-                        android:textColor="@color/on_surface" />
+        </LinearLayout>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/cv_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_sm"
-                        android:nestedScrollingEnabled="false"
-                        android:clipToPadding="false" />
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
-                    <!-- Empty CV State -->
-                    <LinearLayout
-                        android:id="@+id/empty_container"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="@dimen/spacing_xl"
-                        android:visibility="gone">
-
-                        <ImageView
-                            android:layout_width="80dp"
-                            android:layout_height="80dp"
-                            android:src="@drawable/ic_document"
-                            android:alpha="0.5"
-                            app:tint="@color/on_surface_secondary" />
-
-                        <TextView
-                            android:id="@+id/empty_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_md"
-                            android:text="@string/no_cvs"
-                            android:textSize="@dimen/text_md"
-                            android:textStyle="bold"
-                            android:textColor="@color/on_surface" />
-
-                        <TextView
-                            android:id="@+id/empty_message"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_xs"
-                            android:text="@string/no_cvs_hint"
-                            android:textSize="@dimen/text_sm"
-                            android:textColor="@color/on_surface_secondary"
-                            android:gravity="center" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- CV Templates Section -->
-                <LinearLayout
-                    android:id="@+id/templates_section"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/spacing_md"
-                    android:background="@color/surface">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="CV Templates"
-                            android:textSize="@dimen/text_lg"
-                            android:textStyle="bold"
-                            android:textColor="@color/on_surface" />
-
-                        <TextView
-                            android:id="@+id/see_all_templates"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="See All"
-                            android:textSize="@dimen/text_sm"
-                            android:textColor="@color/primary"
-                            android:padding="@dimen/spacing_xs" />
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_xxs"
-                        android:text="Choose from professional templates"
-                        android:textSize="@dimen/text_sm"
-                        android:textColor="@color/on_surface_secondary" />
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/templates_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_md"
-                        android:orientation="horizontal"
-                        android:clipToPadding="false" />
-
-                    <ProgressBar
-                        android:id="@+id/templates_progress"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:visibility="gone" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </androidx.core.widget.NestedScrollView>
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+    </FrameLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_cv"

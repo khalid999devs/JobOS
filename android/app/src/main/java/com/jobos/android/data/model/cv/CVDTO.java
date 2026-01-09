@@ -175,7 +175,15 @@ public class CVDTO {
             Map<String, Object> contentMap = objectMapper.readValue(content, 
                 new TypeReference<Map<String, Object>>() {});
             Object value = contentMap.get(fieldName);
-            return value != null ? value.toString() : null;
+            if (value != null) {
+                return value.toString();
+            }
+            // Also try "placeholder" field (used in templates)
+            value = contentMap.get("placeholder");
+            if (value != null) {
+                return value.toString();
+            }
+            return null;
         } catch (Exception e) {
             // Content might be plain text, not JSON
             return content;
@@ -311,7 +319,29 @@ public class CVDTO {
         // Try to get text content from SUMMARY section
         String summaryContent = getFieldFromSection("SUMMARY", "text");
         if (summaryContent == null) summaryContent = getFieldFromSection("SUMMARY", "summary");
-        if (summaryContent == null) summaryContent = getSectionContent("SUMMARY");
+        if (summaryContent == null) summaryContent = getFieldFromSection("SUMMARY", "placeholder");
+        if (summaryContent == null) {
+            // If all else fails, try to parse the raw content
+            String rawContent = getSectionContent("SUMMARY");
+            if (rawContent != null && rawContent.trim().startsWith("{")) {
+                // Don't return raw JSON - try to extract any text value
+                try {
+                    Map<String, Object> contentMap = objectMapper.readValue(rawContent, 
+                        new TypeReference<Map<String, Object>>() {});
+                    // Try common text fields
+                    for (String field : new String[]{"text", "summary", "placeholder", "content", "value"}) {
+                        Object val = contentMap.get(field);
+                        if (val != null && !val.toString().trim().isEmpty()) {
+                            return val.toString();
+                        }
+                    }
+                } catch (Exception e) {
+                    // Ignore parsing error
+                }
+            } else {
+                return rawContent; // It's plain text
+            }
+        }
         return summaryContent;
     }
 

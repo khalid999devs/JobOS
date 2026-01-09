@@ -5,8 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -16,6 +21,8 @@ import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.cv.CVDTO;
+import com.jobos.android.data.model.cv.CVTemplateDTO;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,8 +46,12 @@ public class CVEditorFragment extends BaseFragment {
     private MaterialButton saveButton;
     private ProgressBar progressBar;
     private TextInputLayout titleLayout;
+    private TextView templateInfoText;
 
     private String cvId = null;
+    private String templateId = null;
+    private String templateName = null;
+    private CVTemplateDTO selectedTemplate = null;
     private ApiService apiService;
     private boolean isEditMode = false;
 
@@ -58,6 +69,8 @@ public class CVEditorFragment extends BaseFragment {
 
         if (getArguments() != null) {
             cvId = getArguments().getString("cvId");
+            templateId = getArguments().getString("templateId");
+            templateName = getArguments().getString("templateName");
         }
         isEditMode = cvId != null && !cvId.isEmpty();
 
@@ -67,6 +80,9 @@ public class CVEditorFragment extends BaseFragment {
         if (isEditMode) {
             toolbar.setTitle("Edit CV");
             loadCVDetails();
+        } else if (templateId != null && !templateId.isEmpty()) {
+            toolbar.setTitle("Create CV");
+            loadTemplateDetails();
         } else {
             toolbar.setTitle("Create CV");
             prefillUserInfo();
@@ -89,6 +105,15 @@ public class CVEditorFragment extends BaseFragment {
         saveButton = view.findViewById(R.id.save_button);
         progressBar = view.findViewById(R.id.progress_bar);
         titleLayout = view.findViewById(R.id.title_layout);
+        templateInfoText = view.findViewById(R.id.template_info);
+        
+        // Show template info if template is selected
+        if (templateName != null && !templateName.isEmpty()) {
+            if (templateInfoText != null) {
+                templateInfoText.setVisibility(View.VISIBLE);
+                templateInfoText.setText("Template: " + templateName);
+            }
+        }
     }
 
     private void setupClickListeners() {
@@ -105,6 +130,121 @@ public class CVEditorFragment extends BaseFragment {
         String userEmail = sessionManager.getUserEmail();
         if (userName != null) fullNameInput.setText(userName);
         if (userEmail != null) emailInput.setText(userEmail);
+    }
+
+    private void loadTemplateDetails() {
+        if (templateId == null) {
+            prefillUserInfo();
+            return;
+        }
+
+        showLoading(true);
+        apiService.getCVTemplateById(sessionManager.getAccessToken(), templateId,
+            new ApiCallback<CVTemplateDTO>() {
+                @Override
+                public void onSuccess(CVTemplateDTO result) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        selectedTemplate = result;
+                        prefillUserInfo();
+                        applyTemplateConfig(result);
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        prefillUserInfo();
+                        showToast("Using default template settings");
+                    });
+                }
+            });
+    }
+
+    private void applyTemplateConfig(CVTemplateDTO template) {
+        if (template == null) return;
+
+        // Update template info display
+        if (templateInfoText != null && template.getName() != null) {
+            templateInfoText.setVisibility(View.VISIBLE);
+            templateInfoText.setText("Template: " + template.getName() + 
+                (template.getCategory() != null ? " (" + template.getCategory() + ")" : ""));
+        }
+
+        // Parse sectionsConfig if available to show/hide fields
+        String sectionsConfig = template.getSectionsConfig();
+        if (sectionsConfig != null && !sectionsConfig.isEmpty()) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                List<Map<String, Object>> sections = mapper.readValue(sectionsConfig, 
+                    new TypeReference<List<Map<String, Object>>>() {});
+                
+                // Configure form based on template sections
+                configureSectionsFromTemplate(sections);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Set default title based on template
+        if (titleInput.getText().toString().isEmpty() && template.getName() != null) {
+            String userName = sessionManager.getUserName();
+            if (userName != null) {
+                titleInput.setText(userName + "'s " + template.getName() + " CV");
+            }
+        }
+    }
+
+    private void configureSectionsFromTemplate(List<Map<String, Object>> sections) {
+        // This method can be expanded to show/hide form sections based on template config
+        // For now, it sets hints based on the template structure
+        for (Map<String, Object> section : sections) {
+            String type = (String) section.get("type");
+            String label = (String) section.get("label");
+            Boolean required = (Boolean) section.get("required");
+            
+            if (type == null) continue;
+            
+            switch (type.toLowerCase()) {
+                case "summary":
+                case "professional_summary":
+                    if (label != null) {
+                        TextInputLayout summaryLayout = (TextInputLayout) summaryInput.getParent().getParent();
+                        if (summaryLayout != null) {
+                            summaryLayout.setHint(label + (Boolean.TRUE.equals(required) ? " *" : ""));
+                        }
+                    }
+                    break;
+                case "skills":
+                    if (label != null) {
+                        TextInputLayout skillsLayout = (TextInputLayout) skillsInput.getParent().getParent();
+                        if (skillsLayout != null) {
+                            skillsLayout.setHint(label + (Boolean.TRUE.equals(required) ? " *" : ""));
+                        }
+                    }
+                    break;
+                case "education":
+                    if (label != null) {
+                        TextInputLayout educationLayout = (TextInputLayout) educationInput.getParent().getParent();
+                        if (educationLayout != null) {
+                            educationLayout.setHint(label + (Boolean.TRUE.equals(required) ? " *" : ""));
+                        }
+                    }
+                    break;
+                case "experience":
+                case "work_experience":
+                    if (label != null) {
+                        TextInputLayout experienceLayout = (TextInputLayout) experienceInput.getParent().getParent();
+                        if (experienceLayout != null) {
+                            experienceLayout.setHint(label + (Boolean.TRUE.equals(required) ? " *" : ""));
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
     private void loadCVDetails() {
@@ -225,6 +365,11 @@ public class CVEditorFragment extends BaseFragment {
         String experience = experienceInput.getText().toString().trim();
         if (!experience.isEmpty()) {
             cvData.put("experience", Arrays.asList(experience.split("\n")));
+        }
+
+        // Include template ID if creating from template
+        if (!isEditMode && templateId != null && !templateId.isEmpty()) {
+            cvData.put("templateId", templateId);
         }
 
         ApiCallback<CVDTO> callback = new ApiCallback<CVDTO>() {

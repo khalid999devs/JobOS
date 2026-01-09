@@ -2,20 +2,20 @@ package com.jobos.android.data.model.notification;
 
 public class NotificationDTO {
 
-    private Long id;
+    private String id;  // UUID from backend
     private String notificationType;
     private String title;
     private String message;
     private String actionUrl;
     private Boolean isRead;
     private String createdAt;
-    private Long referenceId;
+    private String referenceId;  // Also UUID
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -79,11 +79,11 @@ public class NotificationDTO {
         this.createdAt = createdAt;
     }
 
-    public Long getReferenceId() {
+    public String getReferenceId() {
         return referenceId;
     }
 
-    public void setReferenceId(Long referenceId) {
+    public void setReferenceId(String referenceId) {
         this.referenceId = referenceId;
     }
 }

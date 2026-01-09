@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.jobos.android.R;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
@@ -29,13 +31,15 @@ import java.util.List;
 public class CVListFragment extends BaseFragment implements CVAdapter.OnCVActionListener, CVTemplateAdapter.OnTemplateActionListener {
 
     private MaterialToolbar toolbar;
+    private TabLayout tabLayout;
     private SwipeRefreshLayout swipeRefresh;
+    private SwipeRefreshLayout templatesSwipeRefresh;
     private RecyclerView cvList;
     private RecyclerView templatesList;
     private LinearLayout emptyContainer;
-    private LinearLayout templatesSection;
-    private ProgressBar templatesProgress;
-    private TextView seeAllTemplates;
+    private ImageView emptyIcon;
+    private TextView emptyTitle;
+    private TextView emptyMessage;
     private FloatingActionButton fabAddCv;
     private ProgressBar progressBar;
 
@@ -44,6 +48,8 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     private ApiService apiService;
     private final List<CVDTO> cvs = new ArrayList<>();
     private final List<CVTemplateDTO> templates = new ArrayList<>();
+    
+    private int currentTab = 0; // 0 = My CVs, 1 = Templates
 
     @Nullable
     @Override
@@ -55,26 +61,63 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         apiService = new ApiService();
-        hideBottomNav();
+        showBottomNav(); // Keep bottom nav visible - this is a main tab
         initViews(view);
+        setupTabs();
         setupRecyclerView();
         setupTemplatesRecyclerView();
         setupClickListeners();
+        updateTabVisibility(); // Set initial visibility
         loadCVs();
         loadTemplates();
     }
 
     private void initViews(View view) {
         toolbar = view.findViewById(R.id.toolbar);
+        tabLayout = view.findViewById(R.id.tab_layout);
         swipeRefresh = view.findViewById(R.id.swipe_refresh);
+        templatesSwipeRefresh = view.findViewById(R.id.templates_swipe_refresh);
         cvList = view.findViewById(R.id.cv_list);
         templatesList = view.findViewById(R.id.templates_list);
         emptyContainer = view.findViewById(R.id.empty_container);
-        templatesSection = view.findViewById(R.id.templates_section);
-        templatesProgress = view.findViewById(R.id.templates_progress);
-        seeAllTemplates = view.findViewById(R.id.see_all_templates);
+        emptyIcon = view.findViewById(R.id.empty_icon);
+        emptyTitle = view.findViewById(R.id.empty_title);
+        emptyMessage = view.findViewById(R.id.empty_message);
         fabAddCv = view.findViewById(R.id.fab_add_cv);
         progressBar = view.findViewById(R.id.progress_bar);
+    }
+
+    private void setupTabs() {
+        tabLayout.addTab(tabLayout.newTab().setText("My CVs"));
+        tabLayout.addTab(tabLayout.newTab().setText("Templates"));
+        
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                currentTab = tab.getPosition();
+                updateTabVisibility();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
+    }
+
+    private void updateTabVisibility() {
+        if (currentTab == 0) {
+            // My CVs tab
+            swipeRefresh.setVisibility(View.VISIBLE);
+            templatesSwipeRefresh.setVisibility(View.GONE);
+            updateEmptyState();
+        } else {
+            // Templates tab
+            swipeRefresh.setVisibility(View.GONE);
+            templatesSwipeRefresh.setVisibility(View.VISIBLE);
+            updateTemplatesEmptyState();
+        }
     }
 
     private void setupRecyclerView() {
@@ -85,22 +128,26 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
 
     private void setupTemplatesRecyclerView() {
         templateAdapter = new CVTemplateAdapter(this);
-        templatesList.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        // Use GridLayoutManager for template thumbnails (2 columns)
+        templatesList.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2));
         templatesList.setAdapter(templateAdapter);
     }
 
     private void setupClickListeners() {
-        toolbar.setNavigationOnClickListener(v -> navController.popBackStack());
-        fabAddCv.setOnClickListener(v -> navController.navigate(R.id.cvEditorFragment));
-        swipeRefresh.setOnRefreshListener(() -> {
-            loadCVs();
-            loadTemplates();
+        fabAddCv.setOnClickListener(v -> {
+            if (currentTab == 1 && !templates.isEmpty()) {
+                // On templates tab, show template selection
+                showTemplateSelectionDialog();
+            } else {
+                // On My CVs tab or no templates, go to editor
+                navController.navigate(R.id.cvEditorFragment);
+            }
         });
-        if (seeAllTemplates != null) {
-            seeAllTemplates.setOnClickListener(v -> {
-                // Navigate to templates list or show all templates
-                showToast("All templates");
-            });
+        
+        swipeRefresh.setOnRefreshListener(this::loadCVs);
+        
+        if (templatesSwipeRefresh != null) {
+            templatesSwipeRefresh.setOnRefreshListener(this::loadTemplates);
         }
     }
 
@@ -117,9 +164,13 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
                         showLoading(false);
                         swipeRefresh.setRefreshing(false);
                         cvs.clear();
-                        cvs.addAll(result);
+                        if (result != null) {
+                            cvs.addAll(result);
+                        }
                         adapter.notifyDataSetChanged();
-                        updateEmptyState();
+                        if (currentTab == 0) {
+                            updateEmptyState();
+                        }
                     });
                 }
 
@@ -130,7 +181,54 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
                         showLoading(false);
                         swipeRefresh.setRefreshing(false);
                         showToast("Error loading CVs: " + error);
-                        updateEmptyState();
+                        if (currentTab == 0) {
+                            updateEmptyState();
+                        }
+                    });
+                }
+            });
+    }
+
+    private void loadTemplates() {
+        // Only show loading indicator if we're on the Templates tab
+        if (currentTab == 1) {
+            if (templatesSwipeRefresh != null && !templatesSwipeRefresh.isRefreshing()) {
+                showLoading(true);
+            }
+        }
+        apiService.getCVTemplates(sessionManager.getAccessToken(), null,
+            new ApiCallback<List<CVTemplateDTO>>() {
+                @Override
+                public void onSuccess(List<CVTemplateDTO> result) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        if (templatesSwipeRefresh != null) {
+                            templatesSwipeRefresh.setRefreshing(false);
+                        }
+                        templates.clear();
+                        if (result != null) {
+                            templates.addAll(result);
+                        }
+                        templateAdapter.setTemplates(templates);
+                        if (currentTab == 1) {
+                            updateTemplatesEmptyState();
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        if (templatesSwipeRefresh != null) {
+                            templatesSwipeRefresh.setRefreshing(false);
+                        }
+                        showToast("Error loading templates: " + error);
+                        if (currentTab == 1) {
+                            updateTemplatesEmptyState();
+                        }
                     });
                 }
             });
@@ -140,6 +238,24 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
         boolean isEmpty = cvs.isEmpty();
         emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         cvList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        
+        if (isEmpty) {
+            emptyIcon.setImageResource(R.drawable.ic_document);
+            emptyTitle.setText(R.string.no_cvs);
+            emptyMessage.setText(R.string.no_cvs_hint);
+        }
+    }
+
+    private void updateTemplatesEmptyState() {
+        boolean isEmpty = templates.isEmpty();
+        emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        templatesList.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        
+        if (isEmpty) {
+            emptyIcon.setImageResource(R.drawable.ic_document);
+            emptyTitle.setText("No Templates Available");
+            emptyMessage.setText("Check your connection and pull to refresh");
+        }
     }
 
     private void showLoading(boolean show) {
@@ -221,46 +337,6 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
             });
     }
 
-    private void loadTemplates() {
-        if (templatesProgress != null) {
-            templatesProgress.setVisibility(View.VISIBLE);
-        }
-        apiService.getCVTemplates(sessionManager.getAccessToken(), null,
-            new ApiCallback<List<CVTemplateDTO>>() {
-                @Override
-                public void onSuccess(List<CVTemplateDTO> result) {
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> {
-                        if (templatesProgress != null) {
-                            templatesProgress.setVisibility(View.GONE);
-                        }
-                        templates.clear();
-                        if (result != null) {
-                            templates.addAll(result);
-                        }
-                        templateAdapter.setTemplates(templates);
-                        if (templatesSection != null) {
-                            templatesSection.setVisibility(templates.isEmpty() ? View.GONE : View.VISIBLE);
-                        }
-                    });
-                }
-
-                @Override
-                public void onError(String error) {
-                    if (!isAdded()) return;
-                    requireActivity().runOnUiThread(() -> {
-                        if (templatesProgress != null) {
-                            templatesProgress.setVisibility(View.GONE);
-                        }
-                        // Don't show error for templates, just hide section
-                        if (templatesSection != null) {
-                            templatesSection.setVisibility(View.GONE);
-                        }
-                    });
-                }
-            });
-    }
-
     @Override
     public void onUseTemplate(CVTemplateDTO template) {
         // Navigate to CV editor with template
@@ -272,10 +348,62 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
 
     @Override
     public void onUnlockTemplate(CVTemplateDTO template) {
+        Integer cost = template.getCreditCost();
         new AlertDialog.Builder(requireContext())
             .setTitle("Unlock Template")
-            .setMessage("Unlock \"" + template.getName() + "\" for " + template.getCreditCost() + " credits?")
+            .setMessage("Unlock \"" + template.getName() + "\" for " + (cost != null ? cost : 0) + " credits?")
             .setPositiveButton("Unlock", (dialog, which) -> unlockTemplate(template))
+            .setNegativeButton("Cancel", null)
+            .show();
+    }
+
+    private void showTemplateSelectionDialog() {
+        if (templates.isEmpty()) {
+            showToast("No templates available");
+            return;
+        }
+
+        // Create arrays for dialog
+        String[] templateNames = new String[templates.size() + 1];
+        templateNames[0] = "Start from scratch";
+        for (int i = 0; i < templates.size(); i++) {
+            CVTemplateDTO template = templates.get(i);
+            String name = template.getName();
+            Boolean isPremium = template.getIsPremium();
+            Boolean isUnlocked = template.getIsUnlocked();
+            if (isPremium != null && isPremium) {
+                if (isUnlocked != null && isUnlocked) {
+                    name += " ✓";
+                } else {
+                    Integer cost = template.getCreditCost();
+                    name += " (🔒 " + (cost != null ? cost : 0) + " credits)";
+                }
+            }
+            templateNames[i + 1] = name;
+        }
+
+        new AlertDialog.Builder(requireContext())
+            .setTitle("Choose a Template")
+            .setItems(templateNames, (dialog, which) -> {
+                if (which == 0) {
+                    // Start from scratch
+                    navController.navigate(R.id.cvEditorFragment);
+                } else {
+                    // Template selected
+                    CVTemplateDTO selectedTemplate = templates.get(which - 1);
+                    
+                    // Check if locked
+                    Boolean isPremium = selectedTemplate.getIsPremium();
+                    Boolean isUnlocked = selectedTemplate.getIsUnlocked();
+                    if (isPremium != null && isPremium && (isUnlocked == null || !isUnlocked)) {
+                        // Show unlock dialog
+                        onUnlockTemplate(selectedTemplate);
+                    } else {
+                        // Use template
+                        onUseTemplate(selectedTemplate);
+                    }
+                }
+            })
             .setNegativeButton("Cancel", null)
             .show();
     }

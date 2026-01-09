@@ -1,22 +1,31 @@
 package com.jobos.android.ui.notifications;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.tabs.TabLayout;
 import com.jobos.android.R;
 import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
+import com.jobos.android.service.JobOSFirebaseMessagingService;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.notification.NotificationDTO;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +40,17 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
     private ApiService apiService;
     private List<NotificationDTO> allNotifications = new ArrayList<>();
     private String currentFilter = "ALL";
+    
+    // Broadcast receiver for real-time notifications
+    private BroadcastReceiver notificationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (JobOSFirebaseMessagingService.ACTION_NEW_NOTIFICATION.equals(intent.getAction())) {
+                // Refresh notifications when new notification arrives
+                loadNotifications();
+            }
+        }
+    };
 
     @Nullable
     @Override
@@ -48,6 +68,23 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
         setupTabs();
         setupRecyclerView();
         loadNotifications();
+        
+        // Register for Firebase notification broadcasts
+        IntentFilter filter = new IntentFilter(JobOSFirebaseMessagingService.ACTION_NEW_NOTIFICATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireContext().registerReceiver(notificationReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            requireContext().registerReceiver(notificationReceiver, filter);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Unregister broadcast receiver
+        try {
+            requireContext().unregisterReceiver(notificationReceiver);
+        } catch (Exception ignored) {}
     }
 
     private void initViews(View view) {
@@ -143,7 +180,7 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
 
         apiService.markNotificationRead(
             sessionManager.getAccessToken(),
-            String.valueOf(notification.getId()),
+            notification.getId(),
             new ApiCallback<String>() {
                 @Override
                 public void onSuccess(String result) {
@@ -157,19 +194,18 @@ public class NotificationsFragment extends BaseFragment implements NotificationA
 
     private void handleNotificationAction(NotificationDTO notification) {
         String type = notification.getType();
-        Long referenceId = notification.getReferenceId();
+        String referenceId = notification.getReferenceId();
         
-        if (type == null || referenceId == null) return;
+        if (type == null || referenceId == null || referenceId.isEmpty()) return;
 
         Bundle args = new Bundle();
-        String refIdStr = String.valueOf(referenceId);
         switch (type) {
             case "APPLICATION_UPDATE":
             case "NEW_APPLICATION":
-                args.putString("applicationId", refIdStr);
+                args.putString("applicationId", referenceId);
                 break;
             case "JOB_MATCH":
-                args.putString("jobId", refIdStr);
+                args.putString("jobId", referenceId);
                 navController.navigate(R.id.jobDetailFragment, args);
                 break;
         }
