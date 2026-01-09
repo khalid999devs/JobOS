@@ -298,18 +298,15 @@ public class CVPreviewFragment extends BaseFragment {
         }
 
         try {
-            // Create PDF document
             PdfDocument document = new PdfDocument();
             
-            // A4 page dimensions in points (72 points per inch)
-            int pageWidth = 595; // A4 width
-            int pageHeight = 842; // A4 height
+            int pageWidth = 595;
+            int pageHeight = 842;
             
             PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create();
             PdfDocument.Page page = document.startPage(pageInfo);
             Canvas canvas = page.getCanvas();
             
-            // Set up paints
             Paint titlePaint = new Paint();
             titlePaint.setColor(Color.parseColor("#1a73e8"));
             titlePaint.setTextSize(24);
@@ -333,14 +330,12 @@ public class CVPreviewFragment extends BaseFragment {
             int lineSpacing = 20;
             int sectionSpacing = 30;
             
-            // Name
             String fullNameText = currentCV.getFullName();
             if (fullNameText != null) {
                 canvas.drawText(fullNameText, margin, yPos, titlePaint);
                 yPos += lineSpacing + 10;
             }
             
-            // Contact info line
             StringBuilder contactLine = new StringBuilder();
             if (currentCV.getEmail() != null) contactLine.append(currentCV.getEmail());
             if (currentCV.getPhone() != null && !currentCV.getPhone().isEmpty()) {
@@ -354,25 +349,20 @@ public class CVPreviewFragment extends BaseFragment {
             canvas.drawText(contactLine.toString(), margin, yPos, contactPaint);
             yPos += sectionSpacing;
             
-            // Draw horizontal line
             Paint linePaint = new Paint();
             linePaint.setColor(Color.parseColor("#dddddd"));
             linePaint.setStrokeWidth(1);
             canvas.drawLine(margin, yPos, pageWidth - margin, yPos, linePaint);
             yPos += sectionSpacing;
             
-            // Summary section
             String summaryText = currentCV.getSummary();
             if (summaryText != null && !summaryText.isEmpty()) {
                 canvas.drawText("PROFESSIONAL SUMMARY", margin, yPos, headerPaint);
                 yPos += lineSpacing;
-                
-                // Wrap text
                 yPos = drawWrappedText(canvas, summaryText, margin, yPos, pageWidth - 2 * margin, textPaint);
                 yPos += sectionSpacing;
             }
             
-            // Skills section
             List<String> skills = currentCV.getSkills();
             if (skills != null && !skills.isEmpty()) {
                 canvas.drawText("SKILLS", margin, yPos, headerPaint);
@@ -381,7 +371,6 @@ public class CVPreviewFragment extends BaseFragment {
                 yPos += sectionSpacing;
             }
             
-            // Experience section
             List<String> experience = currentCV.getExperience();
             if (experience != null && !experience.isEmpty()) {
                 canvas.drawText("WORK EXPERIENCE", margin, yPos, headerPaint);
@@ -389,12 +378,11 @@ public class CVPreviewFragment extends BaseFragment {
                 for (String exp : experience) {
                     canvas.drawText("• " + exp, margin + 10, yPos, textPaint);
                     yPos += lineSpacing;
-                    if (yPos > pageHeight - margin) break; // Simple page overflow check
+                    if (yPos > pageHeight - margin) break;
                 }
                 yPos += sectionSpacing - lineSpacing;
             }
             
-            // Education section
             List<String> education = currentCV.getEducation();
             if (education != null && !education.isEmpty()) {
                 canvas.drawText("EDUCATION", margin, yPos, headerPaint);
@@ -407,7 +395,6 @@ public class CVPreviewFragment extends BaseFragment {
                 yPos += sectionSpacing - lineSpacing;
             }
             
-            // Links section
             String linkedin = currentCV.getLinkedinUrl();
             String portfolio = currentCV.getPortfolioUrl();
             if ((linkedin != null && !linkedin.isEmpty()) || (portfolio != null && !portfolio.isEmpty())) {
@@ -424,13 +411,13 @@ public class CVPreviewFragment extends BaseFragment {
             
             document.finishPage(page);
             
-            // Save to file
             String fileName = currentCV.getTitle() != null ? 
                 currentCV.getTitle().replaceAll("[^a-zA-Z0-9\\s]", "").replace(" ", "_") + ".pdf" : 
                 "cv_" + System.currentTimeMillis() + ".pdf";
             
+            Uri savedUri = null;
+            
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Use MediaStore for Android 10+
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
                 values.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
@@ -442,25 +429,36 @@ public class CVPreviewFragment extends BaseFragment {
                     if (outputStream != null) {
                         document.writeTo(outputStream);
                         outputStream.close();
-                        showToast("PDF saved to Downloads: " + fileName);
+                        savedUri = uri;
                     }
                 }
             } else {
-                // Legacy approach for older Android versions
                 File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 File file = new File(downloadsDir, fileName);
                 FileOutputStream fos = new FileOutputStream(file);
                 document.writeTo(fos);
                 fos.close();
-                showToast("PDF saved to Downloads: " + fileName);
+                savedUri = Uri.fromFile(file);
             }
             
             document.close();
             
+            if (savedUri != null) {
+                openPdfPreview(savedUri, fileName);
+            } else {
+                showToast("Error saving PDF");
+            }
+            
         } catch (Exception e) {
-            e.printStackTrace();
             showToast("Error creating PDF: " + e.getMessage());
         }
+    }
+    
+    private void openPdfPreview(Uri pdfUri, String fileName) {
+        Intent intent = new Intent(requireContext(), PdfPreviewActivity.class);
+        intent.putExtra("pdfUri", pdfUri);
+        intent.putExtra("pdfFileName", fileName);
+        startActivity(intent);
     }
     
     private int drawWrappedText(Canvas canvas, String text, int x, int y, int maxWidth, Paint paint) {
@@ -481,7 +479,6 @@ public class CVPreviewFragment extends BaseFragment {
             }
         }
         
-        // Draw remaining text
         if (line.length() > 0) {
             canvas.drawText(line.toString(), x, y, paint);
             y += lineSpacing;

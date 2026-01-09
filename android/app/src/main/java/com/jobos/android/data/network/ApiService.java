@@ -58,7 +58,6 @@ public class ApiService {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor(logging);
 
-        // Add auth interceptor for automatic token refresh on 401
         if (context != null) {
             authInterceptor = new AuthInterceptor(context);
             builder.addInterceptor(authInterceptor);
@@ -181,7 +180,6 @@ public class ApiService {
         
         Request httpRequest = builder.build();
 
-        // Backend returns JobSearchResponse with jobs list
         client.newCall(httpRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -193,7 +191,6 @@ public class ApiService {
                 String body = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
                     try {
-                        // Parse JobSearchResponse and extract jobs list
                         Map<String, Object> searchResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
                         Object jobsObj = searchResponse.get("jobs");
                         if (jobsObj != null) {
@@ -213,7 +210,6 @@ public class ApiService {
         });
     }
     
-    // Backwards compatibility overload
     public void searchJobs(JobSearchRequest request, ApiCallback<List<JobDTO>> callback) {
         searchJobs(null, request, callback);
     }
@@ -318,7 +314,6 @@ public class ApiService {
                 .get()
                 .build();
 
-        // Backend returns paginated response with jobs list
         client.newCall(httpRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -418,7 +413,6 @@ public class ApiService {
                 .get()
                 .build();
 
-        // Backend returns paginated response with applicants list
         client.newCall(httpRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -646,7 +640,6 @@ public class ApiService {
                 .get()
                 .build();
 
-        // Backend returns ApiResponse<Page<NotificationResponse>>
         client.newCall(httpRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -878,14 +871,11 @@ public class ApiService {
                 String body = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
                     try {
-                        // Check if response is a direct array or an object with "result" field
                         String trimmedBody = body.trim();
                         if (trimmedBody.startsWith("[")) {
-                            // Direct array response
                             T result = objectMapper.readValue(body, typeRef);
                             callback.onSuccess(result);
                         } else {
-                            // Object response - try to get "result" field
                             Map<String, Object> apiResponse = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
                             Object resultObj = apiResponse.get("result");
                             if (resultObj != null) {
@@ -893,7 +883,6 @@ public class ApiService {
                                 T result = objectMapper.readValue(resultJson, typeRef);
                                 callback.onSuccess(result);
                             } else {
-                                // No "result" field, try parsing as the expected type directly
                                 T result = objectMapper.readValue(body, typeRef);
                                 callback.onSuccess(result);
                             }
@@ -975,7 +964,6 @@ public class ApiService {
         }
     }
 
-    // CV Template APIs
     public void getCVTemplates(String token, String category, ApiCallback<List<com.jobos.android.data.model.cv.CVTemplateDTO>> callback) {
         String url = BASE_URL + "/api/cv-templates";
         if (category != null && !category.isEmpty()) {

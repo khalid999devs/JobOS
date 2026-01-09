@@ -90,8 +90,9 @@
                 android:textSize="@dimen/text_xs"
                 android:textColor="@color/secondary"
                 android:drawableStart="@drawable/ic_location"
-                android:drawablePadding="@dimen/spacing_xxs"
-                android:drawableTint="@color/secondary" />
+                android:drawablePadding="4dp"
+                android:drawableTint="@color/secondary"
+                android:gravity="center_vertical" />
 
         </LinearLayout>
 

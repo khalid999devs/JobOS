@@ -1,6 +1,8 @@
 package com.jobos.android.ui.cv;
 
 import android.app.AlertDialog;
+import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.jobos.android.R;
@@ -25,6 +30,7 @@ import com.jobos.android.adapter.CVTemplateAdapter;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.cv.CVDTO;
 import com.jobos.android.data.model.cv.CVTemplateDTO;
+import com.jobos.android.ui.cv.PdfPreviewActivity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +55,7 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
     private final List<CVDTO> cvs = new ArrayList<>();
     private final List<CVTemplateDTO> templates = new ArrayList<>();
     
-    private int currentTab = 0; // 0 = My CVs, 1 = Templates
+    private int currentTab = 0;
 
     @Nullable
     @Override
@@ -108,12 +114,10 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
 
     private void updateTabVisibility() {
         if (currentTab == 0) {
-            // My CVs tab
             swipeRefresh.setVisibility(View.VISIBLE);
             templatesSwipeRefresh.setVisibility(View.GONE);
             updateEmptyState();
         } else {
-            // Templates tab
             swipeRefresh.setVisibility(View.GONE);
             templatesSwipeRefresh.setVisibility(View.VISIBLE);
             updateTemplatesEmptyState();
@@ -128,18 +132,32 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
 
     private void setupTemplatesRecyclerView() {
         templateAdapter = new CVTemplateAdapter(this);
-        // Use GridLayoutManager for template thumbnails (2 columns)
-        templatesList.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2));
+        androidx.recyclerview.widget.GridLayoutManager gridLayoutManager = 
+            new androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2);
+        templatesList.setLayoutManager(gridLayoutManager);
+        
+        int spacing = (int) (12 * getResources().getDisplayMetrics().density);
+        templatesList.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, 
+                    @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                int position = parent.getChildAdapterPosition(view);
+                int column = position % 2;
+                outRect.left = column == 0 ? spacing : spacing / 2;
+                outRect.right = column == 0 ? spacing / 2 : spacing;
+                outRect.top = spacing;
+                outRect.bottom = 0;
+            }
+        });
+        
         templatesList.setAdapter(templateAdapter);
     }
 
     private void setupClickListeners() {
         fabAddCv.setOnClickListener(v -> {
             if (currentTab == 1 && !templates.isEmpty()) {
-                // On templates tab, show template selection
                 showTemplateSelectionDialog();
             } else {
-                // On My CVs tab or no templates, go to editor
                 navController.navigate(R.id.cvEditorFragment);
             }
         });
@@ -339,7 +357,6 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
 
     @Override
     public void onUseTemplate(CVTemplateDTO template) {
-        // Navigate to CV editor with template
         Bundle args = new Bundle();
         args.putString("templateId", template.getId());
         args.putString("templateName", template.getName());
@@ -357,13 +374,113 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
             .show();
     }
 
+    @Override
+    public void onPreviewTemplate(CVTemplateDTO template) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_template_preview, null);
+        builder.setView(dialogView);
+        
+        ImageView previewImage = dialogView.findViewById(R.id.preview_image);
+        LinearLayout placeholderContainer = dialogView.findViewById(R.id.placeholder_container);
+        TextView templateName = dialogView.findViewById(R.id.template_name);
+        TextView templateDescription = dialogView.findViewById(R.id.template_description);
+        TextView templateCategory = dialogView.findViewById(R.id.template_category);
+        TextView sectionsCount = dialogView.findViewById(R.id.sections_count);
+        MaterialButton btnClose = dialogView.findViewById(R.id.btn_close);
+        MaterialButton btnUseTemplate = dialogView.findViewById(R.id.btn_use_template);
+        MaterialButton btnViewPdf = dialogView.findViewById(R.id.btn_view_pdf);
+        
+        templateName.setText(template.getName());
+        
+        String description = template.getDescription();
+        if (description != null && !description.isEmpty()) {
+            templateDescription.setText(description);
+            templateDescription.setVisibility(View.VISIBLE);
+        } else {
+            templateDescription.setVisibility(View.GONE);
+        }
+        
+        String category = template.getCategory();
+        if (category != null) {
+            templateCategory.setText(formatCategory(category));
+        } else {
+            templateCategory.setText("Professional");
+        }
+        
+        String sectionsConfig = template.getSectionsConfig();
+        if (sectionsConfig != null && !sectionsConfig.isEmpty()) {
+            try {
+                org.json.JSONArray sections = new org.json.JSONArray(sectionsConfig);
+                sectionsCount.setText(sections.length() + " sections");
+            } catch (Exception e) {
+                sectionsCount.setText("Standard layout");
+            }
+        } else {
+            sectionsCount.setText("Standard layout");
+        }
+        
+        String previewUrl = template.getPreviewImageUrl();
+        if (previewUrl != null && !previewUrl.isEmpty()) {
+            previewImage.setVisibility(View.VISIBLE);
+            placeholderContainer.setVisibility(View.GONE);
+            Glide.with(requireContext())
+                    .load(previewUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .centerInside()
+                    .placeholder(R.drawable.ic_document)
+                    .error(R.drawable.ic_document)
+                    .into(previewImage);
+        } else {
+            previewImage.setVisibility(View.GONE);
+            placeholderContainer.setVisibility(View.VISIBLE);
+        }
+        
+        Boolean isPremium = template.getIsPremium();
+        Boolean isUnlocked = template.getIsUnlocked();
+        boolean locked = isPremium != null && isPremium && (isUnlocked == null || !isUnlocked);
+        
+        if (locked) {
+            Integer cost = template.getCreditCost();
+            btnUseTemplate.setText("Unlock (" + (cost != null ? cost : 0) + ")");
+        } else {
+            btnUseTemplate.setText("Use Template");
+        }
+        
+        AlertDialog dialog = builder.create();
+        
+        btnViewPdf.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), PdfPreviewActivity.class);
+            intent.putExtra("title", template.getName());
+            intent.putExtra("isTemplate", true);
+            intent.putExtra("templateCategory", template.getCategory());
+            startActivity(intent);
+        });
+        
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        btnUseTemplate.setOnClickListener(v -> {
+            dialog.dismiss();
+            if (locked) {
+                onUnlockTemplate(template);
+            } else {
+                onUseTemplate(template);
+            }
+        });
+        
+        dialog.show();
+    }
+
+    private String formatCategory(String category) {
+        if (category == null) return "Professional";
+        String lower = category.toLowerCase();
+        return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
+    }
+
     private void showTemplateSelectionDialog() {
         if (templates.isEmpty()) {
             showToast("No templates available");
             return;
         }
 
-        // Create arrays for dialog
         String[] templateNames = new String[templates.size() + 1];
         templateNames[0] = "Start from scratch";
         for (int i = 0; i < templates.size(); i++) {
@@ -386,20 +503,14 @@ public class CVListFragment extends BaseFragment implements CVAdapter.OnCVAction
             .setTitle("Choose a Template")
             .setItems(templateNames, (dialog, which) -> {
                 if (which == 0) {
-                    // Start from scratch
                     navController.navigate(R.id.cvEditorFragment);
                 } else {
-                    // Template selected
                     CVTemplateDTO selectedTemplate = templates.get(which - 1);
-                    
-                    // Check if locked
                     Boolean isPremium = selectedTemplate.getIsPremium();
                     Boolean isUnlocked = selectedTemplate.getIsUnlocked();
                     if (isPremium != null && isPremium && (isUnlocked == null || !isUnlocked)) {
-                        // Show unlock dialog
                         onUnlockTemplate(selectedTemplate);
                     } else {
-                        // Use template
                         onUseTemplate(selectedTemplate);
                     }
                 }

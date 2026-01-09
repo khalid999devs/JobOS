@@ -50,7 +50,6 @@
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <!-- Templates RecyclerView (shown when Templates tab is selected) -->
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/templates_swipe_refresh"
             android:layout_width="match_parent"

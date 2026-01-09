@@ -28,7 +28,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Firebase Messaging Service -->
+        <activity
+            android:name=".ui.cv.PdfPreviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JobOS" />
+
         <service
             android:name=".service.JobOSFirebaseMessagingService"
             android:exported="false">

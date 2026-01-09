@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/spacing_xs"
-    app:cardCornerRadius="@dimen/corner_radius_md"
-    app:cardElevation="4dp"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
     app:strokeWidth="0dp">
 
     <LinearLayout
@@ -14,13 +13,11 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Template Preview/Thumbnail -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="140dp"
             android:background="@color/surface_variant">
 
-            <!-- Placeholder icon when no thumbnail -->
             <LinearLayout
                 android:id="@+id/placeholder_container"
                 android:layout_width="match_parent"
@@ -31,22 +28,21 @@
 
                 <ImageView
                     android:id="@+id/template_icon"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:src="@drawable/ic_document"
                     app:tint="@color/on_surface_secondary" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:layout_marginTop="4dp"
                     android:text="Preview"
                     android:textColor="@color/on_surface_secondary"
-                    android:textSize="@dimen/text_sm" />
+                    android:textSize="11sp" />
 
             </LinearLayout>
 
-            <!-- Actual thumbnail image -->
             <ImageView
                 android:id="@+id/template_thumbnail"
                 android:layout_width="match_parent"
@@ -54,59 +50,68 @@
                 android:scaleType="centerCrop"
                 android:visibility="gone" />
 
-            <!-- Premium Badge Overlay -->
             <LinearLayout
                 android:id="@+id/premium_overlay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
-                android:layout_margin="@dimen/spacing_sm"
+                android:layout_margin="6dp"
                 android:background="@drawable/badge_background_premium"
                 android:gravity="center"
                 android:orientation="horizontal"
-                android:paddingHorizontal="@dimen/spacing_sm"
-                android:paddingVertical="4dp"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
                 android:visibility="gone">
 
                 <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
                     android:src="@drawable/ic_star"
                     app:tint="@android:color/white" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="2dp"
                     android:text="Premium"
                     android:textColor="@android:color/white"
-                    android:textSize="@dimen/text_xs"
+                    android:textSize="9sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
-            <!-- Category Badge -->
             <TextView
                 android:id="@+id/template_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|start"
-                android:layout_margin="@dimen/spacing_sm"
+                android:layout_margin="6dp"
                 android:background="@drawable/badge_background"
-                android:paddingHorizontal="@dimen/spacing_sm"
-                android:paddingVertical="4dp"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
                 android:text="Professional"
                 android:textColor="@color/primary"
-                android:textSize="@dimen/text_xs" />
+                android:textSize="9sp" />
+
+            <ImageView
+                android:id="@+id/btn_preview"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="6dp"
+                android:background="@drawable/circle_background"
+                android:backgroundTint="@color/surface"
+                android:padding="6dp"
+                android:src="@drawable/ic_visibility"
+                app:tint="@color/primary" />
 
         </FrameLayout>
 
-        <!-- Template Info -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/spacing_md">
+            android:padding="10dp">
 
             <TextView
                 android:id="@+id/template_name"
@@ -116,41 +121,38 @@
                 android:maxLines="1"
                 android:text="Template Name"
                 android:textColor="@color/on_surface"
-                android:textSize="@dimen/text_md"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/template_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="2dp"
                 android:ellipsize="end"
-                android:maxLines="2"
-                android:text="Template description goes here"
+                android:maxLines="1"
+                android:text="Template description"
                 android:textColor="@color/on_surface_secondary"
-                android:textSize="@dimen/text_sm" />
+                android:textSize="11sp" />
 
-            <!-- Action buttons row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_md"
+                android:layout_marginTop="8dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <!-- Credit cost (for locked premium templates) -->
                 <LinearLayout
                     android:id="@+id/credit_container"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:visibility="gone">
 
                     <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
                         android:src="@drawable/ic_credit"
                         app:tint="@color/warning" />
 
@@ -158,10 +160,10 @@
                         android:id="@+id/credit_cost"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:text="25 Credits"
+                        android:layout_marginStart="2dp"
+                        android:text="25"
                         android:textColor="@color/warning"
-                        android:textSize="@dimen/text_sm" />
+                        android:textSize="11sp" />
 
                 </LinearLayout>
 
@@ -172,11 +174,16 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_use_template"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="28dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="14dp"
                     android:text="Use"
-                    android:textSize="@dimen/text_sm"
-                    app:cornerRadius="@dimen/corner_radius_sm" />
+                    android:textSize="10sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="14dp" />
 
             </LinearLayout>
 
