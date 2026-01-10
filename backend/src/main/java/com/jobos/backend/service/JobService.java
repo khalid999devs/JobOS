@@ -156,8 +156,11 @@ public class JobService {
         JobPost jobPost = jobPostRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job not found"));
 
-        jobPost.incrementViewCount();
-        jobPostRepository.save(jobPost);
+        boolean isPoster = userId != null && jobPost.getPoster().getId().equals(userId);
+        if (!isPoster) {
+            jobPost.incrementViewCount();
+            jobPostRepository.save(jobPost);
+        }
 
         Boolean isSaved = null;
         Boolean hasApplied = null;

@@ -22,7 +22,7 @@
         <!-- Basic Information -->
         <VBox styleClass="card" spacing="16">
             <padding><Insets topRightBottomLeft="20"/></padding>
-            <Label text="Basic Information" styleClass="h4"/>
+            <Label text="Basic Information" styleClass="h4" style="-fx-font-weight: bold;"/>
             
             <VBox spacing="8">
                 <Label text="Job Title *" styleClass="label-secondary"/>
@@ -59,7 +59,7 @@
         <!-- Compensation -->
         <VBox styleClass="card" spacing="16">
             <padding><Insets topRightBottomLeft="20"/></padding>
-            <Label text="Compensation" styleClass="h4"/>
+            <Label text="Compensation" styleClass="h4" style="-fx-font-weight: bold;"/>
             
             <HBox spacing="16">
                 <VBox spacing="8" HBox.hgrow="ALWAYS">
@@ -80,7 +80,7 @@
         <!-- Skills -->
         <VBox styleClass="card" spacing="16">
             <padding><Insets topRightBottomLeft="20"/></padding>
-            <Label text="Required Skills *" styleClass="h4"/>
+            <Label text="Required Skills *" styleClass="h4" style="-fx-font-weight: bold;"/>
             
             <HBox spacing="8">
                 <TextField fx:id="skillInput" promptText="Type a skill and press Enter" HBox.hgrow="ALWAYS"/>
@@ -93,33 +93,33 @@
         <!-- Description -->
         <VBox styleClass="card" spacing="16">
             <padding><Insets topRightBottomLeft="20"/></padding>
-            <Label text="Job Description *" styleClass="h4"/>
+            <Label text="Job Description *" styleClass="h4" style="-fx-font-weight: bold;"/>
             
             <VBox spacing="8">
                 <Label text="Description" styleClass="label-secondary"/>
-                <TextArea fx:id="descriptionArea" promptText="Describe the role..." prefRowCount="5" wrapText="true"/>
+                <TextArea fx:id="descriptionArea" promptText="Describe the role..." prefRowCount="8" wrapText="true"/>
             </VBox>
             
             <VBox spacing="8">
                 <Label text="Responsibilities" styleClass="label-secondary"/>
-                <TextArea fx:id="responsibilitiesArea" promptText="Key responsibilities..." prefRowCount="4" wrapText="true"/>
+                <TextArea fx:id="responsibilitiesArea" promptText="Key responsibilities..." prefRowCount="6" wrapText="true"/>
             </VBox>
             
             <VBox spacing="8">
                 <Label text="Requirements" styleClass="label-secondary"/>
-                <TextArea fx:id="requirementsArea" promptText="Required qualifications..." prefRowCount="4" wrapText="true"/>
+                <TextArea fx:id="requirementsArea" promptText="Required qualifications..." prefRowCount="6" wrapText="true"/>
             </VBox>
             
             <VBox spacing="8">
                 <Label text="Benefits" styleClass="label-secondary"/>
-                <TextArea fx:id="benefitsArea" promptText="Perks and benefits..." prefRowCount="3" wrapText="true"/>
+                <TextArea fx:id="benefitsArea" promptText="Perks and benefits..." prefRowCount="5" wrapText="true"/>
             </VBox>
         </VBox>
         
         <!-- Publishing -->
         <VBox styleClass="card" spacing="16">
             <padding><Insets topRightBottomLeft="20"/></padding>
-            <Label text="Publishing" styleClass="h4"/>
+            <Label text="Publishing" styleClass="h4" style="-fx-font-weight: bold;"/>
             
             <HBox spacing="16">
                 <VBox spacing="8" HBox.hgrow="ALWAYS">

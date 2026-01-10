@@ -22,6 +22,7 @@ public enum Route {
     POSTER_DASHBOARD("/poster/dashboard", true, true, UserRole.POSTER),
     POSTER_JOB_POSTS("/poster/job-posts", true, true, UserRole.POSTER),
     POSTER_JOB_FORM("/poster/job-form", true, true, UserRole.POSTER),
+    POSTER_JOB_DETAIL("/poster/job-detail", true, true, UserRole.POSTER),
     POSTER_APPLICANTS("/poster/applicants", true, true, UserRole.POSTER),
     POSTER_APPLICATION_DETAIL("/poster/application-detail", true, true, UserRole.POSTER),
     
@@ -80,6 +81,7 @@ public enum Route {
             case SEEKER_CV_EDITOR -> "CV Editor";
             case POSTER_JOB_POSTS -> "Job Posts";
             case POSTER_JOB_FORM -> "Job Form";
+            case POSTER_JOB_DETAIL -> "Job Details";
             case POSTER_APPLICANTS -> "Applicants";
             case POSTER_APPLICATION_DETAIL -> "Application Details";
             case NOTIFICATIONS -> "Notifications";

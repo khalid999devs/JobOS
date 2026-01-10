@@ -2,7 +2,6 @@ package com.jobos.desktop.controller.poster;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.JobPostService;
 import com.jobos.shared.dto.job.JobPostRequest;
@@ -14,7 +13,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -67,8 +65,8 @@ public class JobFormController implements Initializable {
         currencyCombo.getItems().addAll("USD", "EUR", "GBP", "BDT", "INR");
         currencyCombo.setValue("USD");
         
-        statusCombo.getItems().addAll("DRAFT", "OPEN");
-        statusCombo.setValue("OPEN");
+        statusCombo.getItems().addAll("DRAFT", "ACTIVE", "CLOSED");
+        statusCombo.setValue("ACTIVE");
         
         deadlinePicker.setValue(LocalDate.now().plusMonths(1));
     }
@@ -122,16 +120,14 @@ public class JobFormController implements Initializable {
     }
 
     private void loadJobDetails() {
-        LoadingOverlay.show("Loading job details...");
+        Toast.info("Loading job details...");
         
         jobPostService.getJobPostById(editingJobId)
             .thenAccept(job -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 populateForm(job);
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to load job details");
                     router.navigate(Route.POSTER_JOB_POSTS);
                 });
@@ -183,7 +179,7 @@ public class JobFormController implements Initializable {
     private void onSave() {
         if (!validateForm()) return;
         
-        LoadingOverlay.show(isEditMode ? "Updating job..." : "Creating job...");
+        Toast.info(isEditMode ? "Updating job..." : "Creating job...");
         
         if (isEditMode) {
             updateJob();
@@ -221,13 +217,11 @@ public class JobFormController implements Initializable {
         
         jobPostService.createJobPost(request)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success("Job created successfully!");
                 router.navigate(Route.POSTER_JOB_POSTS);
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to create job: " + e.getMessage());
                 });
                 return null;
@@ -240,13 +234,11 @@ public class JobFormController implements Initializable {
         
         jobPostService.updateJobPost(editingJobId, request)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success("Job updated successfully!");
                 router.navigate(Route.POSTER_JOB_POSTS);
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to update job: " + e.getMessage());
                 });
                 return null;

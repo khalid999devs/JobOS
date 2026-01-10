@@ -2,7 +2,7 @@ package com.jobos.desktop.controller.poster;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
+import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.JobPostService;
 import javafx.application.Platform;
@@ -12,6 +12,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ public class JobPostsController implements Initializable {
 
     private void setupStatusFilter() {
         if (statusFilter != null) {
-            statusFilter.getItems().addAll("All", "OPEN", "CLOSED", "DRAFT");
+            statusFilter.getItems().addAll("All", "ACTIVE", "CLOSED", "DRAFT");
             statusFilter.setValue("All");
             statusFilter.setOnAction(e -> {
                 String value = statusFilter.getValue();
@@ -57,18 +58,17 @@ public class JobPostsController implements Initializable {
     }
 
     private void loadJobPosts() {
-        LoadingOverlay.show("Loading job posts...");
+        jobsList.getChildren().clear();
+        jobsList.getChildren().add(SkeletonLoader.createSkeletonList(4));
         
         jobPostService.getMyJobPosts(currentPage, 10, selectedStatus)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     renderJobPosts(response);
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     showEmptyState("Failed to load job posts. Please try again.");
                 });
                 return null;
@@ -112,7 +112,6 @@ public class JobPostsController implements Initializable {
         String location = getString(job, "location");
         String jobType = getString(job, "jobType");
         Object appCount = job.get("applicationCount");
-        Object viewCount = job.get("viewCount");
         String createdAt = getString(job, "createdAt");
         
         HBox header = new HBox(12);
@@ -131,24 +130,38 @@ public class JobPostsController implements Initializable {
         meta.setAlignment(Pos.CENTER_LEFT);
         
         if (location != null && !location.isEmpty()) {
-            Label locLabel = new Label("📍 " + location);
+            HBox locBox = new HBox(4);
+            locBox.setAlignment(Pos.CENTER_LEFT);
+            FontIcon locIcon = new FontIcon("fas-map-marker-alt");
+            locIcon.setIconSize(12);
+            locIcon.setIconColor(javafx.scene.paint.Color.web("#6B7280"));
+            Label locLabel = new Label(location);
             locLabel.getStyleClass().add("label-secondary");
-            meta.getChildren().add(locLabel);
+            locBox.getChildren().addAll(locIcon, locLabel);
+            meta.getChildren().add(locBox);
         }
         
         if (jobType != null && !jobType.isEmpty()) {
-            Label typeLabel = new Label("💼 " + formatJobType(jobType));
+            HBox typeBox = new HBox(4);
+            typeBox.setAlignment(Pos.CENTER_LEFT);
+            FontIcon typeIcon = new FontIcon("fas-briefcase");
+            typeIcon.setIconSize(12);
+            typeIcon.setIconColor(javafx.scene.paint.Color.web("#6B7280"));
+            Label typeLabel = new Label(formatJobType(jobType));
             typeLabel.getStyleClass().add("label-secondary");
-            meta.getChildren().add(typeLabel);
+            typeBox.getChildren().addAll(typeIcon, typeLabel);
+            meta.getChildren().add(typeBox);
         }
         
-        Label applicantsLabel = new Label("👥 " + (appCount != null ? appCount : "0") + " applicants");
+        HBox appBox = new HBox(4);
+        appBox.setAlignment(Pos.CENTER_LEFT);
+        FontIcon appIcon = new FontIcon("fas-users");
+        appIcon.setIconSize(12);
+        appIcon.setIconColor(javafx.scene.paint.Color.web("#6B7280"));
+        Label applicantsLabel = new Label((appCount != null ? appCount : "0") + " applicants");
         applicantsLabel.getStyleClass().add("label-secondary");
-        meta.getChildren().add(applicantsLabel);
-        
-        Label viewsLabel = new Label("👁 " + (viewCount != null ? viewCount : "0") + " views");
-        viewsLabel.getStyleClass().add("label-secondary");
-        meta.getChildren().add(viewsLabel);
+        appBox.getChildren().addAll(appIcon, applicantsLabel);
+        meta.getChildren().add(appBox);
         
         HBox footer = new HBox(12);
         footer.setAlignment(Pos.CENTER_LEFT);
@@ -206,7 +219,7 @@ public class JobPostsController implements Initializable {
         
         card.setOnMouseClicked(e -> {
             if (e.getTarget() instanceof Button) return;
-            router.navigate(Route.POSTER_APPLICANTS, Map.of("jobId", id));
+            router.navigate(Route.POSTER_JOB_DETAIL, Map.of("jobId", id));
         });
         
         return card;
@@ -237,16 +250,14 @@ public class JobPostsController implements Initializable {
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            LoadingOverlay.show("Closing job...");
+            Toast.info("Closing job...");
             jobPostService.closeJob(jobId)
                 .thenAccept(r -> Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.success("Job closed successfully");
                     loadJobPosts();
                 }))
                 .exceptionally(e -> {
                     Platform.runLater(() -> {
-                        LoadingOverlay.hide();
                         Toast.error("Failed to close job");
                     });
                     return null;
@@ -255,16 +266,14 @@ public class JobPostsController implements Initializable {
     }
 
     private void reopenJob(String jobId) {
-        LoadingOverlay.show("Reopening job...");
+        Toast.info("Reopening job...");
         jobPostService.reopenJob(jobId)
             .thenAccept(r -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success("Job reopened successfully");
                 loadJobPosts();
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to reopen job");
                 });
                 return null;

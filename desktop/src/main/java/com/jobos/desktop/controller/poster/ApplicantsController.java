@@ -2,7 +2,7 @@ package com.jobos.desktop.controller.poster;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
+import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.JobPostService;
 import javafx.application.Platform;
@@ -43,7 +43,7 @@ public class ApplicantsController implements Initializable {
     }
 
     private void setupFilters() {
-        statusFilter.getItems().addAll("All", "PENDING", "REVIEWING", "SHORTLISTED", "INTERVIEWED", "OFFERED", "HIRED", "REJECTED");
+        statusFilter.getItems().addAll("All", "PENDING", "REVIEWED", "SHORTLISTED", "ACCEPTED", "REJECTED");
         statusFilter.setValue("All");
         statusFilter.setOnAction(e -> {
             String value = statusFilter.getValue();
@@ -71,7 +71,8 @@ public class ApplicantsController implements Initializable {
     private void loadInitialData() {
         String paramJobId = router.getParam("jobId");
         
-        LoadingOverlay.show("Loading...");
+        applicantsList.getChildren().clear();
+        applicantsList.getChildren().add(SkeletonLoader.createSkeletonApplicantsList(4));
         
         jobPostService.getMyJobPosts(0, 100, null)
             .thenAccept(response -> {
@@ -104,14 +105,12 @@ public class ApplicantsController implements Initializable {
                     if (selectedJobId != null) {
                         loadApplicants();
                     } else {
-                        LoadingOverlay.hide();
                         showEmptyState("No job posts found. Create a job post first to receive applications.");
                     }
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     showEmptyState("Failed to load jobs. Please try again.");
                 });
                 return null;
@@ -121,18 +120,17 @@ public class ApplicantsController implements Initializable {
     private void loadApplicants() {
         if (selectedJobId == null) return;
         
-        LoadingOverlay.show("Loading applicants...");
+        applicantsList.getChildren().clear();
+        applicantsList.getChildren().add(SkeletonLoader.createSkeletonApplicantsList(4));
         
         jobPostService.getJobApplicants(selectedJobId, currentPage, 10, selectedStatus)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     renderApplicants(response);
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     showEmptyState("Failed to load applicants. Please try again.");
                 });
                 return null;
@@ -169,6 +167,11 @@ public class ApplicantsController implements Initializable {
         card.setStyle("-fx-cursor: hand;");
         
         String applicationId = getString(applicant, "applicationId");
+        if (applicationId == null || applicationId.isEmpty()) {
+            applicationId = getString(applicant, "id");
+        }
+        final String finalAppId = applicationId;
+        
         String name = getString(applicant, "seekerName");
         String email = getString(applicant, "seekerEmail");
         String status = getString(applicant, "status");
@@ -224,17 +227,21 @@ public class ApplicantsController implements Initializable {
         viewBtn.getStyleClass().add("button-secondary");
         viewBtn.setOnAction(e -> {
             e.consume();
-            router.navigate(Route.POSTER_APPLICATION_DETAIL, Map.of("applicationId", applicationId));
+            if (finalAppId != null && !finalAppId.isEmpty()) {
+                router.navigate(Route.POSTER_APPLICATION_DETAIL, Map.of("applicationId", finalAppId));
+            } else {
+                Toast.error("Application ID not found");
+            }
         });
         
         ComboBox<String> statusCombo = new ComboBox<>();
-        statusCombo.getItems().addAll("PENDING", "REVIEWING", "SHORTLISTED", "INTERVIEWED", "OFFERED", "HIRED", "REJECTED");
+        statusCombo.getItems().addAll("PENDING", "REVIEWED", "SHORTLISTED", "ACCEPTED", "REJECTED");
         statusCombo.setValue(status);
         statusCombo.setOnAction(e -> {
             e.consume();
             String newStatus = statusCombo.getValue();
             if (newStatus != null && !newStatus.equals(status)) {
-                updateStatus(applicationId, newStatus);
+                updateStatus(finalAppId, newStatus);
             }
         });
         
@@ -244,7 +251,9 @@ public class ApplicantsController implements Initializable {
         
         card.setOnMouseClicked(e -> {
             if (e.getTarget() instanceof Button || e.getTarget() instanceof ComboBox) return;
-            router.navigate(Route.POSTER_APPLICATION_DETAIL, Map.of("applicationId", applicationId));
+            if (finalAppId != null && !finalAppId.isEmpty()) {
+                router.navigate(Route.POSTER_APPLICATION_DETAIL, Map.of("applicationId", finalAppId));
+            }
         });
         
         return card;
@@ -256,11 +265,9 @@ public class ApplicantsController implements Initializable {
         
         String bgColor = switch (status != null ? status.toUpperCase() : "") {
             case "PENDING" -> "#F59E0B";
-            case "REVIEWING" -> "#3B82F6";
+            case "REVIEWED" -> "#3B82F6";
             case "SHORTLISTED" -> "#8B5CF6";
-            case "INTERVIEWED" -> "#06B6D4";
-            case "OFFERED" -> "#10B981";
-            case "HIRED" -> "#059669";
+            case "ACCEPTED" -> "#10B981";
             case "REJECTED" -> "#EF4444";
             default -> "#6B7280";
         };
@@ -270,20 +277,18 @@ public class ApplicantsController implements Initializable {
     }
 
     private void updateStatus(String applicationId, String newStatus) {
-        LoadingOverlay.show("Updating status...");
+        Toast.info("Updating status...");
         
         com.jobos.shared.dto.application.ApplicationStatusUpdateRequest request = new com.jobos.shared.dto.application.ApplicationStatusUpdateRequest();
         request.setStatus(newStatus);
         
         jobPostService.updateApplicationStatus(applicationId, request)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success("Status updated to " + newStatus);
                 loadApplicants();
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to update status");
                     loadApplicants();
                 });

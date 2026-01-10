@@ -213,6 +213,23 @@ public class ApplicationService {
         response.setAnswers(application.getAnswers());
         response.setAppliedAt(application.getAppliedAt());
         response.setUpdatedAt(application.getUpdatedAt());
+        
+        // Add applicant info
+        if (application.getSeeker() != null) {
+            response.setApplicantId(application.getSeeker().getId().toString());
+            String firstName = application.getSeeker().getFirstName();
+            String lastName = application.getSeeker().getLastName();
+            if (firstName != null && lastName != null) {
+                response.setApplicantName(firstName + " " + lastName);
+            } else if (firstName != null) {
+                response.setApplicantName(firstName);
+            } else {
+                response.setApplicantName("Unknown Applicant");
+            }
+            response.setApplicantEmail(application.getSeeker().getEmail());
+            response.setApplicantAvatar(application.getSeeker().getAvatarUrl());
+        }
+        
         return response;
     }
 

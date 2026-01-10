@@ -1,7 +1,7 @@
 package com.jobos.desktop.controller.credits;
 
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
+import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.CreditService;
 import javafx.application.Platform;
@@ -241,32 +241,98 @@ public class CreditsController implements Initializable {
     }
     
     private void subscribeToPlan(String planId, String planName) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Subscribe to Plan");
-        alert.setHeaderText("Subscribe to " + planName + "?");
-        alert.setContentText("This will change your current subscription plan. In production, this would redirect to a payment gateway.");
+        showPlanPaymentDialog(planId, planName);
+    }
+    
+    private void showPlanPaymentDialog(String planId, String planName) {
+        String price = switch (planId.toUpperCase()) {
+            case "FREE" -> "$0.00";
+            case "PRO" -> "$9.99";
+            case "PREMIUM", "ENTERPRISE" -> "$19.99";
+            default -> "$9.99";
+        };
         
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            LoadingOverlay.show("Processing subscription...");
-            
-            creditService.subscribeToPlan(planId)
-                .thenAccept(response -> Platform.runLater(() -> {
-                    LoadingOverlay.hide();
-                    Toast.success("Successfully subscribed to " + planName + "!");
-                    loadCreditsData();
-                    loadPlans();
-                    // Refresh shell header to sync plan badge
-                    router.refreshShellCredits();
-                }))
-                .exceptionally(e -> {
-                    Platform.runLater(() -> {
-                        LoadingOverlay.hide();
-                        Toast.error("Subscription failed. Please try again.");
-                    });
-                    return null;
-                });
+        if ("FREE".equalsIgnoreCase(planId)) {
+            processSubscription(planId, planName);
+            return;
         }
+        
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Subscribe to " + planName);
+        dialog.setHeaderText("Complete Your Subscription");
+        
+        VBox content = new VBox(16);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(400);
+        
+        VBox summary = new VBox(8);
+        summary.setStyle("-fx-background-color: #F3F4F6; -fx-padding: 16; -fx-background-radius: 8;");
+        Label summaryTitle = new Label("Subscription Summary");
+        summaryTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        HBox planRow = new HBox();
+        planRow.setAlignment(Pos.CENTER_LEFT);
+        Label planText = new Label(planName + " Plan (Monthly)");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label priceText = new Label(price + "/mo");
+        priceText.setStyle("-fx-font-weight: bold; -fx-text-fill: #0F766E;");
+        planRow.getChildren().addAll(planText, spacer, priceText);
+        summary.getChildren().addAll(summaryTitle, planRow);
+        
+        VBox cardSection = new VBox(12);
+        Label cardLabel = new Label("Payment Details");
+        cardLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        
+        TextField cardNumber = new TextField();
+        cardNumber.setPromptText("4242 4242 4242 4242");
+        cardNumber.setStyle("-fx-pref-height: 40;");
+        
+        HBox cardExtras = new HBox(12);
+        TextField expiry = new TextField();
+        expiry.setPromptText("MM/YY");
+        expiry.setPrefWidth(100);
+        TextField cvv = new TextField();
+        cvv.setPromptText("CVV");
+        cvv.setPrefWidth(80);
+        cardExtras.getChildren().addAll(expiry, cvv);
+        
+        Label secureNote = new Label("🔒 Your payment is secure and encrypted");
+        secureNote.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        
+        cardSection.getChildren().addAll(cardLabel, cardNumber, cardExtras, secureNote);
+        
+        content.getChildren().addAll(summary, cardSection);
+        
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setText("Subscribe " + price + "/mo");
+        okButton.setStyle("-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: bold;");
+        
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                processSubscription(planId, planName);
+            }
+        });
+    }
+    
+    private void processSubscription(String planId, String planName) {
+        Toast.info("Processing subscription...");
+        
+        creditService.subscribeToPlan(planId)
+            .thenAccept(response -> Platform.runLater(() -> {
+                Toast.success("Successfully subscribed to " + planName + "!");
+                loadCreditsData();
+                loadPlans();
+                router.refreshShellCredits();
+            }))
+            .exceptionally(e -> {
+                Platform.runLater(() -> {
+                    Toast.error("Subscription failed: " + e.getMessage());
+                });
+                return null;
+            });
     }
     
     private Integer getInteger(Map<String, Object> map, String key) {
@@ -308,18 +374,17 @@ public class CreditsController implements Initializable {
     private void loadTransactions() {
         if (transactionsList == null) return;
         
-        LoadingOverlay.show("Loading transactions...");
+        // Show skeleton loading in transactions list
+        transactionsList.getChildren().setAll(SkeletonLoader.createSkeletonList(5));
         
         creditService.getTransactions(currentPage, 10)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     renderTransactions(response);
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     showEmptyTransactions("Unable to load transactions");
                 });
                 return null;
@@ -519,12 +584,11 @@ public class CreditsController implements Initializable {
     }
     
     private void processPayment(int credits, String price) {
-        LoadingOverlay.show("Processing payment...");
+        Toast.info("Processing payment...");
         
-        // Simulate payment processing delay
         CompletableFuture.runAsync(() -> {
             try {
-                Thread.sleep(1500); // Simulate payment processing
+                Thread.sleep(1500);
             } catch (InterruptedException ignored) {}
         }).thenRun(() -> {
             Platform.runLater(() -> {
@@ -534,20 +598,15 @@ public class CreditsController implements Initializable {
     }
 
     private void purchaseCredits(int amount, String price) {
-        LoadingOverlay.show("Adding credits to your account...");
-            
         creditService.purchaseCredits(amount, "SIMULATED")
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success(amount + " credits added to your account!");
                 loadCreditsData();
                 loadTransactions();
-                // Also refresh shell header
                 router.refreshShellCredits();
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Purchase failed. Please try again.");
                 });
                 return null;

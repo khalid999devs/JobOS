@@ -51,7 +51,7 @@ public class JobPostService {
         return apiClient.get(url.toString(), new TypeReference<Map<String, Object>>() {});
     }
 
-    public CompletableFuture<ApiResponse<Object>> updateApplicationStatus(String applicationId, ApplicationStatusUpdateRequest request) {
-        return apiClient.patch("/api/applications/" + applicationId + "/status", request, new TypeReference<ApiResponse<Object>>() {});
+    public CompletableFuture<ApiResponse<ApplicantResponse>> updateApplicationStatus(String applicationId, ApplicationStatusUpdateRequest request) {
+        return apiClient.patch("/api/applications/" + applicationId + "/status", request, new TypeReference<ApiResponse<ApplicantResponse>>() {});
     }
 }

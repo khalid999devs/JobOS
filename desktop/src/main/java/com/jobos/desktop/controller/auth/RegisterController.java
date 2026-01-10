@@ -3,7 +3,6 @@ package com.jobos.desktop.controller.auth;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
 import com.jobos.desktop.core.session.SessionManager;
-import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
 import com.jobos.shared.dto.auth.AuthResponse;
@@ -189,9 +188,7 @@ public class RegisterController implements Initializable {
         roleComboBox.setDisable(loading);
         
         if (loading) {
-            LoadingOverlay.show("Creating account...");
-        } else {
-            LoadingOverlay.hide();
+            Toast.info("Creating account...");
         }
     }
     

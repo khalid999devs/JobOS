@@ -187,6 +187,28 @@
             </VBox>
             
             <Button text="Save Company Info" onAction="#onSavePosterProfile" styleClass="button-primary-teal"/>
+            
+            <!-- Verification Documents Section -->
+            <VBox spacing="16" style="-fx-padding: 20 0 0 0; -fx-border-color: #E5E7EB; -fx-border-width: 1 0 0 0;">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #DCFCE7; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                        <FontIcon iconLiteral="fas-file-alt" iconSize="18" iconColor="#16A34A"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label text="Verification Documents" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                        <Label text="Upload documents for company verification" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+                
+                <VBox fx:id="verificationDocsContainer" spacing="8"/>
+                
+                <HBox spacing="12">
+                    <TextField fx:id="newDocUrlField" promptText="Enter document URL (e.g., business registration, tax certificate)" HBox.hgrow="ALWAYS"/>
+                    <Button text="Add Document" onAction="#onAddVerificationDoc" styleClass="button-outline-teal"/>
+                </HBox>
+                
+                <Button text="Save Verification Documents" onAction="#onSaveVerificationDocs" styleClass="button-primary-teal"/>
+            </VBox>
         </VBox>
         
     </VBox>

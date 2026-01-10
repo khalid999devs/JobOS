@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.jobos.desktop.core.session.SessionManager;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
+import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
 import com.jobos.shared.dto.profile.ProfileResponse;
@@ -51,7 +51,6 @@ public class SeekerDashboardController implements Initializable {
     }
     
     private void setupWelcome() {
-        // First try from session
         ProfileResponse profile = sessionManager.getProfile();
         if (profile != null && profile.getFirstName() != null) {
             String name = profile.getFirstName();
@@ -60,7 +59,6 @@ public class SeekerDashboardController implements Initializable {
             }
             welcomeLabel.setText("Welcome back, " + name + "!");
         } else {
-            // Fetch fresh profile if not in session
             apiClient.get("/api/users/me", new TypeReference<ProfileResponse>() {})
                 .thenAccept(p -> {
                     if (p != null) {
@@ -79,9 +77,9 @@ public class SeekerDashboardController implements Initializable {
     }
     
     private void loadDashboardData() {
-        LoadingOverlay.show("Loading dashboard...");
+        recentApplicationsList.getChildren().setAll(SkeletonLoader.createSkeletonApplicantsList(3));
+        recommendedJobsContainer.getChildren().setAll(SkeletonLoader.createSkeletonJobList(4));
         
-        // Load applications with direct API call (backend doesn't use ApiResponse wrapper)
         apiClient.get("/api/applications?page=0&size=20", new TypeReference<Map<String, Object>>() {})
             .thenAccept(response -> {
                 Platform.runLater(() -> {
@@ -112,7 +110,6 @@ public class SeekerDashboardController implements Initializable {
     }
     
     private void loadAdditionalData() {
-        // Load CVs count
         apiClient.get("/api/cvs?page=0&size=100", new TypeReference<Map<String, Object>>() {})
             .thenAccept(response -> {
                 Platform.runLater(() -> {
@@ -129,7 +126,6 @@ public class SeekerDashboardController implements Initializable {
                 return null;
             });
         
-        // Load saved jobs count
         apiClient.get("/api/jobs/saved?page=0&size=1", new TypeReference<Map<String, Object>>() {})
             .thenAccept(response -> {
                 Platform.runLater(() -> {
@@ -140,7 +136,6 @@ public class SeekerDashboardController implements Initializable {
             })
             .exceptionally(e -> null);
         
-        // Load recommended jobs
         loadRecommendedJobs();
     }
     
@@ -152,7 +147,6 @@ public class SeekerDashboardController implements Initializable {
         apiClient.post("/api/jobs/search", request, com.jobos.shared.dto.job.JobSearchResponse.class)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     if (response != null && response.getJobs() != null) {
                         updateRecommendedJobs(response.getJobs());
                         if (response.getTotalElements() != null) {
@@ -162,7 +156,7 @@ public class SeekerDashboardController implements Initializable {
                 });
             })
             .exceptionally(e -> {
-                Platform.runLater(() -> LoadingOverlay.hide());
+                Platform.runLater(() -> recommendedJobsContainer.getChildren().clear());
                 return null;
             });
     }

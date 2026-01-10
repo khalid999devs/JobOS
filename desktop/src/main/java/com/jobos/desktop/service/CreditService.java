@@ -42,7 +42,12 @@ public class CreditService {
     }
 
     public CompletableFuture<ApiResponse<Object>> subscribeToPlan(String planId) {
-        return apiClient.post("/api/plans/subscribe", Map.of("planId", planId), 
+        Map<String, Object> request = Map.of(
+            "planId", planId,
+            "billingCycle", "MONTHLY",
+            "paymentMethod", "SIMULATED"
+        );
+        return apiClient.post("/api/plans/subscribe", request, 
             new TypeReference<ApiResponse<Object>>() {});
     }
     
@@ -53,7 +58,8 @@ public class CreditService {
         private Integer balance = 0;
         
         public Integer getCredits() {
-            return credits != null ? credits : balance;
+            if (balance != null && balance > 0) return balance;
+            return credits != null ? credits : 0;
         }
         
         public void setCredits(Integer credits) {
@@ -69,7 +75,7 @@ public class CreditService {
         }
         
         public String getPlan() {
-            return plan != null ? plan : "FREE";
+            return plan != null && !plan.isEmpty() ? plan : "FREE";
         }
         
         public void setPlan(String plan) {
@@ -82,9 +88,6 @@ public class CreditService {
         
         public void setBalance(Integer balance) {
             this.balance = balance;
-            if (this.credits == null || this.credits == 0) {
-                this.credits = balance;
-            }
         }
     }
 }

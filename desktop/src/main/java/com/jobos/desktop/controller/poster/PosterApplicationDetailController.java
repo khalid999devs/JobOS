@@ -1,8 +1,9 @@
 package com.jobos.desktop.controller.poster;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApplicationService;
 import com.jobos.desktop.service.JobPostService;
@@ -11,19 +12,24 @@ import com.jobos.shared.dto.application.ApplicationStatusUpdateRequest;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class PosterApplicationDetailController implements Initializable {
 
     @FXML private VBox contentContainer;
+    @FXML private VBox avatarContainer;
+    @FXML private Label avatarInitials;
     @FXML private Label applicantName;
     @FXML private Label applicantEmail;
     @FXML private Label jobTitleLabel;
@@ -57,7 +63,7 @@ public class PosterApplicationDetailController implements Initializable {
     }
 
     private void setupStatusCombo() {
-        statusCombo.getItems().addAll("PENDING", "REVIEWING", "SHORTLISTED", "INTERVIEWED", "OFFERED", "HIRED", "REJECTED");
+        statusCombo.getItems().addAll("PENDING", "REVIEWED", "SHORTLISTED", "ACCEPTED", "REJECTED");
         statusCombo.setOnAction(e -> {
             String newStatus = statusCombo.getValue();
             if (newStatus != null && currentApplication != null && !newStatus.equals(currentApplication.getStatus())) {
@@ -67,12 +73,11 @@ public class PosterApplicationDetailController implements Initializable {
     }
 
     private void loadApplication() {
-        LoadingOverlay.show("Loading application...");
+        Toast.info("Loading application...");
         
         applicationService.getApplicationById(applicationId)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     if (response != null && response.getResult() != null) {
                         currentApplication = response.getResult();
                         populateDetails();
@@ -84,7 +89,6 @@ public class PosterApplicationDetailController implements Initializable {
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to load application");
                     router.navigate(Route.POSTER_APPLICANTS);
                 });
@@ -93,6 +97,23 @@ public class PosterApplicationDetailController implements Initializable {
     }
 
     private void populateDetails() {
+        String name = currentApplication.getApplicantName();
+        if (name != null && !name.isEmpty()) {
+            applicantName.setText(name);
+            String initials = getInitials(name);
+            avatarInitials.setText(initials);
+        } else {
+            applicantName.setText("Unknown Applicant");
+            avatarInitials.setText("?");
+        }
+        
+        String email = currentApplication.getApplicantEmail();
+        if (email != null && !email.isEmpty()) {
+            applicantEmail.setText(email);
+        } else {
+            applicantEmail.setText("");
+        }
+        
         jobTitleLabel.setText(currentApplication.getJobTitle() != null ? currentApplication.getJobTitle() : "Unknown Job");
         
         statusCombo.setValue(currentApplication.getStatus());
@@ -102,37 +123,31 @@ public class PosterApplicationDetailController implements Initializable {
             appliedDateLabel.setText("Applied: " + formatDateTime(currentApplication.getAppliedAt()));
         }
         
-        // Cover Letter
         coverLetterContainer.getChildren().clear();
         String coverLetter = currentApplication.getCoverLetter();
         if (coverLetter != null && !coverLetter.isEmpty()) {
-            TextArea letterArea = new TextArea(coverLetter);
-            letterArea.setWrapText(true);
-            letterArea.setEditable(false);
-            letterArea.setPrefRowCount(8);
-            letterArea.getStyleClass().add("text-area-readonly");
-            
-            // Auto-resize based on content
-            String text = coverLetter != null ? coverLetter : "";
-            int lines = Math.max(8, Math.min(20, text.split("\n", -1).length));
-            letterArea.setPrefRowCount(lines);
-            
-            coverLetterContainer.getChildren().add(letterArea);
+            VBox letterBox = createSelectableTextBox(coverLetter);
+            coverLetterContainer.getChildren().add(letterBox);
         } else {
             Label noLetter = new Label("No cover letter provided");
             noLetter.getStyleClass().add("label-muted");
             coverLetterContainer.getChildren().add(noLetter);
         }
         
-        // CV
         cvContainer.getChildren().clear();
         String cvUrl = currentApplication.getCvFileUrl();
         if (cvUrl != null && !cvUrl.isEmpty()) {
             HBox cvRow = new HBox(12);
             cvRow.setAlignment(Pos.CENTER_LEFT);
             
-            Label cvIcon = new Label("📄");
-            cvIcon.setStyle("-fx-font-size: 24px;");
+            VBox cvIconBox = new VBox();
+            cvIconBox.setAlignment(Pos.CENTER);
+            cvIconBox.setPrefSize(40, 40);
+            cvIconBox.setStyle("-fx-background-color: #F3F4F6; -fx-background-radius: 8;");
+            FontIcon cvIcon = new FontIcon("fas-file-alt");
+            cvIcon.setIconSize(20);
+            cvIcon.setIconColor(javafx.scene.paint.Color.web("#6B7280"));
+            cvIconBox.getChildren().add(cvIcon);
             
             VBox cvInfo = new VBox(4);
             Label cvLabel = new Label("CV Document");
@@ -152,7 +167,7 @@ public class PosterApplicationDetailController implements Initializable {
                 }
             });
             
-            cvRow.getChildren().addAll(cvIcon, cvInfo, downloadBtn);
+            cvRow.getChildren().addAll(cvIconBox, cvInfo, downloadBtn);
             cvContainer.getChildren().add(cvRow);
         } else {
             Label noCv = new Label("No CV attached");
@@ -160,27 +175,113 @@ public class PosterApplicationDetailController implements Initializable {
             cvContainer.getChildren().add(noCv);
         }
         
-        // Answers
         answersContainer.getChildren().clear();
         String answers = currentApplication.getAnswers();
         if (answers != null && !answers.isEmpty()) {
-            TextArea answersArea = new TextArea(answers);
-            answersArea.setWrapText(true);
-            answersArea.setEditable(false);
-            answersArea.setPrefRowCount(5);
-            answersArea.getStyleClass().add("text-area-readonly");
-            
-            // Auto-resize based on content
-            String text = answers != null ? answers : "";
-            int lines = Math.max(5, Math.min(20, text.split("\n", -1).length));
-            answersArea.setPrefRowCount(lines);
-            
-            answersContainer.getChildren().add(answersArea);
+            VBox answersBox = formatAnswers(answers);
+            answersContainer.getChildren().add(answersBox);
         } else {
             Label noAnswers = new Label("No additional answers provided");
             noAnswers.getStyleClass().add("label-muted");
             answersContainer.getChildren().add(noAnswers);
         }
+    }
+    
+    private VBox createSelectableTextBox(String content) {
+        VBox box = new VBox(8);
+        box.setStyle("-fx-background-color: #F9FAFB; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8;");
+        
+        Label textLabel = new Label(content);
+        textLabel.setWrapText(true);
+        textLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 14px; -fx-line-spacing: 4;");
+        
+        HBox copyBtnContent = new HBox(4);
+        copyBtnContent.setAlignment(Pos.CENTER);
+        FontIcon copyIcon = new FontIcon("fas-copy");
+        copyIcon.setIconSize(12);
+        copyIcon.setIconColor(javafx.scene.paint.Color.web("#0F766E"));
+        copyBtnContent.getChildren().addAll(copyIcon, new Label("Copy"));
+        Button copyBtn = new Button();
+        copyBtn.setGraphic(copyBtnContent);
+        copyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #0F766E; -fx-cursor: hand; -fx-font-size: 12px;");
+        copyBtn.setOnAction(e -> {
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent clipContent = new ClipboardContent();
+            clipContent.putString(content);
+            clipboard.setContent(clipContent);
+            Toast.success("Copied to clipboard");
+        });
+        
+        HBox actionRow = new HBox();
+        actionRow.setAlignment(Pos.CENTER_RIGHT);
+        actionRow.getChildren().add(copyBtn);
+        
+        box.getChildren().addAll(textLabel, actionRow);
+        return box;
+    }
+    
+    private VBox formatAnswers(String answersJson) {
+        VBox box = new VBox(12);
+        box.setStyle("-fx-background-color: #F9FAFB; -fx-padding: 16; -fx-background-radius: 8; -fx-border-color: #E5E7EB; -fx-border-radius: 8;");
+        
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> answersMap = mapper.readValue(answersJson, new TypeReference<Map<String, Object>>() {});
+            
+            for (Map.Entry<String, Object> entry : answersMap.entrySet()) {
+                VBox answerItem = new VBox(4);
+                
+                String questionKey = entry.getKey().replace("_", " ");
+                String formattedKey = questionKey.substring(0, 1).toUpperCase() + questionKey.substring(1);
+                
+                Label questionLabel = new Label(formattedKey);
+                questionLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px; -fx-font-weight: 600;");
+                
+                String answerValue = entry.getValue() != null ? entry.getValue().toString() : "N/A";
+                Label answerLabel = new Label(answerValue);
+                answerLabel.setWrapText(true);
+                answerLabel.setStyle("-fx-text-fill: #111827; -fx-font-size: 14px;");
+                
+                answerItem.getChildren().addAll(questionLabel, answerLabel);
+                box.getChildren().add(answerItem);
+            }
+            
+            HBox copyBtnContent = new HBox(4);
+            copyBtnContent.setAlignment(Pos.CENTER);
+            FontIcon copyAllIcon = new FontIcon("fas-copy");
+            copyAllIcon.setIconSize(12);
+            copyAllIcon.setIconColor(javafx.scene.paint.Color.web("#0F766E"));
+            copyBtnContent.getChildren().addAll(copyAllIcon, new Label("Copy All"));
+            Button copyBtn = new Button();
+            copyBtn.setGraphic(copyBtnContent);
+            copyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #0F766E; -fx-cursor: hand; -fx-font-size: 12px;");
+            copyBtn.setOnAction(e -> {
+                StringBuilder sb = new StringBuilder();
+                for (Map.Entry<String, Object> entry : answersMap.entrySet()) {
+                    String key = entry.getKey().replace("_", " ");
+                    sb.append(key.substring(0, 1).toUpperCase()).append(key.substring(1))
+                      .append(": ").append(entry.getValue()).append("\n");
+                }
+                Clipboard clipboard = Clipboard.getSystemClipboard();
+                ClipboardContent clipContent = new ClipboardContent();
+                clipContent.putString(sb.toString().trim());
+                clipboard.setContent(clipContent);
+                Toast.success("Copied to clipboard");
+            });
+            
+            HBox actionRow = new HBox();
+            actionRow.setAlignment(Pos.CENTER_RIGHT);
+            actionRow.getChildren().add(copyBtn);
+            box.getChildren().add(actionRow);
+            
+        } catch (Exception e) {
+            Label rawLabel = new Label(answersJson);
+            rawLabel.setWrapText(true);
+            rawLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 14px;");
+            box.getChildren().add(rawLabel);
+        }
+        
+        return box;
     }
 
     private void updateStatusLabel(String status) {
@@ -188,11 +289,9 @@ public class PosterApplicationDetailController implements Initializable {
         
         String bgColor = switch (status != null ? status.toUpperCase() : "") {
             case "PENDING" -> "#F59E0B";
-            case "REVIEWING" -> "#3B82F6";
+            case "REVIEWED" -> "#3B82F6";
             case "SHORTLISTED" -> "#8B5CF6";
-            case "INTERVIEWED" -> "#06B6D4";
-            case "OFFERED" -> "#10B981";
-            case "HIRED" -> "#059669";
+            case "ACCEPTED" -> "#10B981";
             case "REJECTED" -> "#EF4444";
             default -> "#6B7280";
         };
@@ -201,22 +300,29 @@ public class PosterApplicationDetailController implements Initializable {
     }
 
     private void updateStatus(String newStatus) {
-        LoadingOverlay.show("Updating status...");
+        Toast.info("Updating status...");
         
         ApplicationStatusUpdateRequest request = new ApplicationStatusUpdateRequest();
         request.setStatus(newStatus);
         
+        System.out.println("Updating application " + applicationId + " to status: " + newStatus);
+        
         jobPostService.updateApplicationStatus(applicationId, request)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
-                Toast.success("Status updated to " + newStatus);
-                currentApplication.setStatus(newStatus);
-                updateStatusLabel(newStatus);
+                if (response != null && response.isSuccess()) {
+                    Toast.success("Status updated to " + newStatus);
+                    currentApplication.setStatus(newStatus);
+                    updateStatusLabel(newStatus);
+                } else {
+                    String errorMsg = response != null ? response.getMessage() : "Unknown error";
+                    Toast.error("Failed: " + errorMsg);
+                    statusCombo.setValue(currentApplication.getStatus());
+                }
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
-                    Toast.error("Failed to update status");
+                    e.printStackTrace();
+                    Toast.error("Failed to update status: " + e.getMessage());
                     statusCombo.setValue(currentApplication.getStatus());
                 });
                 return null;
@@ -231,12 +337,23 @@ public class PosterApplicationDetailController implements Initializable {
     @FXML
     private void onViewJob() {
         if (currentApplication != null && currentApplication.getJobId() != null) {
-            router.navigate(Route.POSTER_APPLICANTS, java.util.Map.of("jobId", currentApplication.getJobId()));
+            router.navigate(Route.POSTER_JOB_DETAIL, java.util.Map.of("jobId", currentApplication.getJobId()));
         }
     }
 
     private String formatDateTime(LocalDateTime dt) {
         if (dt == null) return "";
         return dt.format(DateTimeFormatter.ofPattern("MMM d, yyyy 'at' h:mm a"));
+    }
+
+    private String getInitials(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return "?";
+        }
+        String[] parts = name.trim().split("\\s+");
+        if (parts.length == 1) {
+            return parts[0].substring(0, 1).toUpperCase();
+        }
+        return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
     }
 }

@@ -53,7 +53,7 @@ public class ApplicationsController implements Initializable {
 
     private void setupFilters() {
         statusFilter.setItems(FXCollections.observableArrayList(
-                "All Status", "Pending", "Reviewing", "Shortlisted", "Interviewing", "Offered", "Hired", "Rejected"
+                "All Status", "Pending", "Reviewed", "Shortlisted", "Accepted", "Rejected"
         ));
         statusFilter.setValue("All Status");
     }
@@ -211,11 +211,9 @@ public class ApplicationsController implements Initializable {
         
         switch (status != null ? status.toUpperCase() : "") {
             case "PENDING" -> { bgColor = "#FEF3C7"; textColor = "#D97706"; }
-            case "REVIEWING" -> { bgColor = "#E0F2FE"; textColor = "#0284C7"; }
+            case "REVIEWED" -> { bgColor = "#E0F2FE"; textColor = "#0284C7"; }
             case "SHORTLISTED" -> { bgColor = "#F3E8FF"; textColor = "#9333EA"; }
-            case "INTERVIEWING" -> { bgColor = "#CCFBF1"; textColor = "#0F766E"; }
-            case "OFFERED" -> { bgColor = "#DCFCE7"; textColor = "#16A34A"; }
-            case "HIRED" -> { bgColor = "#DCFCE7"; textColor = "#16A34A"; }
+            case "ACCEPTED" -> { bgColor = "#DCFCE7"; textColor = "#16A34A"; }
             case "REJECTED" -> { bgColor = "#FEE2E2"; textColor = "#DC2626"; }
             default -> { bgColor = "#F3F4F6"; textColor = "#6B7280"; }
         }

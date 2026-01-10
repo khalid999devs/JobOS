@@ -206,11 +206,9 @@ public class ApplicationDetailController implements Initializable {
         
         switch (status != null ? status.toUpperCase() : "") {
             case "PENDING" -> { bgColor = "#FEF3C7"; textColor = "#D97706"; iconCode = "fas-clock"; }
-            case "REVIEWING" -> { bgColor = "#E0F2FE"; textColor = "#0284C7"; iconCode = "fas-eye"; }
+            case "REVIEWED" -> { bgColor = "#E0F2FE"; textColor = "#0284C7"; iconCode = "fas-eye"; }
             case "SHORTLISTED" -> { bgColor = "#F3E8FF"; textColor = "#9333EA"; iconCode = "fas-star"; }
-            case "INTERVIEWING" -> { bgColor = "#CCFBF1"; textColor = "#0F766E"; iconCode = "fas-comments"; }
-            case "OFFERED" -> { bgColor = "#DCFCE7"; textColor = "#16A34A"; iconCode = "fas-gift"; }
-            case "HIRED" -> { bgColor = "#DCFCE7"; textColor = "#16A34A"; iconCode = "fas-check-circle"; }
+            case "ACCEPTED" -> { bgColor = "#DCFCE7"; textColor = "#16A34A"; iconCode = "fas-check-circle"; }
             case "REJECTED" -> { bgColor = "#FEE2E2"; textColor = "#DC2626"; iconCode = "fas-times-circle"; }
             default -> { bgColor = "#F3F4F6"; textColor = "#6B7280"; iconCode = "fas-question-circle"; }
         }

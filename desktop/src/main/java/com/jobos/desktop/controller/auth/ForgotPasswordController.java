@@ -2,7 +2,7 @@ package com.jobos.desktop.controller.auth;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
+import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
 import com.jobos.shared.dto.auth.ForgotPasswordRequest;
 import javafx.application.Platform;
@@ -111,9 +111,7 @@ public class ForgotPasswordController {
         emailField.setDisable(loading);
         
         if (loading) {
-            LoadingOverlay.show("Sending reset code...");
-        } else {
-            LoadingOverlay.hide();
+            Toast.info("Sending reset code...");
         }
     }
     

@@ -3,20 +3,27 @@ package com.jobos.desktop.controller.poster;
 import com.jobos.desktop.core.session.SessionManager;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
+import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.service.ApiClient;
 import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.profile.ProfileResponse;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class PosterDashboardController implements Initializable {
@@ -26,10 +33,6 @@ public class PosterDashboardController implements Initializable {
     @FXML private Label activeJobsLabel;
     @FXML private Label totalApplicationsLabel;
     @FXML private Label creditsLabel;
-    @FXML private Label jobsPostedMetric;
-    @FXML private Label viewsMetric;
-    @FXML private Label applicationsMetric;
-    @FXML private Label hiredMetric;
     @FXML private VBox recentApplicationsList;
     @FXML private VBox myJobsContainer;
     @FXML private HBox statsContainer;
@@ -38,10 +41,13 @@ public class PosterDashboardController implements Initializable {
     private final SessionManager sessionManager = SessionManager.getInstance();
     private final Router router = Router.getInstance();
     
+    private int totalApplicationsCount = 0;
+    
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupWelcome();
         loadDashboardData();
+        loadCreditsBalance();
     }
     
     private void setupWelcome() {
@@ -54,58 +60,127 @@ public class PosterDashboardController implements Initializable {
         }
     }
     
-    private void loadDashboardData() {
-        LoadingOverlay.show("Loading dashboard...");
-        
-        apiClient.get("/api/jobs/my", ApiResponse.class)
+    private void loadCreditsBalance() {
+        apiClient.get("/api/credits/balance", ApiResponse.class)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
                     @SuppressWarnings("unchecked")
                     ApiResponse<Object> apiResp = (ApiResponse<Object>) response;
                     Object result = apiResp.getResult();
                     
-                    if (result instanceof List<?> jobs) {
-                        updateJobStats(jobs);
-                        updateMyJobs(jobs);
+                    if (result instanceof LinkedHashMap<?, ?> balanceMap) {
+                        Object balance = balanceMap.get("balance");
+                        if (balance != null) {
+                            creditsLabel.setText(balance.toString());
+                        }
+                    }
+                });
+            })
+            .exceptionally(e -> {
+                Platform.runLater(() -> creditsLabel.setText("0"));
+                return null;
+            });
+    }
+    
+    private void loadDashboardData() {
+        myJobsContainer.getChildren().clear();
+        myJobsContainer.getChildren().add(SkeletonLoader.createSkeletonJobList(3));
+        
+        recentApplicationsList.getChildren().clear();
+        recentApplicationsList.getChildren().add(SkeletonLoader.createSkeletonApplicantsList(3));
+        
+        apiClient.get("/api/job-posts?size=100", new TypeReference<Map<String, Object>>() {})
+            .thenAccept(response -> {
+                Platform.runLater(() -> {
+                    List<?> jobs = new ArrayList<>();
+                    if (response != null) {
+                        Object jobsObj = response.get("jobs");
+                        if (jobsObj instanceof List<?>) {
+                            jobs = (List<?>) jobsObj;
+                        }
                     }
                     
-                    loadRecentApplicants();
+                    updateJobStats(jobs);
+                    updateMyJobs(jobs);
+                    loadApplicationsForJobs(jobs);
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     setDefaultStats();
+                    updateMyJobs(Collections.emptyList());
+                    updateRecentApplicants(Collections.emptyList());
                 });
                 return null;
             });
     }
     
-    private void loadRecentApplicants() {
-        apiClient.get("/api/applications/received?limit=5", ApiResponse.class)
+    private void loadApplicationsForJobs(List<?> jobs) {
+        if (jobs == null || jobs.isEmpty()) {
+            totalApplicationsLabel.setText("0");
+            updateRecentApplicants(Collections.emptyList());
+            return;
+        }
+        
+        int totalApps = 0;
+        String firstJobIdWithApplicants = null;
+        
+        for (Object job : jobs) {
+            if (job instanceof LinkedHashMap<?, ?> map) {
+                Object appCount = map.get("applicationCount");
+                if (appCount instanceof Number) {
+                    int count = ((Number) appCount).intValue();
+                    totalApps += count;
+                    if (count > 0 && firstJobIdWithApplicants == null) {
+                        Object idObj = map.get("id");
+                        if (idObj != null) {
+                            firstJobIdWithApplicants = idObj.toString();
+                        }
+                    }
+                }
+            }
+        }
+        
+        totalApplicationsCount = totalApps;
+        totalApplicationsLabel.setText(String.valueOf(totalApps));
+        
+        if (firstJobIdWithApplicants != null) {
+            loadRecentApplicantsFromJob(firstJobIdWithApplicants);
+        } else {
+            updateRecentApplicants(Collections.emptyList());
+        }
+    }
+    
+    private void loadRecentApplicantsFromJob(String jobId) {
+        apiClient.get("/api/job-posts/" + jobId + "/applicants?page=0&size=5", new TypeReference<Map<String, Object>>() {})
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
-                    
-                    @SuppressWarnings("unchecked")
-                    ApiResponse<Object> apiResp = (ApiResponse<Object>) response;
-                    Object result = apiResp.getResult();
-                    
-                    if (result instanceof List<?> applications) {
-                        updateTotalApplications(applications.size());
-                        updateRecentApplicants(applications);
+                    List<?> applicants = new ArrayList<>();
+                    if (response != null) {
+                        Object applicantsObj = response.get("applicants");
+                        if (applicantsObj instanceof List<?>) {
+                            applicants = (List<?>) applicantsObj;
+                        }
                     }
+                    
+                    updateRecentApplicants(applicants);
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
+                    updateRecentApplicants(Collections.emptyList());
                 });
                 return null;
             });
     }
     
     private void updateJobStats(List<?> jobs) {
+        if (jobs == null) {
+            totalJobsLabel.setText("0");
+            activeJobsLabel.setText("0");
+            return;
+        }
+        
         int total = jobs.size();
         int active = 0;
         
@@ -120,7 +195,6 @@ public class PosterDashboardController implements Initializable {
         
         totalJobsLabel.setText(String.valueOf(total));
         activeJobsLabel.setText(String.valueOf(active));
-        creditsLabel.setText("0");
     }
     
     private void setDefaultStats() {
@@ -130,12 +204,15 @@ public class PosterDashboardController implements Initializable {
         creditsLabel.setText("0");
     }
     
-    private void updateTotalApplications(int count) {
-        totalApplicationsLabel.setText(String.valueOf(count));
-    }
-    
     private void updateMyJobs(List<?> jobs) {
         myJobsContainer.getChildren().clear();
+        
+        if (jobs == null || jobs.isEmpty()) {
+            Label emptyLabel = new Label("No job posts yet. Create your first job!");
+            emptyLabel.getStyleClass().add("empty-state-text");
+            myJobsContainer.getChildren().add(emptyLabel);
+            return;
+        }
         
         int displayCount = Math.min(jobs.size(), 4);
         for (int i = 0; i < displayCount; i++) {
@@ -143,12 +220,6 @@ public class PosterDashboardController implements Initializable {
             if (job instanceof LinkedHashMap<?, ?> map) {
                 myJobsContainer.getChildren().add(createJobCard(map));
             }
-        }
-        
-        if (jobs.isEmpty()) {
-            Label emptyLabel = new Label("No job posts yet. Create your first job!");
-            emptyLabel.getStyleClass().add("empty-state-text");
-            myJobsContainer.getChildren().add(emptyLabel);
         }
     }
     
@@ -171,23 +242,36 @@ public class PosterDashboardController implements Initializable {
         titleRow.getChildren().addAll(titleLabel, statusLabel);
         
         HBox meta = new HBox(12);
+        meta.setAlignment(Pos.CENTER_LEFT);
         if (location != null) {
-            Label locLabel = new Label("📍 " + location);
+            HBox locBox = new HBox(4);
+            locBox.setAlignment(Pos.CENTER_LEFT);
+            FontIcon locIcon = new FontIcon("fas-map-marker-alt");
+            locIcon.setIconSize(12);
+            locIcon.setIconColor(javafx.scene.paint.Color.web("#6B7280"));
+            Label locLabel = new Label(location);
             locLabel.getStyleClass().add("job-card-meta");
-            meta.getChildren().add(locLabel);
+            locBox.getChildren().addAll(locIcon, locLabel);
+            meta.getChildren().add(locBox);
         }
         
         Object applicantCount = job.get("applicationCount");
-        Label applicantsLabel = new Label("👥 " + (applicantCount != null ? applicantCount : "0") + " applicants");
+        HBox appBox = new HBox(4);
+        appBox.setAlignment(Pos.CENTER_LEFT);
+        FontIcon appIcon = new FontIcon("fas-users");
+        appIcon.setIconSize(12);
+        appIcon.setIconColor(javafx.scene.paint.Color.web("#6B7280"));
+        Label applicantsLabel = new Label((applicantCount != null ? applicantCount : "0") + " applicants");
         applicantsLabel.getStyleClass().add("job-card-meta");
-        meta.getChildren().add(applicantsLabel);
+        appBox.getChildren().addAll(appIcon, applicantsLabel);
+        meta.getChildren().add(appBox);
         
         card.getChildren().addAll(titleRow, meta);
         
         card.setOnMouseClicked(e -> {
             Object idObj = job.get("id");
             if (idObj != null) {
-                router.navigate(Route.POSTER_APPLICANTS, java.util.Map.of("jobId", idObj.toString()));
+                router.navigate(Route.POSTER_JOB_DETAIL, java.util.Map.of("jobId", idObj.toString()));
             }
         });
         
@@ -197,16 +281,17 @@ public class PosterDashboardController implements Initializable {
     private void updateRecentApplicants(List<?> applications) {
         recentApplicationsList.getChildren().clear();
         
+        if (applications == null || applications.isEmpty()) {
+            Label emptyLabel = new Label("No applications received yet");
+            emptyLabel.getStyleClass().add("empty-state-text");
+            recentApplicationsList.getChildren().add(emptyLabel);
+            return;
+        }
+        
         for (Object app : applications) {
             if (app instanceof LinkedHashMap<?, ?> map) {
                 recentApplicationsList.getChildren().add(createApplicantItem(map));
             }
-        }
-        
-        if (applications.isEmpty()) {
-            Label emptyLabel = new Label("No applications received yet");
-            emptyLabel.getStyleClass().add("empty-state-text");
-            recentApplicationsList.getChildren().add(emptyLabel);
         }
     }
     
@@ -214,29 +299,17 @@ public class PosterDashboardController implements Initializable {
         VBox item = new VBox(4);
         item.getStyleClass().add("list-item");
         
-        String applicantName = "Unknown Applicant";
-        Object applicantObj = app.get("applicant");
-        if (applicantObj instanceof LinkedHashMap<?, ?> applicant) {
-            String firstName = getString(applicant, "firstName");
-            String lastName = getString(applicant, "lastName");
-            if (firstName != null) {
-                applicantName = firstName;
-                if (lastName != null) applicantName += " " + lastName;
-            }
-        }
-        
-        String jobTitle = "Unknown Position";
-        Object jobObj = app.get("job");
-        if (jobObj instanceof LinkedHashMap<?, ?> job) {
-            String title = getString(job, "title");
-            if (title != null) jobTitle = title;
+        String applicantName = getString(app, "seekerName");
+        if (applicantName == null || applicantName.isEmpty()) {
+            applicantName = "Unknown Applicant";
         }
         
         Label nameLabel = new Label(applicantName);
         nameLabel.getStyleClass().add("list-item-title");
         
-        Label jobLabel = new Label("Applied for: " + jobTitle);
-        jobLabel.getStyleClass().add("list-item-subtitle");
+        String seekerEmail = getString(app, "seekerEmail");
+        Label emailLabel = new Label(seekerEmail != null ? seekerEmail : "");
+        emailLabel.getStyleClass().add("list-item-subtitle");
         
         String status = getString(app, "status");
         Label statusLabel = new Label(status != null ? formatStatus(status) : "Unknown");
@@ -245,12 +318,15 @@ public class PosterDashboardController implements Initializable {
         HBox row = new HBox(8);
         row.getChildren().addAll(nameLabel, statusLabel);
         
-        item.getChildren().addAll(row, jobLabel);
+        item.getChildren().addAll(row, emailLabel);
         
         item.setOnMouseClicked(e -> {
-            Object idObj = app.get("id");
-            if (idObj != null) {
-                router.navigate(Route.POSTER_APPLICATION_DETAIL, java.util.Map.of("applicationId", idObj.toString()));
+            Object appIdObj = app.get("applicationId");
+            if (appIdObj == null) {
+                appIdObj = app.get("id");
+            }
+            if (appIdObj != null) {
+                router.navigate(Route.POSTER_APPLICATION_DETAIL, java.util.Map.of("applicationId", appIdObj.toString()));
             }
         });
         
@@ -301,9 +377,10 @@ public class PosterDashboardController implements Initializable {
     private String getBadgeClass(String status) {
         if (status == null) return "badge-default";
         return switch (status) {
-            case "PENDING", "SUBMITTED" -> "badge-warning";
-            case "INTERVIEW", "INTERVIEW_SCHEDULED" -> "badge-info";
-            case "ACCEPTED", "HIRED" -> "badge-success";
+            case "PENDING" -> "badge-warning";
+            case "REVIEWED" -> "badge-info";
+            case "SHORTLISTED" -> "badge-info";
+            case "ACCEPTED" -> "badge-success";
             case "REJECTED" -> "badge-danger";
             default -> "badge-default";
         };

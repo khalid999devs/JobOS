@@ -1,7 +1,6 @@
 package com.jobos.desktop.controller.common;
 
 import com.jobos.desktop.core.session.SessionManager;
-import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Modal;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
@@ -162,7 +161,7 @@ public class SettingsController implements Initializable {
         
         hideErrors();
         changePasswordButton.setDisable(true);
-        LoadingOverlay.show("Changing password...");
+        Toast.info("Changing password...");
         
         Map<String, String> request = Map.of(
             "currentPassword", currentPassword,
@@ -171,7 +170,6 @@ public class SettingsController implements Initializable {
         
         apiClient.post("/api/auth/change-password", request, ApiResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 changePasswordButton.setDisable(false);
                 Toast.success("Password changed successfully");
                 currentPasswordField.clear();
@@ -180,7 +178,6 @@ public class SettingsController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     changePasswordButton.setDisable(false);
                     showPasswordError("Failed to change password. Please check your current password.");
                 });
@@ -218,17 +215,15 @@ public class SettingsController implements Initializable {
         Modal.confirm("Delete Account", 
             "Are you sure you want to delete your account? This action cannot be undone.",
             () -> {
-                LoadingOverlay.show("Deleting account...");
+                Toast.info("Deleting account...");
                 
                 apiClient.delete("/api/users/me")
                     .thenAccept(response -> Platform.runLater(() -> {
-                        LoadingOverlay.hide();
                         Toast.success("Account deleted");
                         sessionManager.logout();
                     }))
                     .exceptionally(e -> {
                         Platform.runLater(() -> {
-                            LoadingOverlay.hide();
                             Toast.error("Failed to delete account");
                         });
                         return null;

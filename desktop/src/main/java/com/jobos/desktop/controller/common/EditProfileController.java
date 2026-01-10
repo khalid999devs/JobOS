@@ -2,7 +2,6 @@ package com.jobos.desktop.controller.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.jobos.desktop.core.session.SessionManager;
-import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.model.UserRole;
 import com.jobos.desktop.service.ApiClient;
@@ -12,13 +11,16 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.net.URL;
@@ -70,6 +72,11 @@ public class EditProfileController implements Initializable {
     @FXML private ToggleButton size51to200;
     @FXML private ToggleButton size201to500;
     @FXML private ToggleButton size500Plus;
+    
+    // Verification Documents Section
+    @FXML private VBox verificationDocsContainer;
+    @FXML private TextField newDocUrlField;
+    private List<String> verificationDocuments = new ArrayList<>();
     
     private final ApiClient apiClient = ApiClient.getInstance();
     private final SessionManager sessionManager = SessionManager.getInstance();
@@ -123,13 +130,12 @@ public class EditProfileController implements Initializable {
     }
     
     private void fetchProfile() {
-        LoadingOverlay.show("Loading profile...");
+        Toast.info("Loading profile...");
         
         // Backend returns ProfileResponse directly, not wrapped in ApiResponse
         apiClient.get("/api/users/me", new TypeReference<ProfileResponse>() {})
             .thenAccept(profile -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     if (profile != null) {
                         currentProfile = profile;
                         sessionManager.setProfile(currentProfile);
@@ -142,7 +148,6 @@ public class EditProfileController implements Initializable {
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to load profile: " + e.getMessage());
                 });
                 return null;
@@ -280,6 +285,12 @@ public class EditProfileController implements Initializable {
                 industryCombo.setValue(poster.getIndustry());
             }
             selectCompanySize(poster.getCompanySize());
+            
+            // Verification Documents
+            if (poster.getVerificationDocuments() != null) {
+                verificationDocuments = new ArrayList<>(poster.getVerificationDocuments());
+                refreshVerificationDocsUI();
+            }
         }
     }
     
@@ -387,7 +398,7 @@ public class EditProfileController implements Initializable {
         
         hideProfileError();
         saveBasicInfoBtn.setDisable(true);
-        LoadingOverlay.show("Saving profile...");
+        Toast.info("Saving profile...");
         
         UpdateProfileRequest request = new UpdateProfileRequest();
         request.setFirstName(firstName);
@@ -399,7 +410,6 @@ public class EditProfileController implements Initializable {
         
         apiClient.patch("/api/users/me", request, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 saveBasicInfoBtn.setDisable(false);
                 Toast.success("Profile updated successfully");
                 // Update session with fresh data
@@ -410,7 +420,6 @@ public class EditProfileController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     saveBasicInfoBtn.setDisable(false);
                     showProfileError("Failed to update profile");
                 });
@@ -420,7 +429,7 @@ public class EditProfileController implements Initializable {
     
     @FXML
     private void onSaveSeekerPreferences() {
-        LoadingOverlay.show("Saving preferences...");
+        Toast.info("Saving preferences...");
         
         Map<String, Object> preferences = new HashMap<>();
         
@@ -448,7 +457,6 @@ public class EditProfileController implements Initializable {
             }
         } catch (NumberFormatException e) {
             Toast.error("Invalid salary value");
-            LoadingOverlay.hide();
             return;
         }
         
@@ -477,7 +485,6 @@ public class EditProfileController implements Initializable {
         
         apiClient.put("/api/users/me/preferences", preferences, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success("Preferences saved successfully");
                 if (response != null) {
                     currentProfile = response;
@@ -486,7 +493,6 @@ public class EditProfileController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to save preferences");
                 });
                 return null;
@@ -495,7 +501,7 @@ public class EditProfileController implements Initializable {
     
     @FXML
     private void onSavePosterProfile() {
-        LoadingOverlay.show("Saving company info...");
+        Toast.info("Saving company info...");
         
         Map<String, Object> posterData = new HashMap<>();
         posterData.put("companyName", companyNameField.getText().trim());
@@ -505,7 +511,6 @@ public class EditProfileController implements Initializable {
         
         apiClient.put("/api/users/me/preferences", posterData, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success("Company info saved successfully");
                 if (response != null) {
                     currentProfile = response;
@@ -514,7 +519,6 @@ public class EditProfileController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to save company info");
                 });
                 return null;
@@ -530,5 +534,111 @@ public class EditProfileController implements Initializable {
     private void hideProfileError() {
         profileErrorLabel.setVisible(false);
         profileErrorLabel.setManaged(false);
+    }
+    
+    private void refreshVerificationDocsUI() {
+        if (verificationDocsContainer == null) return;
+        
+        verificationDocsContainer.getChildren().clear();
+        
+        for (int i = 0; i < verificationDocuments.size(); i++) {
+            final int index = i;
+            String docUrl = verificationDocuments.get(i);
+            
+            HBox docRow = new HBox(12);
+            docRow.setAlignment(Pos.CENTER_LEFT);
+            docRow.setStyle("-fx-background-color: #F9FAFB; -fx-padding: 12; -fx-background-radius: 8;");
+            
+            FontIcon docIcon = new FontIcon("fas-file-alt");
+            docIcon.setIconSize(16);
+            docIcon.setIconColor(javafx.scene.paint.Color.web("#6B7280"));
+            
+            Label urlLabel = new Label(truncateUrl(docUrl));
+            urlLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 13px;");
+            urlLabel.setMaxWidth(350);
+            urlLabel.setTooltip(new Tooltip(docUrl));
+            HBox.setHgrow(urlLabel, javafx.scene.layout.Priority.ALWAYS);
+            
+            Hyperlink viewLink = new Hyperlink("View");
+            viewLink.setStyle("-fx-text-fill: #0F766E;");
+            viewLink.setOnAction(e -> {
+                try {
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI(docUrl));
+                } catch (Exception ex) {
+                    Toast.error("Could not open document URL");
+                }
+            });
+            
+            Button removeBtn = new Button("✕");
+            removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #EF4444; -fx-cursor: hand; -fx-font-size: 14px;");
+            removeBtn.setOnAction(e -> {
+                verificationDocuments.remove(index);
+                refreshVerificationDocsUI();
+            });
+            
+            docRow.getChildren().addAll(docIcon, urlLabel, viewLink, removeBtn);
+            verificationDocsContainer.getChildren().add(docRow);
+        }
+        
+        if (verificationDocuments.isEmpty()) {
+            Label emptyLabel = new Label("No verification documents added yet");
+            emptyLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-style: italic;");
+            verificationDocsContainer.getChildren().add(emptyLabel);
+        }
+    }
+    
+    private String truncateUrl(String url) {
+        if (url == null) return "";
+        if (url.length() <= 50) return url;
+        return url.substring(0, 47) + "...";
+    }
+    
+    @FXML
+    private void onAddVerificationDoc() {
+        if (newDocUrlField == null) return;
+        
+        String url = newDocUrlField.getText().trim();
+        if (url.isEmpty()) {
+            Toast.error("Please enter a document URL");
+            return;
+        }
+        
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            Toast.error("Please enter a valid URL (http:// or https://)");
+            return;
+        }
+        
+        if (verificationDocuments.contains(url)) {
+            Toast.error("This document URL already exists");
+            return;
+        }
+        
+        verificationDocuments.add(url);
+        newDocUrlField.clear();
+        refreshVerificationDocsUI();
+        Toast.info("Document added. Click 'Save Verification Documents' to save.");
+    }
+    
+    @FXML
+    private void onSaveVerificationDocs() {
+        Toast.info("Saving verification documents...");
+        
+        Map<String, Object> posterData = new HashMap<>();
+        posterData.put("verificationDocuments", verificationDocuments);
+        
+        apiClient.put("/api/users/me/preferences", posterData, ProfileResponse.class)
+            .thenAccept(response -> Platform.runLater(() -> {
+                Toast.success("Verification documents saved successfully");
+                if (response != null) {
+                    currentProfile = response;
+                    sessionManager.setProfile(currentProfile);
+                }
+            }))
+            .exceptionally(e -> {
+                Platform.runLater(() -> {
+                    Toast.error("Failed to save verification documents");
+                });
+                return null;
+            });
     }
 }

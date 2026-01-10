@@ -4,8 +4,10 @@ import javafx.animation.RotateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.util.Duration;
@@ -27,27 +29,29 @@ public class LoadingOverlay {
         if (rootContainer == null || currentOverlay != null) return;
         
         currentOverlay = new StackPane();
-        currentOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        currentOverlay.setStyle("-fx-background-color: rgba(250, 250, 250, 0.95);");
         currentOverlay.setAlignment(Pos.CENTER);
         
-        VBox content = new VBox(20);
+        VBox content = new VBox(16);
         content.setAlignment(Pos.CENTER);
+        content.setStyle("-fx-background-color: white; -fx-padding: 32; -fx-background-radius: 16;");
+        content.setMaxWidth(200);
+        content.setMaxHeight(150);
         
-        Arc spinner = new Arc();
-        spinner.setRadiusX(24);
-        spinner.setRadiusY(24);
-        spinner.setStartAngle(0);
-        spinner.setLength(270);
-        spinner.setStyle("-fx-stroke: #1E88E5; -fx-stroke-width: 4; -fx-fill: transparent;");
-        spinner.setStrokeLineCap(StrokeLineCap.ROUND);
+        // Add shadow effect
+        DropShadow shadow = new DropShadow();
+        shadow.setRadius(20);
+        shadow.setOffsetY(4);
+        shadow.setColor(Color.rgb(0, 0, 0, 0.15));
+        content.setEffect(shadow);
         
-        RotateTransition rotate = new RotateTransition(Duration.seconds(1), spinner);
-        rotate.setByAngle(360);
-        rotate.setCycleCount(RotateTransition.INDEFINITE);
-        rotate.play();
+        // Use ProgressIndicator for a nicer look
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setMaxSize(48, 48);
+        spinner.setStyle("-fx-progress-color: #0F766E;");
         
         Label messageLabel = new Label(message);
-        messageLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        messageLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 14px; -fx-font-weight: 500;");
         
         content.getChildren().addAll(spinner, messageLabel);
         currentOverlay.getChildren().add(content);

@@ -24,12 +24,13 @@
             <padding><Insets topRightBottomLeft="20"/></padding>
             
             <HBox spacing="16" alignment="CENTER_LEFT">
-                <VBox alignment="CENTER" prefWidth="64" prefHeight="64" 
+                <VBox fx:id="avatarContainer" alignment="CENTER" prefWidth="64" prefHeight="64" 
                       style="-fx-background-color: #0F766E; -fx-background-radius: 32;">
-                    <Label fx:id="applicantName" text="JD" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    <Label fx:id="avatarInitials" text="JD" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
                 </VBox>
                 <VBox spacing="4" HBox.hgrow="ALWAYS">
-                    <Label fx:id="applicantEmail" text="Loading..." styleClass="label-secondary"/>
+                    <Label fx:id="applicantName" text="Loading..." style="-fx-text-fill: #111827; -fx-font-size: 18px; -fx-font-weight: 600;"/>
+                    <Label fx:id="applicantEmail" text="" styleClass="label-secondary"/>
                     <Label fx:id="appliedDateLabel" text="" styleClass="label-muted"/>
                 </VBox>
             </HBox>

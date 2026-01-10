@@ -1,7 +1,7 @@
 package com.jobos.desktop.controller.notification;
 
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
+import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.NotificationService;
 import javafx.application.Platform;
@@ -51,17 +51,15 @@ public class NotificationsController implements Initializable {
 
     @FXML
     private void onMarkAllRead() {
-        LoadingOverlay.show("Marking all as read...");
+        Toast.info("Marking all as read...");
         
         notificationService.markAllAsRead()
             .thenAccept(response -> Platform.runLater(() -> {
-                LoadingOverlay.hide();
                 Toast.success("All notifications marked as read");
                 loadNotifications();
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     Toast.error("Failed to mark all as read");
                 });
                 return null;
@@ -69,18 +67,17 @@ public class NotificationsController implements Initializable {
     }
 
     private void loadNotifications() {
-        LoadingOverlay.show("Loading notifications...");
+        // Show skeleton loading
+        notificationsList.getChildren().setAll(SkeletonLoader.createSkeletonList(5));
         
         notificationService.getNotifications(currentPage, 20)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     renderNotifications(response);
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    LoadingOverlay.hide();
                     showEmptyState("Failed to load notifications");
                 });
                 return null;

@@ -2,7 +2,6 @@ package com.jobos.desktop.controller.auth;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
 import com.jobos.shared.dto.auth.ForgotPasswordRequest;
@@ -142,9 +141,7 @@ public class ResetPasswordController implements Initializable {
         confirmPasswordField.setDisable(loading);
         
         if (loading) {
-            LoadingOverlay.show("Resetting password...");
-        } else {
-            LoadingOverlay.hide();
+            Toast.info("Resetting password...");
         }
     }
 }
