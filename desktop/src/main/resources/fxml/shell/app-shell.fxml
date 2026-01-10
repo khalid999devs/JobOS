@@ -51,11 +51,15 @@
             <HBox fx:id="headerBar" styleClass="topbar-modern" alignment="CENTER_RIGHT" spacing="12">
                 <Region HBox.hgrow="ALWAYS"/>
                 
-                <HBox alignment="CENTER" spacing="6" styleClass="credits-pill" onMouseClicked="#onCredits">
-                    <FontIcon iconLiteral="fas-coins" iconSize="13" iconColor="#0F766E"/>
-                    <Label fx:id="creditsLabel" text="0" style="-fx-text-fill: #0F766E; -fx-font-size: 13px; -fx-font-weight: 600;"/>
-                    <Label fx:id="planLabel" text="FREE" styleClass="plan-tag"/>
-                </HBox>
+                <Button onAction="#onCredits" styleClass="credits-pill" style="-fx-cursor: hand;">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="6">
+                            <FontIcon iconLiteral="fas-coins" iconSize="13" iconColor="#0F766E"/>
+                            <Label fx:id="creditsLabel" text="0" style="-fx-text-fill: #0F766E; -fx-font-size: 13px; -fx-font-weight: 600;"/>
+                            <Label fx:id="planLabel" text="FREE" styleClass="plan-tag"/>
+                        </HBox>
+                    </graphic>
+                </Button>
                 
                 <Button onAction="#onNotifications" styleClass="topbar-icon-btn">
                     <graphic>

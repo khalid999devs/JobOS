@@ -73,7 +73,7 @@
                     <FlowPane fx:id="tagsContainer" hgap="8" vgap="8"/>
                     
                     <HBox spacing="12" style="-fx-padding: 8 0 0 0;">
-                        <Button fx:id="applyBtn" onAction="#onApply" styleClass="button-primary-teal" style="-fx-min-width: 140; -fx-pref-height: 40;">
+                        <Button fx:id="applyBtn" onAction="#onApply" styleClass="button-primary-teal" style="-fx-min-width: 160; -fx-pref-height: 42;">
                             <graphic>
                                 <HBox spacing="8" alignment="CENTER">
                                     <FontIcon iconLiteral="fas-paper-plane" iconSize="14" iconColor="white"/>
@@ -81,11 +81,11 @@
                                 </HBox>
                             </graphic>
                         </Button>
-                        <Button fx:id="shareBtn" onAction="#onShare" styleClass="button-outline-teal" style="-fx-pref-height: 40;">
+                        <Button fx:id="shareBtn" onAction="#onShare" styleClass="button-outline-teal" style="-fx-min-width: 120; -fx-pref-height: 42;">
                             <graphic>
                                 <HBox spacing="8" alignment="CENTER">
                                     <FontIcon iconLiteral="fas-share-alt" iconSize="14" iconColor="#0F766E"/>
-                                    <Label text="Share" style="-fx-text-fill: #0F766E;"/>
+                                    <Label text="Share" style="-fx-text-fill: #0F766E; -fx-font-weight: 600;"/>
                                 </HBox>
                             </graphic>
                         </Button>
@@ -93,7 +93,7 @@
                 </VBox>
                 
                 <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
-                    <Label text="Salary" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
+                    <Label text="Salary" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
                     <HBox alignment="CENTER_LEFT" spacing="8">
                         <FontIcon iconLiteral="fas-dollar-sign" iconSize="20" iconColor="#0F766E"/>
                         <Label fx:id="salaryLabel" text="Competitive" style="-fx-text-fill: #111827; -fx-font-size: 18px; -fx-font-weight: 600;"/>
@@ -101,28 +101,28 @@
                 </VBox>
                 
                 <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
-                    <Label text="Job Description" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
-                    <WebView fx:id="descriptionWebView" prefHeight="200" style="-fx-background-color: transparent;"/>
+                    <Label text="Job Description" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="descriptionContent" spacing="4"/>
                 </VBox>
                 
                 <VBox fx:id="requirementsSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
-                    <Label text="Requirements" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
-                    <WebView fx:id="requirementsWebView" prefHeight="180" style="-fx-background-color: transparent;"/>
+                    <Label text="Requirements" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="requirementsContent" spacing="4"/>
                 </VBox>
                 
                 <VBox fx:id="responsibilitiesSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
-                    <Label text="Responsibilities" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
-                    <WebView fx:id="responsibilitiesWebView" prefHeight="180" style="-fx-background-color: transparent;"/>
+                    <Label text="Responsibilities" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="responsibilitiesContent" spacing="4"/>
                 </VBox>
                 
                 <VBox fx:id="skillsSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
-                    <Label text="Required Skills" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
+                    <Label text="Required Skills" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
                     <FlowPane fx:id="skillsContainer" hgap="8" vgap="8"/>
                 </VBox>
                 
                 <VBox fx:id="benefitsSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
-                    <Label text="Benefits" style="-fx-text-fill: #111827; -fx-font-size: 15px; -fx-font-weight: 600;"/>
-                    <WebView fx:id="benefitsWebView" prefHeight="150" style="-fx-background-color: transparent;"/>
+                    <Label text="Benefits" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="benefitsContent" spacing="4"/>
                 </VBox>
                 
                 <Region style="-fx-min-height: 40;"/>

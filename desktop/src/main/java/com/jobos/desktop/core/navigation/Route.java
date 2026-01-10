@@ -17,7 +17,7 @@ public enum Route {
     SEEKER_APPLICATIONS("/seeker/applications", true, true, UserRole.SEEKER),
     SEEKER_APPLICATION_DETAIL("/seeker/application-detail", true, true, UserRole.SEEKER),
     SEEKER_CVS("/seeker/cvs", true, true, UserRole.SEEKER),
-    SEEKER_CV_EDITOR("/seeker/cv-editor", true, true, UserRole.SEEKER),
+    SEEKER_CV_EDITOR("/seeker/cv-editor", true, false, UserRole.SEEKER),
     
     POSTER_DASHBOARD("/poster/dashboard", true, true, UserRole.POSTER),
     POSTER_JOB_POSTS("/poster/job-posts", true, true, UserRole.POSTER),

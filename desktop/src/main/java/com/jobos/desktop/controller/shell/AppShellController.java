@@ -135,6 +135,8 @@ public class AppShellController implements Initializable, Router.AppShellAware {
                         String plan = balance.getPlan();
                         if (plan != null && !plan.isEmpty()) {
                             planLabel.setText(plan.toUpperCase());
+                        } else {
+                            planLabel.setText("FREE");
                         }
                     }
                 });
@@ -203,5 +205,12 @@ public class AppShellController implements Initializable, Router.AppShellAware {
         if (notificationCountLabel != null) {
             notificationCountLabel.setText(count > 99 ? "99+" : String.valueOf(count));
         }
+    }
+    
+    /**
+     * Refresh credits info from server - call this after plan changes
+     */
+    public void refreshCreditsInfo() {
+        loadCreditsInfo();
     }
 }

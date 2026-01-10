@@ -10,6 +10,7 @@ public class ApplicationResponse {
     private String company;
     private String location;
     private String status;
+    private String cvId;
     private String cvFileUrl;
     private String coverLetter;
     private String answers;
@@ -62,6 +63,14 @@ public class ApplicationResponse {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCvId() {
+        return cvId;
+    }
+
+    public void setCvId(String cvId) {
+        this.cvId = cvId;
     }
 
     public String getCvFileUrl() {

@@ -33,6 +33,8 @@ public class ProfileResponse {
         private List<String> desiredRoles;
         private List<String> skills;
         private List<String> jobTypes;
+        private List<String> workModes;
+        private List<String> experienceLevels;
         private String workingHours;
         private Integer salaryMin;
         private Integer salaryMax;
@@ -61,6 +63,22 @@ public class ProfileResponse {
 
         public void setJobTypes(List<String> jobTypes) {
             this.jobTypes = jobTypes;
+        }
+
+        public List<String> getWorkModes() {
+            return workModes;
+        }
+
+        public void setWorkModes(List<String> workModes) {
+            this.workModes = workModes;
+        }
+
+        public List<String> getExperienceLevels() {
+            return experienceLevels;
+        }
+
+        public void setExperienceLevels(List<String> experienceLevels) {
+            this.experienceLevels = experienceLevels;
         }
 
         public String getWorkingHours() {

@@ -71,6 +71,7 @@ public class ApplicationService {
         Application application = new Application();
         application.setSeeker(seeker);
         application.setJobPost(jobPost);
+        application.setCvId(request.getCvId());
         application.setCvFileUrl(request.getCvFileUrl());
         application.setCoverLetter(request.getCoverLetter());
         application.setAnswers(request.getAnswers());
@@ -206,6 +207,7 @@ public class ApplicationService {
         response.setCompany(application.getJobPost().getCompany());
         response.setLocation(application.getJobPost().getLocation());
         response.setStatus(application.getStatus().name());
+        response.setCvId(application.getCvId() != null ? application.getCvId().toString() : null);
         response.setCvFileUrl(application.getCvFileUrl());
         response.setCoverLetter(application.getCoverLetter());
         response.setAnswers(application.getAnswers());

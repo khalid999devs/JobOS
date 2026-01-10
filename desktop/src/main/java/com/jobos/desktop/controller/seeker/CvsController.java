@@ -73,7 +73,6 @@ public class CvsController implements Initializable {
         cvService.getTemplates(categoryParam).whenComplete((result, error) -> {
             Platform.runLater(() -> {
                 if (error != null) {
-                    System.err.println("Failed to load templates: " + error.getMessage());
                     renderTemplates(List.of());
                     return;
                 }
@@ -277,7 +276,9 @@ public class CvsController implements Initializable {
                     return;
                 }
                 Toast.success("Template unlocked!");
+                // Refresh templates and open editor with the newly unlocked template
                 loadTemplates();
+                createNewCV(template.getId(), template.getName());
             });
         });
     }
@@ -302,6 +303,11 @@ public class CvsController implements Initializable {
                         Toast.error("Failed to create CV");
                         return;
                     }
+                    if (cv == null || cv.getId() == null) {
+                        Toast.error("CV created but no ID returned");
+                        loadMyCVs();
+                        return;
+                    }
                     Toast.success("CV created!");
                     Map<String, Object> params = new HashMap<>();
                     params.put("cvId", cv.getId());
@@ -319,7 +325,6 @@ public class CvsController implements Initializable {
             Platform.runLater(() -> {
                 showLoading(false);
                 if (error != null) {
-                    System.err.println("Failed to load CVs: " + error.getMessage());
                     showEmpty(true);
                     return;
                 }
@@ -361,16 +366,22 @@ public class CvsController implements Initializable {
         
         // Default badge
         if (cv.getIsDefault() != null && cv.getIsDefault()) {
-            HBox defaultBadge = new HBox();
+            HBox defaultBadge = new HBox(4);
             defaultBadge.setAlignment(Pos.CENTER);
-            defaultBadge.setPadding(new Insets(2, 6, 2, 6));
+            defaultBadge.setPadding(new Insets(3, 8, 3, 8));
             defaultBadge.setStyle("-fx-background-color: #0F766E; -fx-background-radius: 4;");
+            defaultBadge.setMaxWidth(Region.USE_PREF_SIZE);
+            defaultBadge.setMaxHeight(Region.USE_PREF_SIZE);
             StackPane.setAlignment(defaultBadge, Pos.TOP_LEFT);
             StackPane.setMargin(defaultBadge, new Insets(8, 0, 0, 8));
             
+            FontIcon starIcon = new FontIcon("fas-star");
+            starIcon.setIconSize(10);
+            starIcon.setIconColor(Color.WHITE);
+            
             Label defaultLabel = new Label("Default");
-            defaultLabel.setStyle("-fx-text-fill: white; -fx-font-size: 9px; -fx-font-weight: 600;");
-            defaultBadge.getChildren().add(defaultLabel);
+            defaultLabel.setStyle("-fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: 600;");
+            defaultBadge.getChildren().addAll(starIcon, defaultLabel);
             thumbnailContainer.getChildren().add(defaultBadge);
         }
         

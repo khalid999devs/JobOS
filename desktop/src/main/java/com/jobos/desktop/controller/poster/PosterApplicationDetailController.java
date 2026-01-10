@@ -111,6 +111,12 @@ public class PosterApplicationDetailController implements Initializable {
             letterArea.setEditable(false);
             letterArea.setPrefRowCount(8);
             letterArea.getStyleClass().add("text-area-readonly");
+            
+            // Auto-resize based on content
+            String text = coverLetter != null ? coverLetter : "";
+            int lines = Math.max(8, Math.min(20, text.split("\n", -1).length));
+            letterArea.setPrefRowCount(lines);
+            
             coverLetterContainer.getChildren().add(letterArea);
         } else {
             Label noLetter = new Label("No cover letter provided");
@@ -163,6 +169,12 @@ public class PosterApplicationDetailController implements Initializable {
             answersArea.setEditable(false);
             answersArea.setPrefRowCount(5);
             answersArea.getStyleClass().add("text-area-readonly");
+            
+            // Auto-resize based on content
+            String text = answers != null ? answers : "";
+            int lines = Math.max(5, Math.min(20, text.split("\n", -1).length));
+            answersArea.setPrefRowCount(lines);
+            
             answersContainer.getChildren().add(answersArea);
         } else {
             Label noAnswers = new Label("No additional answers provided");

@@ -5,6 +5,7 @@ import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Modal;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
+import com.jobos.desktop.service.NotificationService;
 import com.jobos.shared.dto.common.ApiResponse;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -45,6 +46,7 @@ public class SettingsController implements Initializable {
     
     private final ApiClient apiClient = ApiClient.getInstance();
     private final SessionManager sessionManager = SessionManager.getInstance();
+    private final NotificationService notificationService = NotificationService.getInstance();
     private final Preferences prefs = Preferences.userNodeForPackage(SettingsController.class);
     
     private static final String PREF_THEME = "theme";
@@ -83,21 +85,35 @@ public class SettingsController implements Initializable {
             String theme = themeCombo.getValue();
             prefs.put(PREF_THEME, theme);
             Toast.success("Theme changed to " + theme);
-            // TODO: Implement actual theme switching
+            // Note: Theme switching is visual only in current implementation
         });
         
         desktopNotificationsCheck.setOnAction(e -> {
-            prefs.putBoolean(PREF_DESKTOP_NOTIFICATIONS, desktopNotificationsCheck.isSelected());
+            boolean enabled = desktopNotificationsCheck.isSelected();
+            prefs.putBoolean(PREF_DESKTOP_NOTIFICATIONS, enabled);
+            
+            // Control notification polling based on setting
+            if (enabled) {
+                notificationService.startPolling(30);
+                Toast.success("Desktop notifications enabled");
+            } else {
+                notificationService.stopPolling();
+                Toast.info("Desktop notifications disabled");
+            }
             updateNotificationPreferences();
         });
         
         emailNotificationsCheck.setOnAction(e -> {
-            prefs.putBoolean(PREF_EMAIL_NOTIFICATIONS, emailNotificationsCheck.isSelected());
+            boolean enabled = emailNotificationsCheck.isSelected();
+            prefs.putBoolean(PREF_EMAIL_NOTIFICATIONS, enabled);
+            Toast.success(enabled ? "Email notifications enabled" : "Email notifications disabled");
             updateNotificationPreferences();
         });
         
         jobAlertsCheck.setOnAction(e -> {
-            prefs.putBoolean(PREF_JOB_ALERTS, jobAlertsCheck.isSelected());
+            boolean enabled = jobAlertsCheck.isSelected();
+            prefs.putBoolean(PREF_JOB_ALERTS, enabled);
+            Toast.success(enabled ? "Job alerts enabled" : "Job alerts disabled");
             updateNotificationPreferences();
         });
     }

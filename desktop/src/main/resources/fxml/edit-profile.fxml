@@ -129,6 +129,25 @@
                 </HBox>
             </VBox>
             
+            <VBox spacing="8">
+                <Label text="Work Mode Preference" styleClass="form-label"/>
+                <HBox spacing="12">
+                    <CheckBox fx:id="remoteCheck" text="Remote"/>
+                    <CheckBox fx:id="hybridCheck" text="Hybrid"/>
+                    <CheckBox fx:id="onsiteCheck" text="On-site"/>
+                </HBox>
+            </VBox>
+            
+            <VBox spacing="8">
+                <Label text="Experience Level" styleClass="form-label"/>
+                <HBox spacing="12">
+                    <CheckBox fx:id="entryLevelCheck" text="Entry Level"/>
+                    <CheckBox fx:id="midLevelCheck" text="Mid Level"/>
+                    <CheckBox fx:id="seniorLevelCheck" text="Senior Level"/>
+                    <CheckBox fx:id="leadLevelCheck" text="Lead/Manager"/>
+                </HBox>
+            </VBox>
+            
             <Button text="Save Preferences" onAction="#onSaveSeekerPreferences" styleClass="button-primary-teal"/>
         </VBox>
         

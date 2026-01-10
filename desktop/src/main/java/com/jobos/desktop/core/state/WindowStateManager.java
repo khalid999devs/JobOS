@@ -25,7 +25,7 @@ public class WindowStateManager {
             try {
                 return mapper.readValue(stateFile, WindowState.class);
             } catch (IOException e) {
-                System.err.println("Failed to load window state: " + e.getMessage());
+                // Ignore load error
             }
         }
         return new WindowState();
@@ -35,7 +35,7 @@ public class WindowStateManager {
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(stateFile, state);
         } catch (IOException e) {
-            System.err.println("Failed to save window state: " + e.getMessage());
+            // Silently handle error
         }
     }
     

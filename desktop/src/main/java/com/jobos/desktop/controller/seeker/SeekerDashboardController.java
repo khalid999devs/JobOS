@@ -1,12 +1,12 @@
 package com.jobos.desktop.controller.seeker;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.jobos.desktop.core.session.SessionManager;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
 import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
-import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.profile.ProfileResponse;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -22,6 +22,7 @@ import javafx.scene.layout.VBox;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class SeekerDashboardController implements Initializable {
@@ -47,29 +48,79 @@ public class SeekerDashboardController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupWelcome();
         loadDashboardData();
-        loadCVsCount();
     }
     
     private void setupWelcome() {
+        // First try from session
         ProfileResponse profile = sessionManager.getProfile();
-        if (profile != null) {
-            String name = profile.getFirstName() != null ? profile.getFirstName() : "User";
-            welcomeLabel.setText("Welcome back!");
+        if (profile != null && profile.getFirstName() != null) {
+            String name = profile.getFirstName();
+            if (profile.getLastName() != null) {
+                name += " " + profile.getLastName();
+            }
+            welcomeLabel.setText("Welcome back, " + name + "!");
         } else {
-            welcomeLabel.setText("Welcome back!");
+            // Fetch fresh profile if not in session
+            apiClient.get("/api/users/me", new TypeReference<ProfileResponse>() {})
+                .thenAccept(p -> {
+                    if (p != null) {
+                        sessionManager.updateProfile(p);
+                        Platform.runLater(() -> {
+                            String name = p.getFirstName() != null ? p.getFirstName() : "User";
+                            if (p.getLastName() != null) {
+                                name += " " + p.getLastName();
+                            }
+                            welcomeLabel.setText("Welcome back, " + name + "!");
+                        });
+                    }
+                })
+                .exceptionally(e -> null);
         }
     }
     
-    private void loadCVsCount() {
-        apiClient.get("/api/cvs", ApiResponse.class)
+    private void loadDashboardData() {
+        LoadingOverlay.show("Loading dashboard...");
+        
+        // Load applications with direct API call (backend doesn't use ApiResponse wrapper)
+        apiClient.get("/api/applications?page=0&size=20", new TypeReference<Map<String, Object>>() {})
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    @SuppressWarnings("unchecked")
-                    ApiResponse<Object> apiResp = (ApiResponse<Object>) response;
-                    Object result = apiResp.getResult();
-                    
-                    if (result instanceof List<?> cvs) {
-                        cvsMetric.setText(String.valueOf(cvs.size()));
+                    if (response != null) {
+                        Object applications = response.get("applications");
+                        if (applications instanceof List<?> appList) {
+                            updateStats(appList);
+                            updateRecentApplications(appList);
+                        } else {
+                            setDefaultStats();
+                            updateRecentApplications(new java.util.ArrayList<>());
+                        }
+                    } else {
+                        setDefaultStats();
+                        updateRecentApplications(new java.util.ArrayList<>());
+                    }
+                    loadAdditionalData();
+                });
+            })
+            .exceptionally(e -> {
+                Platform.runLater(() -> {
+                    setDefaultStats();
+                    updateRecentApplications(new java.util.ArrayList<>());
+                    loadAdditionalData();
+                });
+                return null;
+            });
+    }
+    
+    private void loadAdditionalData() {
+        // Load CVs count
+        apiClient.get("/api/cvs?page=0&size=100", new TypeReference<Map<String, Object>>() {})
+            .thenAccept(response -> {
+                Platform.runLater(() -> {
+                    if (response != null) {
+                        Object content = response.get("content");
+                        if (content instanceof List<?> cvs) {
+                            cvsMetric.setText(String.valueOf(cvs.size()));
+                        }
                     }
                 });
             })
@@ -77,61 +128,41 @@ public class SeekerDashboardController implements Initializable {
                 Platform.runLater(() -> cvsMetric.setText("0"));
                 return null;
             });
-    }
-    
-    private void loadDashboardData() {
-        LoadingOverlay.show("Loading dashboard...");
         
-        apiClient.get("/api/applications/my", ApiResponse.class)
+        // Load saved jobs count
+        apiClient.get("/api/jobs/saved?page=0&size=1", new TypeReference<Map<String, Object>>() {})
             .thenAccept(response -> {
                 Platform.runLater(() -> {
-                    @SuppressWarnings("unchecked")
-                    ApiResponse<Object> apiResp = (ApiResponse<Object>) response;
-                    Object result = apiResp.getResult();
-                    
-                    if (result instanceof LinkedHashMap<?, ?> pageData) {
-                        // Handle paginated response
-                        Object content = pageData.get("content");
-                        if (content instanceof List<?> applications) {
-                            updateStats(applications);
-                            updateRecentApplications(applications);
-                        }
-                    } else if (result instanceof List<?> applications) {
-                        updateStats(applications);
-                        updateRecentApplications(applications);
+                    if (response != null && response.get("totalElements") != null) {
+                        savedJobsLabel.setText(String.valueOf(response.get("totalElements")));
                     }
-                    
-                    loadRecommendedJobs();
                 });
             })
-            .exceptionally(e -> {
-                Platform.runLater(() -> {
-                    LoadingOverlay.hide();
-                    setDefaultStats();
-                });
-                return null;
-            });
+            .exceptionally(e -> null);
+        
+        // Load recommended jobs
+        loadRecommendedJobs();
     }
     
     private void loadRecommendedJobs() {
-        apiClient.get("/api/jobs?limit=4&status=OPEN", ApiResponse.class)
+        com.jobos.shared.dto.job.JobSearchRequest request = new com.jobos.shared.dto.job.JobSearchRequest();
+        request.setPage(0);
+        request.setSize(4);
+        
+        apiClient.post("/api/jobs/search", request, com.jobos.shared.dto.job.JobSearchResponse.class)
             .thenAccept(response -> {
                 Platform.runLater(() -> {
                     LoadingOverlay.hide();
-                    
-                    @SuppressWarnings("unchecked")
-                    ApiResponse<Object> apiResp = (ApiResponse<Object>) response;
-                    Object result = apiResp.getResult();
-                    
-                    if (result instanceof List<?> jobs) {
-                        updateRecommendedJobs(jobs);
+                    if (response != null && response.getJobs() != null) {
+                        updateRecommendedJobs(response.getJobs());
+                        if (response.getTotalElements() != null) {
+                            availableJobsMetric.setText(response.getTotalElements() > 1000 ? "1000+" : String.valueOf(response.getTotalElements()));
+                        }
                     }
                 });
             })
             .exceptionally(e -> {
-                Platform.runLater(() -> {
-                    LoadingOverlay.hide();
-                });
+                Platform.runLater(() -> LoadingOverlay.hide());
                 return null;
             });
     }
@@ -265,8 +296,10 @@ public class SeekerDashboardController implements Initializable {
         recommendedJobsContainer.getChildren().clear();
         
         for (Object job : jobs) {
-            if (job instanceof LinkedHashMap<?, ?> map) {
-                recommendedJobsContainer.getChildren().add(createJobCard(map));
+            if (job instanceof com.jobos.shared.dto.job.JobListResponse jobResp) {
+                recommendedJobsContainer.getChildren().add(createJobCard(jobResp));
+            } else if (job instanceof LinkedHashMap<?, ?> map) {
+                recommendedJobsContainer.getChildren().add(createJobCardFromMap(map));
             }
         }
         
@@ -277,7 +310,46 @@ public class SeekerDashboardController implements Initializable {
         }
     }
     
-    private HBox createJobCard(LinkedHashMap<?, ?> job) {
+    private HBox createJobCard(com.jobos.shared.dto.job.JobListResponse job) {
+        HBox card = new HBox(12);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setPadding(new Insets(12, 16, 12, 16));
+        card.setStyle("-fx-background-color: #F9FAFB; -fx-background-radius: 8; -fx-cursor: hand;");
+        
+        VBox textBox = new VBox(2);
+        HBox.setHgrow(textBox, Priority.ALWAYS);
+        
+        Label titleLabel = new Label(job.getTitle() != null ? job.getTitle() : "Unknown");
+        titleLabel.setStyle("-fx-text-fill: #111827; -fx-font-size: 14px; -fx-font-weight: 600;");
+        
+        HBox metaRow = new HBox(8);
+        if (job.getCompany() != null) {
+            Label companyLabel = new Label(job.getCompany());
+            companyLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 12px;");
+            metaRow.getChildren().add(companyLabel);
+        }
+        if (job.getLocation() != null) {
+            Label locLabel = new Label("📍 " + job.getLocation());
+            locLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 11px;");
+            metaRow.getChildren().add(locLabel);
+        }
+        
+        textBox.getChildren().addAll(titleLabel, metaRow);
+        card.getChildren().add(textBox);
+        
+        card.setOnMouseClicked(e -> {
+            if (job.getId() != null) {
+                router.navigate(Route.SEEKER_JOB_DETAIL, java.util.Map.of("id", job.getId()));
+            }
+        });
+        
+        card.setOnMouseEntered(ev -> card.setStyle("-fx-background-color: #F0FDFA; -fx-background-radius: 8; -fx-cursor: hand;"));
+        card.setOnMouseExited(ev -> card.setStyle("-fx-background-color: #F9FAFB; -fx-background-radius: 8; -fx-cursor: hand;"));
+        
+        return card;
+    }
+    
+    private HBox createJobCardFromMap(LinkedHashMap<?, ?> job) {
         HBox card = new HBox(12);
         card.setAlignment(Pos.CENTER_LEFT);
         card.setPadding(new Insets(12, 16, 12, 16));
@@ -311,7 +383,7 @@ public class SeekerDashboardController implements Initializable {
         card.setOnMouseClicked(e -> {
             Object idObj = job.get("id");
             if (idObj != null) {
-                router.navigate(Route.SEEKER_JOB_DETAIL, java.util.Map.of("jobId", idObj.toString()));
+                router.navigate(Route.SEEKER_JOB_DETAIL, java.util.Map.of("id", idObj.toString()));
             }
         });
         

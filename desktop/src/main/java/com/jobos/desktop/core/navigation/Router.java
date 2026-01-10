@@ -24,6 +24,7 @@ public class Router {
     private StackPane contentArea;
     private Consumer<String> titleUpdater;
     private boolean shellInitialized = false;
+    private AppShellAware shellController;
     
     private Router() {
         this.routeGuard = RouteGuard.getInstance();
@@ -85,6 +86,8 @@ public class Router {
             }
         } catch (IOException e) {
             System.err.println("Failed to load route: " + route.getPath());
+            System.err.println("FXML path: " + route.getFxmlPath());
+            e.printStackTrace();
         }
     }
     
@@ -134,6 +137,7 @@ public class Router {
             aware.setRouter(this);
             contentArea = aware.getContentArea();
             titleUpdater = aware::setTitle;
+            shellController = aware;
         }
     }
     
@@ -161,11 +165,22 @@ public class Router {
         shellInitialized = false;
         appShell = null;
         contentArea = null;
+        shellController = null;
+    }
+    
+    /**
+     * Refresh the credits display in the app shell header
+     */
+    public void refreshShellCredits() {
+        if (shellController != null) {
+            shellController.refreshCreditsInfo();
+        }
     }
     
     public interface AppShellAware {
         void setRouter(Router router);
         StackPane getContentArea();
         void setTitle(String title);
+        default void refreshCreditsInfo() {}
     }
 }

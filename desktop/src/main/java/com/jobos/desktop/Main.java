@@ -10,7 +10,6 @@ import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Modal;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
-import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.profile.ProfileResponse;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -20,7 +19,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.util.Map;
 import java.util.Objects;
 
 public class Main extends Application {
@@ -90,31 +88,23 @@ public class Main extends Application {
     
     private void refreshProfileInBackground() {
         SessionManager session = SessionManager.getInstance();
-        ApiClient.getInstance().get("/api/users/me", new TypeReference<ApiResponse<ProfileResponse>>() {})
-            .thenAccept(response -> {
-                if (response != null && response.isSuccess() && response.getResult() != null) {
-                    ProfileResponse profile = parseProfile(response.getResult());
-                    if (profile != null) {
-                        Platform.runLater(() -> session.updateProfile(profile));
-                    }
+        ApiClient.getInstance().get("/api/users/me", new TypeReference<ProfileResponse>() {})
+            .thenAccept(profile -> {
+                if (profile != null) {
+                    Platform.runLater(() -> session.updateProfile(profile));
                 }
             })
             .exceptionally(e -> null);
     }
     
     private void fetchProfileAndNavigate(SessionManager session, Router router) {
-        ApiClient.getInstance().get("/api/users/me", new TypeReference<ApiResponse<ProfileResponse>>() {})
-            .thenAccept(response -> {
+        ApiClient.getInstance().get("/api/users/me", new TypeReference<ProfileResponse>() {})
+            .thenAccept(profile -> {
                 Platform.runLater(() -> {
                     LoadingOverlay.hide();
-                    if (response != null && response.isSuccess() && response.getResult() != null) {
-                        ProfileResponse profile = parseProfile(response.getResult());
-                        if (profile != null) {
-                            session.updateProfile(profile);
-                            router.navigateToRoleDashboard();
-                        } else {
-                            router.navigate(Route.WELCOME);
-                        }
+                    if (profile != null) {
+                        session.updateProfile(profile);
+                        router.navigateToRoleDashboard();
                     } else {
                         router.navigate(Route.WELCOME);
                     }
@@ -127,33 +117,6 @@ public class Main extends Application {
                 });
                 return null;
             });
-    }
-    
-    @SuppressWarnings("unchecked")
-    private ProfileResponse parseProfile(Object result) {
-        if (result == null) return null;
-        
-        if (result instanceof ProfileResponse) {
-            return (ProfileResponse) result;
-        }
-        
-        if (result instanceof Map) {
-            Map<String, Object> map = (Map<String, Object>) result;
-            ProfileResponse profile = new ProfileResponse();
-            profile.setFirstName((String) map.get("firstName"));
-            profile.setLastName((String) map.get("lastName"));
-            profile.setEmail((String) map.get("email"));
-            profile.setRole((String) map.get("role"));
-            if (map.get("id") != null) {
-                profile.setId(String.valueOf(map.get("id")));
-            }
-            if (map.get("profileCompleted") instanceof Boolean) {
-                profile.setProfileCompleted((Boolean) map.get("profileCompleted"));
-            }
-            return profile;
-        }
-        
-        return null;
     }
     
     private void updateRoot(Parent root) {

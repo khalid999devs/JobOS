@@ -2,7 +2,6 @@ package com.jobos.desktop.controller.seeker;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
-import com.jobos.desktop.core.ui.RichTextRenderer;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.JobService;
 import com.jobos.shared.dto.job.JobPostResponse;
@@ -16,7 +15,8 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.web.WebView;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
@@ -38,10 +38,10 @@ public class JobDetailController implements Initializable {
     @FXML private Label jobTypeLabel;
     @FXML private Label postedLabel;
     @FXML private Label salaryLabel;
-    @FXML private WebView descriptionWebView;
-    @FXML private WebView requirementsWebView;
-    @FXML private WebView responsibilitiesWebView;
-    @FXML private WebView benefitsWebView;
+    @FXML private VBox descriptionContent;
+    @FXML private VBox requirementsContent;
+    @FXML private VBox responsibilitiesContent;
+    @FXML private VBox benefitsContent;
     @FXML private FlowPane tagsContainer;
     @FXML private FlowPane skillsContainer;
     @FXML private VBox requirementsSection;
@@ -98,12 +98,12 @@ public class JobDetailController implements Initializable {
             salaryLabel.setText("Competitive");
         }
         
-        // Render rich text content
-        RichTextRenderer.renderMarkdown(descriptionWebView, 
-            job.getDescription() != null ? job.getDescription() : "No description provided.");
+        // Render text content
+        String description = job.getDescription();
+        renderTextContent(descriptionContent, description != null && !description.isBlank() ? description : "No description provided for this job posting.");
         
         if (job.getRequirements() != null && !job.getRequirements().isEmpty()) {
-            RichTextRenderer.renderMarkdown(requirementsWebView, job.getRequirements());
+            renderTextContent(requirementsContent, job.getRequirements());
             requirementsSection.setVisible(true);
             requirementsSection.setManaged(true);
         } else {
@@ -112,7 +112,7 @@ public class JobDetailController implements Initializable {
         }
         
         if (job.getResponsibilities() != null && !job.getResponsibilities().isEmpty()) {
-            RichTextRenderer.renderMarkdown(responsibilitiesWebView, job.getResponsibilities());
+            renderTextContent(responsibilitiesContent, job.getResponsibilities());
             responsibilitiesSection.setVisible(true);
             responsibilitiesSection.setManaged(true);
         } else {
@@ -121,7 +121,7 @@ public class JobDetailController implements Initializable {
         }
         
         if (job.getBenefits() != null && !job.getBenefits().isEmpty()) {
-            RichTextRenderer.renderMarkdown(benefitsWebView, job.getBenefits());
+            renderTextContent(benefitsContent, job.getBenefits());
             benefitsSection.setVisible(true);
             benefitsSection.setManaged(true);
         } else {
@@ -142,12 +142,15 @@ public class JobDetailController implements Initializable {
     private void updateApplyButton() {
         if (hasApplied) {
             applyBtn.setDisable(true);
-            applyBtn.setStyle("-fx-background-color: #9CA3AF; -fx-min-width: 140; -fx-pref-height: 40;");
+            // Better visual: gray background with clear text (more opacity)
+            applyBtn.setStyle("-fx-background-color: #D1D5DB; -fx-min-width: 160; -fx-pref-height: 42; -fx-opacity: 0.9;");
             applyBtnLabel.setText("Already Applied");
+            applyBtnLabel.setStyle("-fx-text-fill: #4B5563; -fx-font-weight: 600;");
         } else {
             applyBtn.setDisable(false);
-            applyBtn.setStyle("-fx-min-width: 140; -fx-pref-height: 40;");
+            applyBtn.setStyle("-fx-min-width: 160; -fx-pref-height: 42;");
             applyBtnLabel.setText("Apply Now");
+            applyBtnLabel.setStyle("-fx-text-fill: white; -fx-font-weight: 600;");
         }
     }
 
@@ -324,5 +327,56 @@ public class JobDetailController implements Initializable {
             case "AUD" -> "A$";
             default -> currency + " ";
         };
+    }
+    
+    private void renderTextContent(VBox container, String text) {
+        container.getChildren().clear();
+        
+        if (text == null || text.isBlank()) {
+            Label emptyLabel = new Label("No content provided");
+            emptyLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-style: italic;");
+            container.getChildren().add(emptyLabel);
+            return;
+        }
+        
+        // Split by lines and render with basic formatting
+        String[] lines = text.split("\n");
+        
+        for (String line : lines) {
+            String trimmed = line.trim();
+            
+            if (trimmed.isEmpty()) {
+                // Add spacing for empty lines
+                Label spacer = new Label("");
+                spacer.setStyle("-fx-padding: 4 0 0 0;");
+                container.getChildren().add(spacer);
+                continue;
+            }
+            
+            Label lineLabel = new Label(line);
+            lineLabel.setWrapText(true);
+            lineLabel.setMaxWidth(Double.MAX_VALUE);
+            
+            // Style based on line type
+            if (trimmed.startsWith("#")) {
+                // Header
+                lineLabel.setStyle("-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700; -fx-padding: 8 0 4 0;");
+                lineLabel.setText(trimmed.substring(1).trim());
+            } else if (trimmed.startsWith("-") || trimmed.startsWith("•") || trimmed.startsWith("*")) {
+                // Bullet point
+                lineLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 14px; -fx-padding: 2 0 2 16;");
+                if (!trimmed.startsWith("•")) {
+                    lineLabel.setText("• " + trimmed.substring(1).trim());
+                }
+            } else if (trimmed.matches("^\\d+\\.\\.+")) {
+                // Numbered list
+                lineLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 14px; -fx-padding: 2 0 2 16;");
+            } else {
+                // Regular text
+                lineLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 14px; -fx-line-spacing: 1.5; -fx-padding: 2 0 2 0;");
+            }
+            
+            container.getChildren().add(lineLabel);
+        }
     }
 }

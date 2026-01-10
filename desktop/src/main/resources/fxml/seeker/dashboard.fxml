@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
@@ -133,8 +134,9 @@
     <HBox spacing="24">
         <VBox spacing="16" styleClass="card-modern" HBox.hgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT">
-                <Label text="Recent Applications" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;" HBox.hgrow="ALWAYS"/>
-                <Hyperlink text="View all" onAction="#onViewApplications" style="-fx-text-fill: #0F766E;"/>
+                <Label text="Recent Applications" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Hyperlink text="View all" onAction="#onViewApplications" style="-fx-text-fill: #0F766E; -fx-font-size: 13px; -fx-font-weight: 500;"/>
             </HBox>
             <VBox fx:id="recentApplicationsList" spacing="12">
             </VBox>
@@ -142,8 +144,9 @@
         
         <VBox spacing="16" styleClass="card-modern" HBox.hgrow="ALWAYS">
             <HBox alignment="CENTER_LEFT">
-                <Label text="Recommended Jobs" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;" HBox.hgrow="ALWAYS"/>
-                <Hyperlink text="Browse all" onAction="#onBrowseJobs" style="-fx-text-fill: #0F766E;"/>
+                <Label text="Recommended Jobs" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Hyperlink text="Browse all" onAction="#onBrowseJobs" style="-fx-text-fill: #0F766E; -fx-font-size: 13px; -fx-font-weight: 500;"/>
             </HBox>
             <VBox fx:id="recommendedJobsContainer" spacing="12">
             </VBox>

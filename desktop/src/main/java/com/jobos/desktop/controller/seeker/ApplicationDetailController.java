@@ -4,8 +4,11 @@ import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApplicationService;
+import com.jobos.desktop.service.CVService;
+import com.jobos.desktop.util.CvPdfGenerator;
 import com.jobos.shared.dto.application.ApplicationResponse;
 import com.jobos.shared.dto.common.ApiResponse;
+import com.jobos.shared.dto.cv.CVResponse;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,8 +17,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.scene.control.Alert.AlertType;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.io.File;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,12 +38,13 @@ public class ApplicationDetailController implements Initializable {
     @FXML private Label coverLetterContent;
     @FXML private VBox cvContainer;
     @FXML private Label cvInfoLabel;
-    @FXML private VBox answersContainer;
+    @FXML private VBox answersContainer;;
     @FXML private VBox answersContent;
     @FXML private VBox loadingContainer;
     @FXML private StackPane cvPreviewContainer;
 
     private final ApplicationService applicationService = new ApplicationService();
+    private final CVService cvService = new CVService();
     private String applicationId;
     private ApplicationResponse application;
 
@@ -243,19 +250,97 @@ public class ApplicationDetailController implements Initializable {
     }
 
     @FXML
-    private void onDownloadCV() {
-        if (application != null && application.getCvFileUrl() != null) {
-            // Open CV URL in browser or download
-            try {
-                java.awt.Desktop.getDesktop().browse(new java.net.URI(application.getCvFileUrl()));
-            } catch (Exception e) {
-                Toast.error("Failed to open CV");
-            }
+    public void onDownloadCV() {
+        if (application == null) {
+            showErrorDialog("Application Data Not Available", 
+                "Unable to download CV because the application data is not loaded.", 
+                "Please try refreshing the page or contact support if the issue persists.");
+            return;
         }
+        
+        String cvId = application.getCvId();
+        if (cvId == null || cvId.isBlank()) {
+            showErrorDialog("CV Not Available", 
+                "No CV is associated with this application.", 
+                "This may be an older application created before CV tracking was implemented. Please create a new application to download the CV.");
+            return;
+        }
+        
+        Toast.info("Fetching CV data...");
+        
+        cvService.getCVById(cvId).whenComplete((cv, error) -> {
+            Platform.runLater(() -> {
+                if (error != null) {
+                    showErrorDialog("Failed to Fetch CV", 
+                        "An error occurred while retrieving the CV data from the server.", 
+                        "Error: " + error.getMessage());
+                    return;
+                }
+                
+                if (cv == null) {
+                    showErrorDialog("CV Not Found", 
+                        "The CV associated with this application could not be found.", 
+                        "The CV may have been deleted or is no longer available.");
+                    return;
+                }
+                
+                String fileName = cv.getTitle() != null ? 
+                    cv.getTitle().replaceAll("[^a-zA-Z0-9\\s]", "").replaceAll("\\s+", "_") + ".pdf" :
+                    "CV_" + System.currentTimeMillis() + ".pdf";
+                
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save CV as PDF");
+                fileChooser.setInitialFileName(fileName);
+                fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+                );
+                
+                try {
+                    File downloadsDir = new File(System.getProperty("user.home") + "/Downloads");
+                    if (downloadsDir.exists()) {
+                        fileChooser.setInitialDirectory(downloadsDir);
+                    }
+                } catch (Exception e) {
+                    // Ignore if can't set initial directory
+                }
+                
+                File saveFile = fileChooser.showSaveDialog(cvContainer.getScene().getWindow());
+                if (saveFile == null) {
+                    return;
+                }
+                
+                Toast.info("Generating PDF...");
+                
+                try {
+                    CvPdfGenerator.generatePdf(cv, saveFile);
+                    Toast.success("CV downloaded successfully to " + saveFile.getName());
+                    
+                    try {
+                        if (java.awt.Desktop.isDesktopSupported()) {
+                            java.awt.Desktop.getDesktop().open(saveFile);
+                        }
+                    } catch (Exception e) {
+                        // Ignore if can't open PDF viewer
+                    }
+                } catch (Exception e) {
+                    showErrorDialog("Failed to Generate PDF", 
+                        "An error occurred while generating the PDF file.", 
+                        "Error: " + e.getMessage());
+                }
+            });
+        });
     }
 
     private void showLoading(boolean show) {
         loadingContainer.setVisible(show);
         loadingContainer.setManaged(show);
+    }
+    
+    private void showErrorDialog(String title, String header, String content) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

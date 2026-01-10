@@ -6,7 +6,6 @@ import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.model.UserRole;
 import com.jobos.desktop.service.ApiClient;
-import com.jobos.shared.dto.common.ApiResponse;
 import com.jobos.shared.dto.profile.ProfileResponse;
 import com.jobos.shared.dto.profile.UpdateProfileRequest;
 import javafx.application.Platform;
@@ -53,6 +52,13 @@ public class EditProfileController implements Initializable {
     @FXML private CheckBox partTimeCheck;
     @FXML private CheckBox contractCheck;
     @FXML private CheckBox internshipCheck;
+    @FXML private CheckBox remoteCheck;
+    @FXML private CheckBox hybridCheck;
+    @FXML private CheckBox onsiteCheck;
+    @FXML private CheckBox entryLevelCheck;
+    @FXML private CheckBox midLevelCheck;
+    @FXML private CheckBox seniorLevelCheck;
+    @FXML private CheckBox leadLevelCheck;
     
     // Poster Profile Section
     @FXML private VBox posterProfileSection;
@@ -119,22 +125,25 @@ public class EditProfileController implements Initializable {
     private void fetchProfile() {
         LoadingOverlay.show("Loading profile...");
         
-        apiClient.get("/api/users/me", new TypeReference<ApiResponse<ProfileResponse>>() {})
-            .thenAccept(response -> {
+        // Backend returns ProfileResponse directly, not wrapped in ApiResponse
+        apiClient.get("/api/users/me", new TypeReference<ProfileResponse>() {})
+            .thenAccept(profile -> {
                 Platform.runLater(() -> {
                     LoadingOverlay.hide();
-                    if (response != null && response.isSuccess()) {
-                        currentProfile = parseProfile(response.getResult());
+                    if (profile != null) {
+                        currentProfile = profile;
                         sessionManager.setProfile(currentProfile);
                         populateFields(currentProfile);
                         showRoleSections();
+                    } else {
+                        Toast.error("Profile not found");
                     }
                 });
             })
             .exceptionally(e -> {
                 Platform.runLater(() -> {
                     LoadingOverlay.hide();
-                    Toast.error("Failed to load profile");
+                    Toast.error("Failed to load profile: " + e.getMessage());
                 });
                 return null;
             });
@@ -155,6 +164,48 @@ public class EditProfileController implements Initializable {
             profile.setBio(getString(map, "bio"));
             profile.setLocation(getString(map, "location"));
             profile.setTimezone(getString(map, "timezone"));
+            
+            // Parse seeker preferences
+            if (map.get("seekerPreferences") instanceof LinkedHashMap<?, ?> seekerMap) {
+                ProfileResponse.SeekerPreferencesData prefs = new ProfileResponse.SeekerPreferencesData();
+                if (seekerMap.get("desiredRoles") instanceof List<?> roles) {
+                    prefs.setDesiredRoles((List<String>) roles);
+                }
+                if (seekerMap.get("skills") instanceof List<?> skills) {
+                    prefs.setSkills((List<String>) skills);
+                }
+                if (seekerMap.get("jobTypes") instanceof List<?> jobTypes) {
+                    prefs.setJobTypes((List<String>) jobTypes);
+                }
+                prefs.setWorkingHours(getString(seekerMap, "workingHours"));
+                Object salaryMin = seekerMap.get("salaryMin");
+                if (salaryMin instanceof Number) {
+                    prefs.setSalaryMin(((Number) salaryMin).intValue());
+                }
+                Object salaryMax = seekerMap.get("salaryMax");
+                if (salaryMax instanceof Number) {
+                    prefs.setSalaryMax(((Number) salaryMax).intValue());
+                }
+                if (seekerMap.get("willingToRelocate") instanceof Boolean relocate) {
+                    prefs.setWillingToRelocate(relocate);
+                }
+                profile.setSeekerPreferences(prefs);
+            }
+            
+            // Parse poster profile
+            if (map.get("posterProfile") instanceof LinkedHashMap<?, ?> posterMap) {
+                ProfileResponse.PosterProfileData poster = new ProfileResponse.PosterProfileData();
+                poster.setCompanyName(getString(posterMap, "companyName"));
+                poster.setCompanySize(getString(posterMap, "companySize"));
+                poster.setIndustry(getString(posterMap, "industry"));
+                poster.setWebsite(getString(posterMap, "website"));
+                poster.setVerificationStatus(getString(posterMap, "verificationStatus"));
+                if (posterMap.get("verificationDocuments") instanceof List<?> docs) {
+                    poster.setVerificationDocuments((List<String>) docs);
+                }
+                profile.setPosterProfile(poster);
+            }
+            
             return profile;
         }
         
@@ -202,6 +253,17 @@ public class EditProfileController implements Initializable {
                 partTimeCheck.setSelected(prefs.getJobTypes().contains("PART_TIME"));
                 contractCheck.setSelected(prefs.getJobTypes().contains("CONTRACT"));
                 internshipCheck.setSelected(prefs.getJobTypes().contains("INTERNSHIP"));
+            }
+            if (prefs.getWorkModes() != null) {
+                remoteCheck.setSelected(prefs.getWorkModes().contains("REMOTE"));
+                hybridCheck.setSelected(prefs.getWorkModes().contains("HYBRID"));
+                onsiteCheck.setSelected(prefs.getWorkModes().contains("ONSITE"));
+            }
+            if (prefs.getExperienceLevels() != null) {
+                entryLevelCheck.setSelected(prefs.getExperienceLevels().contains("ENTRY"));
+                midLevelCheck.setSelected(prefs.getExperienceLevels().contains("MID"));
+                seniorLevelCheck.setSelected(prefs.getExperienceLevels().contains("SENIOR"));
+                leadLevelCheck.setSelected(prefs.getExperienceLevels().contains("LEAD"));
             }
         }
         
@@ -335,15 +397,14 @@ public class EditProfileController implements Initializable {
         request.setTimezone(timezoneCombo.getValue());
         request.setBio(bioField.getText().trim());
         
-        apiClient.patch("/api/users/me", request, ApiResponse.class)
+        apiClient.patch("/api/users/me", request, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
                 LoadingOverlay.hide();
                 saveBasicInfoBtn.setDisable(false);
                 Toast.success("Profile updated successfully");
-                // Update session
-                if (currentProfile != null) {
-                    currentProfile.setFirstName(firstName);
-                    currentProfile.setLastName(lastName);
+                // Update session with fresh data
+                if (response != null) {
+                    currentProfile = response;
                     sessionManager.setProfile(currentProfile);
                 }
             }))
@@ -399,10 +460,29 @@ public class EditProfileController implements Initializable {
         if (internshipCheck.isSelected()) jobTypes.add("INTERNSHIP");
         if (!jobTypes.isEmpty()) preferences.put("jobTypes", jobTypes);
         
-        apiClient.put("/api/users/me/preferences", preferences, ApiResponse.class)
+        // Work modes
+        List<String> workModes = new ArrayList<>();
+        if (remoteCheck.isSelected()) workModes.add("REMOTE");
+        if (hybridCheck.isSelected()) workModes.add("HYBRID");
+        if (onsiteCheck.isSelected()) workModes.add("ONSITE");
+        if (!workModes.isEmpty()) preferences.put("workModes", workModes);
+        
+        // Experience levels
+        List<String> experienceLevels = new ArrayList<>();
+        if (entryLevelCheck.isSelected()) experienceLevels.add("ENTRY");
+        if (midLevelCheck.isSelected()) experienceLevels.add("MID");
+        if (seniorLevelCheck.isSelected()) experienceLevels.add("SENIOR");
+        if (leadLevelCheck.isSelected()) experienceLevels.add("LEAD");
+        if (!experienceLevels.isEmpty()) preferences.put("experienceLevels", experienceLevels);
+        
+        apiClient.put("/api/users/me/preferences", preferences, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
                 LoadingOverlay.hide();
                 Toast.success("Preferences saved successfully");
+                if (response != null) {
+                    currentProfile = response;
+                    sessionManager.setProfile(currentProfile);
+                }
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
@@ -423,10 +503,14 @@ public class EditProfileController implements Initializable {
         posterData.put("industry", industryCombo.getValue());
         posterData.put("companySize", getSelectedCompanySize());
         
-        apiClient.put("/api/users/me/poster-profile", posterData, ApiResponse.class)
+        apiClient.put("/api/users/me/preferences", posterData, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
                 LoadingOverlay.hide();
                 Toast.success("Company info saved successfully");
+                if (response != null) {
+                    currentProfile = response;
+                    sessionManager.setProfile(currentProfile);
+                }
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {

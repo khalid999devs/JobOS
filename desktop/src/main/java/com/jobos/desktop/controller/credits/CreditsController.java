@@ -1,5 +1,6 @@
 package com.jobos.desktop.controller.credits;
 
+import com.jobos.desktop.core.navigation.Router;
 import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.CreditService;
@@ -12,7 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,6 +27,8 @@ public class CreditsController implements Initializable {
     @FXML private VBox transactionsList;
     @FXML private HBox paginationContainer;
     @FXML private HBox plansContainer;
+    
+    private final Router router = Router.getInstance();
     
     private final CreditService creditService = new CreditService();
     private int currentPage = 0;
@@ -150,22 +152,24 @@ public class CreditsController implements Initializable {
         if (Boolean.TRUE.equals(hasAI)) features.getChildren().add(createFeatureRow("AI Assistance"));
         if (Boolean.TRUE.equals(hasPrioritySupport)) features.getChildren().add(createFeatureRow("Priority Support"));
         
+        Region buttonSpacer = new Region();
+        VBox.setVgrow(buttonSpacer, Priority.ALWAYS);
+        
         Button actionBtn;
         if (isCurrentPlan) {
             actionBtn = new Button("Current Plan");
-            actionBtn.setStyle("-fx-background-color: #D1D5DB; -fx-text-fill: #6B7280; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 10 20;");
+            actionBtn.setStyle("-fx-background-color: #D1D5DB; -fx-text-fill: #6B7280; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 13px;");
             actionBtn.setDisable(true);
         } else {
             actionBtn = new Button(isPopular ? "Upgrade Now" : "Select Plan");
-            actionBtn.setStyle(isPopular ? 
-                "-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;" :
-                "-fx-background-color: white; -fx-text-fill: #0F766E; -fx-border-color: #0F766E; -fx-border-width: 1; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;");
+            actionBtn.setStyle("-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 12 24; -fx-cursor: hand; -fx-font-size: 13px;");
             String planId = getString(plan, "id");
             actionBtn.setOnAction(e -> subscribeToPlan(planId, name));
         }
         actionBtn.setMaxWidth(Double.MAX_VALUE);
+        actionBtn.setPrefHeight(42);
         
-        card.getChildren().addAll(nameLabel, priceLabel, creditsLabel, features, actionBtn);
+        card.getChildren().addAll(nameLabel, priceLabel, creditsLabel, features, buttonSpacer, actionBtn);
         return card;
     }
     
@@ -204,21 +208,23 @@ public class CreditsController implements Initializable {
             features.getChildren().add(createFeatureRow(feature));
         }
         
+        Region buttonSpacer2 = new Region();
+        VBox.setVgrow(buttonSpacer2, Priority.ALWAYS);
+        
         Button actionBtn;
         if (isCurrentPlan) {
             actionBtn = new Button("Current Plan");
-            actionBtn.setStyle("-fx-background-color: #D1D5DB; -fx-text-fill: #6B7280; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 10 20;");
+            actionBtn.setStyle("-fx-background-color: #D1D5DB; -fx-text-fill: #6B7280; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-size: 13px;");
             actionBtn.setDisable(true);
         } else {
             actionBtn = new Button(isPopular ? "Upgrade Now" : "Select Plan");
-            actionBtn.setStyle(isPopular ? 
-                "-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;" :
-                "-fx-background-color: white; -fx-text-fill: #0F766E; -fx-border-color: #0F766E; -fx-border-width: 1; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 10 20; -fx-cursor: hand;");
+            actionBtn.setStyle("-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 8; -fx-padding: 12 24; -fx-cursor: hand; -fx-font-size: 13px;");
             actionBtn.setOnAction(e -> subscribeToPlan(id, name));
         }
         actionBtn.setMaxWidth(Double.MAX_VALUE);
+        actionBtn.setPrefHeight(42);
         
-        card.getChildren().addAll(nameLabel, priceLabel, creditsLabel, features, actionBtn);
+        card.getChildren().addAll(nameLabel, priceLabel, creditsLabel, features, buttonSpacer2, actionBtn);
         return card;
     }
     
@@ -250,6 +256,8 @@ public class CreditsController implements Initializable {
                     Toast.success("Successfully subscribed to " + planName + "!");
                     loadCreditsData();
                     loadPlans();
+                    // Refresh shell header to sync plan badge
+                    router.refreshShellCredits();
                 }))
                 .exceptionally(e -> {
                     Platform.runLater(() -> {
@@ -431,45 +439,119 @@ public class CreditsController implements Initializable {
     }
 
     @FXML
-    private void onPurchase10() {
-        purchaseCredits(10, "$9.99");
+    private void onPurchase200() {
+        showPaymentGateway(200, "$5");
     }
 
     @FXML
-    private void onPurchase50() {
-        purchaseCredits(50, "$39.99");
+    private void onPurchase800() {
+        showPaymentGateway(800, "$10");
     }
 
     @FXML
-    private void onPurchase100() {
-        purchaseCredits(100, "$69.99");
+    private void onPurchase2000() {
+        showPaymentGateway(2000, "$20");
+    }
+    
+    private void showPaymentGateway(int credits, String price) {
+        // Create simulated payment dialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Payment Gateway");
+        dialog.setHeaderText("Complete Your Purchase");
+        
+        // Payment form
+        VBox content = new VBox(16);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(400);
+        
+        // Order summary
+        VBox summary = new VBox(8);
+        summary.setStyle("-fx-background-color: #F3F4F6; -fx-padding: 16; -fx-background-radius: 8;");
+        Label summaryTitle = new Label("Order Summary");
+        summaryTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        HBox creditsRow = new HBox();
+        creditsRow.setAlignment(Pos.CENTER_LEFT);
+        Label creditsText = new Label(credits + " Credits");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label priceText = new Label(price);
+        priceText.setStyle("-fx-font-weight: bold; -fx-text-fill: #0F766E;");
+        creditsRow.getChildren().addAll(creditsText, spacer, priceText);
+        summary.getChildren().addAll(summaryTitle, creditsRow);
+        
+        // Card details (simulated)
+        VBox cardSection = new VBox(12);
+        Label cardLabel = new Label("Card Details");
+        cardLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        
+        TextField cardNumber = new TextField();
+        cardNumber.setPromptText("4242 4242 4242 4242");
+        cardNumber.setStyle("-fx-pref-height: 40;");
+        
+        HBox cardExtras = new HBox(12);
+        TextField expiry = new TextField();
+        expiry.setPromptText("MM/YY");
+        expiry.setPrefWidth(100);
+        TextField cvv = new TextField();
+        cvv.setPromptText("CVV");
+        cvv.setPrefWidth(80);
+        cardExtras.getChildren().addAll(expiry, cvv);
+        
+        Label secureNote = new Label("🔒 Your payment is secure and encrypted");
+        secureNote.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        
+        cardSection.getChildren().addAll(cardLabel, cardNumber, cardExtras, secureNote);
+        
+        content.getChildren().addAll(summary, cardSection);
+        
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setText("Pay " + price);
+        okButton.setStyle("-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: bold;");
+        
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                processPayment(credits, price);
+            }
+        });
+    }
+    
+    private void processPayment(int credits, String price) {
+        LoadingOverlay.show("Processing payment...");
+        
+        // Simulate payment processing delay
+        CompletableFuture.runAsync(() -> {
+            try {
+                Thread.sleep(1500); // Simulate payment processing
+            } catch (InterruptedException ignored) {}
+        }).thenRun(() -> {
+            Platform.runLater(() -> {
+                purchaseCredits(credits, price);
+            });
+        });
     }
 
     private void purchaseCredits(int amount, String price) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Purchase Credits");
-        alert.setHeaderText("Purchase " + amount + " credits for " + price + "?");
-        alert.setContentText("This is a simulated purchase. In production, this would redirect to a payment gateway.");
-        
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            LoadingOverlay.show("Processing purchase...");
+        LoadingOverlay.show("Adding credits to your account...");
             
-            creditService.purchaseCredits(amount, "SIMULATED")
-                .thenAccept(response -> Platform.runLater(() -> {
+        creditService.purchaseCredits(amount, "SIMULATED")
+            .thenAccept(response -> Platform.runLater(() -> {
+                LoadingOverlay.hide();
+                Toast.success(amount + " credits added to your account!");
+                loadCreditsData();
+                loadTransactions();
+                // Also refresh shell header
+                router.refreshShellCredits();
+            }))
+            .exceptionally(e -> {
+                Platform.runLater(() -> {
                     LoadingOverlay.hide();
-                    Toast.success(amount + " credits added to your account!");
-                    loadCreditsData();
-                    loadTransactions();
-                }))
-                .exceptionally(e -> {
-                    Platform.runLater(() -> {
-                        LoadingOverlay.hide();
-                        Toast.error("Purchase failed. Please try again.");
-                    });
-                    return null;
+                    Toast.error("Purchase failed. Please try again.");
                 });
-        }
+                return null;
+            });
     }
 
     private String getString(Map<String, Object> map, String key) {

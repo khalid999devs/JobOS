@@ -6,6 +6,7 @@ import com.jobos.backend.domain.job.*;
 import com.jobos.backend.domain.user.PosterProfile;
 import com.jobos.backend.domain.user.User;
 import com.jobos.backend.domain.user.UserRole;
+import com.jobos.backend.repository.ApplicationRepository;
 import com.jobos.backend.repository.JobPostRepository;
 import com.jobos.backend.repository.PosterProfileRepository;
 import com.jobos.backend.repository.SavedJobRepository;
@@ -35,17 +36,20 @@ public class JobService {
     private final UserRepository userRepository;
     private final PosterProfileRepository posterProfileRepository;
     private final SavedJobRepository savedJobRepository;
+    private final ApplicationRepository applicationRepository;
     private final ObjectMapper objectMapper;
 
     public JobService(JobPostRepository jobPostRepository,
                      UserRepository userRepository,
                      PosterProfileRepository posterProfileRepository,
                      SavedJobRepository savedJobRepository,
+                     ApplicationRepository applicationRepository,
                      ObjectMapper objectMapper) {
         this.jobPostRepository = jobPostRepository;
         this.userRepository = userRepository;
         this.posterProfileRepository = posterProfileRepository;
         this.savedJobRepository = savedJobRepository;
+        this.applicationRepository = applicationRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -120,7 +124,7 @@ public class JobService {
         jobPost.setApplicationCount(0);
 
         JobPost saved = jobPostRepository.save(jobPost);
-        return mapToJobPostResponse(saved, null);
+        return mapToJobPostResponse(saved, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -156,14 +160,16 @@ public class JobService {
         jobPostRepository.save(jobPost);
 
         Boolean isSaved = null;
+        Boolean hasApplied = null;
         if (userId != null) {
             User user = userRepository.findById(userId).orElse(null);
             if (user != null) {
                 isSaved = savedJobRepository.existsByUserAndJobPost(user, jobPost);
+                hasApplied = applicationRepository.existsBySeekerAndJobPost(user, jobPost);
             }
         }
 
-        return mapToJobPostResponse(jobPost, isSaved);
+        return mapToJobPostResponse(jobPost, isSaved, hasApplied);
     }
 
     @Transactional
@@ -232,7 +238,7 @@ public class JobService {
         }
 
         JobPost updated = jobPostRepository.save(jobPost);
-        return mapToJobPostResponse(updated, null);
+        return mapToJobPostResponse(updated, null, null);
     }
 
     @Transactional
@@ -330,7 +336,7 @@ public class JobService {
         return response;
     }
 
-    private JobPostResponse mapToJobPostResponse(JobPost jobPost, Boolean isSaved) {
+    private JobPostResponse mapToJobPostResponse(JobPost jobPost, Boolean isSaved, Boolean hasApplied) {
         JobPostResponse response = new JobPostResponse();
         response.setId(jobPost.getId().toString());
         response.setPosterId(jobPost.getPoster().getId().toString());
@@ -366,6 +372,7 @@ public class JobService {
         response.setUpdatedAt(jobPost.getUpdatedAt());
         response.setClosedAt(jobPost.getClosedAt());
         response.setIsSaved(isSaved);
+        response.setHasApplied(hasApplied);
 
         return response;
     }
