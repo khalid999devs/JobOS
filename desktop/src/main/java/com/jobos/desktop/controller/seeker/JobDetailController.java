@@ -249,11 +249,6 @@ public class JobDetailController implements Initializable {
         }
     }
 
-    @FXML
-    private void onShare() {
-        Toast.info("Share feature coming soon");
-    }
-
     private void updateSaveIcon() {
         saveIcon.setIconLiteral(isSaved ? "fas-heart" : "far-heart");
         saveIcon.setIconColor(isSaved ? Color.web("#EF4444") : Color.web("#9CA3AF"));

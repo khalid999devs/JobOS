@@ -1074,17 +1074,27 @@
 }
 
 .cover-letter-input {
-  -fx-background-color: #f9fafb;
+  -fx-background-color: white;
   -fx-background-radius: 8;
   -fx-border-color: #e5e7eb;
   -fx-border-width: 1;
   -fx-border-radius: 8;
-  -fx-padding: 12;
+  -fx-padding: 14;
   -fx-font-size: 13px;
+  -fx-pref-height: 200;
+  -fx-min-height: 180;
+}
+
+.cover-letter-input .content {
+  -fx-background-color: white;
 }
 
 .cover-letter-input:focused {
   -fx-border-color: #0f766e;
+  -fx-background-color: white;
+}
+
+.cover-letter-input:focused .content {
   -fx-background-color: white;
 }
 

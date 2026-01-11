@@ -176,7 +176,8 @@ public class ApplyController implements Initializable {
         
         ApplicationRequest request = new ApplicationRequest();
         request.setJobId(UUID.fromString(jobId));
-        request.setCvFileUrl(selectedCV.getId());
+        request.setCvId(UUID.fromString(selectedCV.getId()));
+        request.setCvFileUrl(selectedCV.getId()); // CV ID serves as the reference
         request.setCoverLetter(coverLetter);
         
         applicationService.apply(request).whenComplete((response, error) -> {

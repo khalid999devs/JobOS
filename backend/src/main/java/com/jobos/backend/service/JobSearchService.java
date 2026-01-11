@@ -331,6 +331,7 @@ public class JobSearchService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "ONSITE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());

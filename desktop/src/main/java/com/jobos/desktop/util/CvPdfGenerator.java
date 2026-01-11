@@ -25,32 +25,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Generates PDF documents and thumbnails for CVs
- * Enterprise-grade CV document generation utility - matches live preview format
- */
 public class CvPdfGenerator {
 
-    // A4 dimensions in points (72 points = 1 inch)
     private static final float PAGE_WIDTH = 595.28f;
     private static final float PAGE_HEIGHT = 841.89f;
     private static final float MARGIN = 50;
     private static final float CONTENT_WIDTH = PAGE_WIDTH - 2 * MARGIN;
     
-    // Theme colors matching live preview
-    private static final float[] TEXT_RGB = {0.067f, 0.094f, 0.153f}; // #111827
-    private static final float[] SECONDARY_RGB = {0.216f, 0.255f, 0.318f}; // #374151
-    private static final float[] MUTED_RGB = {0.420f, 0.447f, 0.502f}; // #6B7280
-    private static final float[] BORDER_RGB = {0.898f, 0.906f, 0.922f}; // #E5E7EB
+    private static final float[] TEXT_RGB = {0.067f, 0.094f, 0.153f};
+    private static final float[] SECONDARY_RGB = {0.216f, 0.255f, 0.318f};
+    private static final float[] MUTED_RGB = {0.420f, 0.447f, 0.502f};
+    private static final float[] BORDER_RGB = {0.898f, 0.906f, 0.922f};
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Generate a PDF file from CV data - matching live preview format
-     * @param cv The CV data to convert
-     * @param outputFile The output file to write to
-     * @return The generated file
-     */
     public static File generatePdf(CVResponse cv, File outputFile) throws Exception {
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
@@ -59,22 +47,16 @@ public class CvPdfGenerator {
             PDPageContentStream content = new PDPageContentStream(document, page);
             float yPosition = PAGE_HEIGHT - MARGIN;
             
-            // Get personal info for header
             Map<String, Object> personalInfo = getPersonalInfoData(cv);
-            
-            // Header section with personal info (like live preview)
             yPosition = drawHeader(content, personalInfo, yPosition);
-            
-            // Draw sections
             if (cv.getSections() != null) {
                 List<CVSectionResponse> sortedSections = cv.getSections().stream()
                     .filter(s -> s.getIsVisible() == null || s.getIsVisible())
-                    .filter(s -> !"PERSONAL_INFO".equalsIgnoreCase(s.getSectionType())) // Skip - shown in header
+                    .filter(s -> !"PERSONAL_INFO".equalsIgnoreCase(s.getSectionType()))
                     .sorted(Comparator.comparingInt(s -> s.getOrderIndex() != null ? s.getOrderIndex() : 0))
                     .toList();
                 
                 for (CVSectionResponse section : sortedSections) {
-                    // Check if we need a new page
                     if (yPosition < MARGIN + 100) {
                         content.close();
                         page = new PDPage(PDRectangle.A4);
@@ -87,7 +69,6 @@ public class CvPdfGenerator {
                 }
             }
             
-            // Footer
             drawFooter(content);
             
             content.close();
@@ -123,7 +104,6 @@ public class CvPdfGenerator {
         String location = getStringVal(info, "location");
         if (location == null) location = getStringVal(info, "address");
         
-        // Full Name - Large and bold (like live preview: "Khalid Ahammed")
         content.setFont(boldFont, 28);
         content.setNonStrokingColor(TEXT_RGB[0], TEXT_RGB[1], TEXT_RGB[2]);
         content.beginText();
@@ -132,7 +112,6 @@ public class CvPdfGenerator {
         content.endText();
         yPosition -= 24;
         
-        // Job Title below name (like live preview: "Full Stack Engineer")
         if (title != null) {
             content.setFont(regularFont, 12);
             content.setNonStrokingColor(SECONDARY_RGB[0], SECONDARY_RGB[1], SECONDARY_RGB[2]);
@@ -143,7 +122,6 @@ public class CvPdfGenerator {
             yPosition -= 20;
         }
         
-        // Contact info row (Phone | LinkedIn | E-mail | Location)
         List<String[]> contacts = new ArrayList<>();
         if (phone != null) contacts.add(new String[]{"Phone", phone});
         if (linkedIn != null) contacts.add(new String[]{"LinkedIn", linkedIn});
@@ -156,7 +134,6 @@ public class CvPdfGenerator {
             float columnWidth = CONTENT_WIDTH / contacts.size();
             
             for (String[] contact : contacts) {
-                // Label
                 content.setFont(boldFont, 9);
                 content.setNonStrokingColor(TEXT_RGB[0], TEXT_RGB[1], TEXT_RGB[2]);
                 content.beginText();
@@ -164,7 +141,6 @@ public class CvPdfGenerator {
                 content.showText(contact[0]);
                 content.endText();
                 
-                // Value
                 content.setFont(regularFont, 9);
                 content.setNonStrokingColor(SECONDARY_RGB[0], SECONDARY_RGB[1], SECONDARY_RGB[2]);
                 content.beginText();
@@ -178,7 +154,6 @@ public class CvPdfGenerator {
             yPosition -= 30;
         }
         
-        // Divider line
         yPosition -= 8;
         content.setStrokingColor(BORDER_RGB[0], BORDER_RGB[1], BORDER_RGB[2]);
         content.setLineWidth(0.5f);
@@ -193,7 +168,6 @@ public class CvPdfGenerator {
         PDType1Font boldFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
         PDType1Font regularFont = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
         
-        // Section title (like live preview: "Experience", "Education")
         String title = section.getTitle() != null ? section.getTitle() : formatSectionType(section.getSectionType());
         content.setFont(boldFont, 14);
         content.setNonStrokingColor(TEXT_RGB[0], TEXT_RGB[1], TEXT_RGB[2]);
@@ -204,7 +178,6 @@ public class CvPdfGenerator {
         
         yPosition -= 4;
         
-        // Full width underline (like live preview)
         content.setStrokingColor(TEXT_RGB[0], TEXT_RGB[1], TEXT_RGB[2]);
         content.setLineWidth(0.75f);
         content.moveTo(MARGIN, yPosition);
@@ -213,7 +186,6 @@ public class CvPdfGenerator {
         
         yPosition -= 14;
         
-        // Section content
         String sectionContent = section.getContent();
         if (sectionContent != null && !sectionContent.isEmpty()) {
             yPosition = renderSectionContent(content, sectionContent, section.getSectionType(), yPosition, regularFont, boldFont);
@@ -232,7 +204,6 @@ public class CvPdfGenerator {
             }
             
             if (jsonContent != null) {
-                // Check for custom content first
                 String customContent = getStringVal(jsonContent, "customContent");
                 if (customContent != null) {
                     content.setFont(regularFont, 10);
@@ -249,7 +220,6 @@ public class CvPdfGenerator {
                     return yPosition;
                 }
                 
-                // Render based on section type - matching live preview
                 yPosition = renderProfessionalContent(content, jsonContent, sectionType, yPosition, regularFont, boldFont);
             } else {
                 // Plain text
@@ -266,7 +236,6 @@ public class CvPdfGenerator {
                 }
             }
         } catch (Exception e) {
-            // Fallback to plain text
             content.setFont(regularFont, 10);
             content.setNonStrokingColor(SECONDARY_RGB[0], SECONDARY_RGB[1], SECONDARY_RGB[2]);
             List<String> lines = wrapText(sanitizeText(sectionContent), CONTENT_WIDTH, regularFont, 10);
@@ -289,7 +258,6 @@ public class CvPdfGenerator {
         if (sectionType == null) sectionType = "";
         String type = sectionType.toUpperCase();
         
-        // For summary-type sections, check for title or text content first
         boolean isSummaryType = type.contains("SUMMARY") || type.contains("OBJECTIVE") || 
                                type.contains("PROFILE") || type.contains("ABOUT");
         
@@ -316,7 +284,6 @@ public class CvPdfGenerator {
             }
         }
         
-        // Check for field values to display (exclude customContent and metadata)
         boolean hasFieldValues = false;
         if (json.containsKey("fields") && json.get("fields") instanceof List) {
             List<?> fields = (List<?>) json.get("fields");
@@ -333,7 +300,6 @@ public class CvPdfGenerator {
         }
         
         if (!hasFieldValues) {
-            // Show placeholder fields as tags
             if (json.containsKey("fields") && json.get("fields") instanceof List) {
                 List<?> fields = (List<?>) json.get("fields");
                 StringBuilder tagLine = new StringBuilder();
@@ -357,7 +323,6 @@ public class CvPdfGenerator {
             return yPosition;
         }
         
-        // Render based on section type
         switch (type) {
             case "EXPERIENCE", "CAREER_HISTORY", "WORK_EXPERIENCE" -> {
                 yPosition = renderExperienceItem(content, json, yPosition, regularFont, boldFont);
@@ -395,7 +360,6 @@ public class CvPdfGenerator {
         String company = getStringVal(json, "company");
         String description = getStringVal(json, "description");
         
-        // Date | Job Title | Company
         StringBuilder line = new StringBuilder();
         if (duration != null) line.append(duration);
         if (jobTitle != null) {
@@ -586,13 +550,9 @@ public class CvPdfGenerator {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < field.length(); i++) {
             char c = field.charAt(i);
-            if (i == 0) {
-                result.append(Character.toUpperCase(c));
-            } else if (Character.isUpperCase(c)) {
-                result.append(' ').append(c);
-            } else {
-                result.append(c);
-            }
+            if (i == 0) result.append(Character.toUpperCase(c));
+            else if (Character.isUpperCase(c)) result.append(' ').append(c);
+            else result.append(c);
         }
         return result.toString();
     }
@@ -651,22 +611,16 @@ public class CvPdfGenerator {
         return lines;
     }
     
-    /**
-     * Sanitize text for PDF - remove characters not supported by PDF standard fonts
-     */
     private static String sanitizeText(String text) {
         if (text == null) return "";
-        // Replace common problematic characters
         return text
             .replace("\r", "")
             .replace("\t", "    ")
-            // Remove or replace non-ASCII characters
             .replaceAll("[^\\x00-\\x7F]", "");
     }
     
     private static String formatSectionType(String type) {
         if (type == null) return "Section";
-        // Convert EDUCATION -> Education, WORK_EXPERIENCE -> Work Experience
         String formatted = type.replace("_", " ");
         if (formatted.length() > 1) {
             return formatted.substring(0, 1).toUpperCase() + formatted.substring(1).toLowerCase();
@@ -674,13 +628,6 @@ public class CvPdfGenerator {
         return formatted;
     }
     
-    /**
-     * Generate a thumbnail image for CV preview using JavaFX Canvas
-     * @param cv The CV data
-     * @param width Thumbnail width in pixels
-     * @param height Thumbnail height in pixels
-     * @return WritableImage containing the thumbnail
-     */
     public static WritableImage generateThumbnail(CVResponse cv, int width, int height) {
         Canvas canvas = new Canvas(width, height);
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -689,19 +636,16 @@ public class CvPdfGenerator {
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, width, height);
         
-        // Scale factor for A4 to thumbnail
         double scale = (double) width / PAGE_WIDTH;
         double margin = Math.max(MARGIN * scale, 12);
         double contentWidth = width - 2 * margin;
         
         double yPos = margin;
         
-        // Header band - colored top bar based on template
         String headerColor = getHeaderColorForTemplate(cv.getTemplateName());
         gc.setFill(Color.web(headerColor));
         gc.fillRect(0, 0, width, 28);
         
-        // CV Title on header
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("System", FontWeight.BOLD, 11));
         gc.setTextAlign(TextAlignment.LEFT);
@@ -711,23 +655,19 @@ public class CvPdfGenerator {
         
         yPos = 38;
         
-        // Name placeholder line (gray bar)
         gc.setFill(Color.web("#374151"));
         gc.fillRoundRect(margin, yPos, contentWidth * 0.6, 8, 2, 2);
         yPos += 14;
         
-        // Sub-info lines (light gray)
         gc.setFill(Color.web("#D1D5DB"));
         gc.fillRoundRect(margin, yPos, contentWidth * 0.4, 4, 1, 1);
         yPos += 18;
         
-        // Divider line
         gc.setStroke(Color.web("#E5E7EB"));
         gc.setLineWidth(1);
         gc.strokeLine(margin, yPos, width - margin, yPos);
         yPos += 10;
         
-        // Draw section previews (more visual, less text)
         if (cv.getSections() != null) {
             List<CVSectionResponse> visibleSections = cv.getSections().stream()
                 .filter(s -> s.getIsVisible() == null || s.getIsVisible())
@@ -738,12 +678,10 @@ public class CvPdfGenerator {
             for (CVSectionResponse section : visibleSections) {
                 if (yPos > height - margin - 25) break;
                 
-                // Section title bar
                 gc.setFill(Color.web(headerColor));
                 gc.fillRoundRect(margin, yPos, contentWidth * 0.35, 6, 1, 1);
                 yPos += 12;
                 
-                // Content lines (gray bars to represent text)
                 gc.setFill(Color.web("#F3F4F6"));
                 int contentLines = Math.min(3, (int)((height - yPos - margin) / 8));
                 for (int i = 0; i < contentLines; i++) {
@@ -755,12 +693,10 @@ public class CvPdfGenerator {
                 yPos += 10;
             }
         } else {
-            // No sections - show placeholder
             gc.setFill(Color.web("#E5E7EB"));
             gc.fillRoundRect(margin, yPos, contentWidth * 0.35, 6, 1, 1);
             yPos += 14;
             
-            // Placeholder lines
             for (int i = 0; i < 5; i++) {
                 gc.setFill(Color.web("#F3F4F6"));
                 gc.fillRoundRect(margin, yPos, contentWidth * (0.9 - (i % 3) * 0.15), 4, 1, 1);
@@ -768,12 +704,10 @@ public class CvPdfGenerator {
             }
         }
         
-        // Border - subtle gray rounded
         gc.setStroke(Color.web("#E5E7EB"));
         gc.setLineWidth(1);
         gc.strokeRoundRect(0.5, 0.5, width - 1, height - 1, 4, 4);
         
-        // Take snapshot
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
         return canvas.snapshot(params, null);
@@ -788,33 +722,23 @@ public class CvPdfGenerator {
         if (lower.contains("academic") || lower.contains("scholar")) return "#059669";
         if (lower.contains("executive") || lower.contains("elite")) return "#B45309";
         if (lower.contains("tech") || lower.contains("developer")) return "#0F766E";
-        return "#0F766E"; // Default teal
+        return "#0F766E";
     }
     
-    /**
-     * Generate a blank document placeholder thumbnail (like Google Docs)
-     * @param width Thumbnail width in pixels
-     * @param height Thumbnail height in pixels
-     * @return WritableImage containing the blank thumbnail
-     */
     public static WritableImage generateBlankThumbnail(int width, int height) {
         Canvas canvas = new Canvas(width, height);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         
-        // Background - white
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, width, height);
         
-        // Dashed border
         gc.setStroke(Color.web("#D1D5DB"));
         gc.setLineWidth(2);
         gc.setLineDashes(8, 4);
         gc.strokeRect(3, 3, width - 6, height - 6);
         
-        // Reset dashes for plus icon
         gc.setLineDashes(0);
         
-        // Plus icon - centered
         double centerX = width / 2.0;
         double centerY = height / 2.0 - 12;
         double iconSize = Math.min(width, height) * 0.15;
@@ -824,68 +748,50 @@ public class CvPdfGenerator {
         gc.strokeLine(centerX - iconSize, centerY, centerX + iconSize, centerY);
         gc.strokeLine(centerX, centerY - iconSize, centerX, centerY + iconSize);
         
-        // "Blank" text
         gc.setFill(Color.web("#6B7280"));
         gc.setFont(Font.font("System", FontWeight.MEDIUM, 11));
         gc.setTextAlign(TextAlignment.CENTER);
         gc.fillText("Blank", centerX, centerY + 40);
         
-        // Take snapshot
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
         return canvas.snapshot(params, null);
     }
     
-    /**
-     * Generate a template preview thumbnail
-     * @param templateName Name of the template
-     * @param category Category color/style
-     * @param width Thumbnail width
-     * @param height Thumbnail height
-     * @return WritableImage containing the template preview
-     */
     public static WritableImage generateTemplatePreview(String templateName, String category, int width, int height) {
         Canvas canvas = new Canvas(width, height);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         
-        // Background
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, width, height);
         
-        // Category color header bar
         Color headerColor = getCategoryColor(category);
         gc.setFill(headerColor);
         gc.fillRect(0, 0, width, 35);
         
-        // Template name in header
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("System", FontWeight.BOLD, 10));
         gc.setTextAlign(TextAlignment.LEFT);
         gc.fillText(templateName != null ? templateName : "Template", 10, 22);
         
-        // Simulate document structure
         double margin = 15;
         double yPos = 50;
         
-        // Name placeholder
         gc.setFill(Color.web("#374151"));
         gc.fillRect(margin, yPos, width * 0.5, 12);
         
         yPos += 22;
         
-        // Subtitle placeholder
         gc.setFill(Color.web("#9CA3AF"));
         gc.fillRect(margin, yPos, width * 0.35, 6);
         
         yPos += 20;
         
-        // Section divider
         gc.setFill(headerColor.deriveColor(0, 1, 1, 0.7));
         gc.fillRect(margin, yPos, width * 0.25, 3);
         
         yPos += 15;
         
-        // Content lines
         gc.setFill(Color.web("#E5E7EB"));
         for (int i = 0; i < 4; i++) {
             double lineWidth = width - 2 * margin - (i % 2 == 0 ? 0 : 20);
@@ -895,13 +801,11 @@ public class CvPdfGenerator {
         
         yPos += 10;
         
-        // Another section
         gc.setFill(headerColor.deriveColor(0, 1, 1, 0.7));
         gc.fillRect(margin, yPos, width * 0.2, 3);
         
         yPos += 15;
         
-        // More content lines
         gc.setFill(Color.web("#E5E7EB"));
         for (int i = 0; i < 3; i++) {
             double lineWidth = width - 2 * margin - (i % 2 == 0 ? 10 : 0);
@@ -909,7 +813,6 @@ public class CvPdfGenerator {
             yPos += 10;
         }
         
-        // Border
         gc.setStroke(Color.web("#D1D5DB"));
         gc.setLineWidth(1);
         gc.strokeRect(0.5, 0.5, width - 1, height - 1);
@@ -923,12 +826,12 @@ public class CvPdfGenerator {
         if (category == null) return Color.web("#0F766E");
         
         return switch (category.toUpperCase()) {
-            case "PROFESSIONAL" -> Color.web("#1E40AF"); // Blue
-            case "CREATIVE" -> Color.web("#7C3AED"); // Purple
-            case "MODERN" -> Color.web("#0F766E"); // Teal
-            case "SIMPLE" -> Color.web("#374151"); // Gray
-            case "ACADEMIC" -> Color.web("#B45309"); // Amber
-            case "EXECUTIVE" -> Color.web("#0F172A"); // Dark
+            case "PROFESSIONAL" -> Color.web("#1E40AF");
+            case "CREATIVE" -> Color.web("#7C3AED");
+            case "MODERN" -> Color.web("#0F766E");
+            case "SIMPLE" -> Color.web("#374151");
+            case "ACADEMIC" -> Color.web("#B45309");
+            case "EXECUTIVE" -> Color.web("#0F172A");
             default -> Color.web("#0F766E");
         };
     }

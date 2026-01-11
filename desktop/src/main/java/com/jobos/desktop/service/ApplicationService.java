@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.jobos.shared.dto.application.ApplicationRequest;
 import com.jobos.shared.dto.application.ApplicationResponse;
 import com.jobos.shared.dto.common.ApiResponse;
+import com.jobos.shared.dto.cv.CVResponse;
 
 import java.util.Map;
 import java.util.UUID;
@@ -24,5 +25,9 @@ public class ApplicationService {
 
     public CompletableFuture<ApiResponse<ApplicationResponse>> getApplicationById(String id) {
         return apiClient.get("/api/applications/" + id, new TypeReference<ApiResponse<ApplicationResponse>>() {});
+    }
+
+    public CompletableFuture<CVResponse> getApplicantCV(String applicationId) {
+        return apiClient.get("/api/applications/" + applicationId + "/cv", new TypeReference<CVResponse>() {});
     }
 }

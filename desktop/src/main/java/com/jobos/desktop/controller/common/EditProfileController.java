@@ -460,6 +460,7 @@ public class EditProfileController implements Initializable {
                 preferences.put("salaryMax", Integer.parseInt(maxSalaryField.getText().trim()));
             }
         } catch (NumberFormatException e) {
+            setButtonLoading(saveSeekerPreferencesBtn, false, "Save Preferences");
             Toast.error("Invalid salary value");
             return;
         }

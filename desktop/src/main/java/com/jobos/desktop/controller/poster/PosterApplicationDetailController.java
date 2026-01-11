@@ -7,8 +7,10 @@ import com.jobos.desktop.core.navigation.Router;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApplicationService;
 import com.jobos.desktop.service.JobPostService;
+import com.jobos.desktop.util.CvPdfGenerator;
 import com.jobos.shared.dto.application.ApplicationResponse;
 import com.jobos.shared.dto.application.ApplicationStatusUpdateRequest;
+import com.jobos.shared.dto.cv.CVResponse;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -17,8 +19,10 @@ import javafx.scene.control.*;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.io.File;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -135,8 +139,9 @@ public class PosterApplicationDetailController implements Initializable {
         }
         
         cvContainer.getChildren().clear();
+        String cvId = currentApplication.getCvId();
         String cvUrl = currentApplication.getCvFileUrl();
-        if (cvUrl != null && !cvUrl.isEmpty()) {
+        if ((cvId != null && !cvId.isEmpty()) || (cvUrl != null && !cvUrl.isEmpty())) {
             HBox cvRow = new HBox(12);
             cvRow.setAlignment(Pos.CENTER_LEFT);
             
@@ -152,20 +157,15 @@ public class PosterApplicationDetailController implements Initializable {
             VBox cvInfo = new VBox(4);
             Label cvLabel = new Label("CV Document");
             cvLabel.getStyleClass().add("label-bold");
-            Label cvUrlLabel = new Label(cvUrl);
+            String applicantNameStr = currentApplication.getApplicantName() != null ? currentApplication.getApplicantName() : "Applicant";
+            Label cvUrlLabel = new Label(applicantNameStr + "'s CV");
             cvUrlLabel.getStyleClass().add("label-muted");
             cvInfo.getChildren().addAll(cvLabel, cvUrlLabel);
             HBox.setHgrow(cvInfo, Priority.ALWAYS);
             
             Button downloadBtn = new Button("Download");
             downloadBtn.getStyleClass().add("button-secondary");
-            downloadBtn.setOnAction(e -> {
-                try {
-                    java.awt.Desktop.getDesktop().browse(new java.net.URI(cvUrl));
-                } catch (Exception ex) {
-                    Toast.error("Could not open CV");
-                }
-            });
+            downloadBtn.setOnAction(e -> onDownloadCV());
             
             cvRow.getChildren().addAll(cvIconBox, cvInfo, downloadBtn);
             cvContainer.getChildren().add(cvRow);
@@ -332,6 +332,90 @@ public class PosterApplicationDetailController implements Initializable {
     @FXML
     private void onBack() {
         router.navigate(Route.POSTER_APPLICANTS);
+    }
+
+    private void onDownloadCV() {
+        if (currentApplication == null || applicationId == null) {
+            showErrorDialog("Application Data Not Available", 
+                "Unable to download CV because the application data is not loaded.", 
+                "Please try refreshing the page.");
+            return;
+        }
+        
+        Toast.info("Fetching CV data...");
+        
+        applicationService.getApplicantCV(applicationId).whenComplete((cv, error) -> {
+            Platform.runLater(() -> {
+                if (error != null) {
+                    showErrorDialog("Failed to Fetch CV", 
+                        "An error occurred while retrieving the CV data from the server.", 
+                        "Error: " + error.getMessage());
+                    return;
+                }
+                
+                if (cv == null) {
+                    showErrorDialog("CV Not Found", 
+                        "The CV associated with this application could not be found.", 
+                        "The CV may have been deleted or is no longer available.");
+                    return;
+                }
+                
+                String applicantNameStr = currentApplication.getApplicantName() != null ? 
+                    currentApplication.getApplicantName().replaceAll("[^a-zA-Z0-9\\s]", "").replaceAll("\\s+", "_") : "Applicant";
+                String fileName = applicantNameStr + "_CV.pdf";
+                
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Save CV as PDF");
+                fileChooser.setInitialFileName(fileName);
+                fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+                );
+                
+                try {
+                    File downloadsDir = new File(System.getProperty("user.home") + "/Downloads");
+                    if (downloadsDir.exists()) {
+                        fileChooser.setInitialDirectory(downloadsDir);
+                    }
+                } catch (Exception e) {
+                    // Ignore if can't set initial directory
+                }
+                
+                File saveFile = fileChooser.showSaveDialog(cvContainer.getScene().getWindow());
+                if (saveFile == null) {
+                    return;
+                }
+                
+                Toast.info("Generating PDF...");
+                
+                try {
+                    CvPdfGenerator.generatePdf(cv, saveFile);
+                    Toast.success("CV downloaded successfully!");
+                    
+                    // Open the file
+                    if (java.awt.Desktop.isDesktopSupported()) {
+                        new Thread(() -> {
+                            try {
+                                java.awt.Desktop.getDesktop().open(saveFile);
+                            } catch (Exception ex) {
+                                // Ignore if can't open
+                            }
+                        }).start();
+                    }
+                } catch (Exception e) {
+                    showErrorDialog("Failed to Generate PDF", 
+                        "An error occurred while generating the PDF file.", 
+                        "Error: " + e.getMessage());
+                }
+            });
+        });
+    }
+    
+    private void showErrorDialog(String title, String header, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     @FXML

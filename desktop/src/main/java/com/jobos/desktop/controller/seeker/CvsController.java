@@ -114,7 +114,9 @@ public class CvsController implements Initializable {
         
         // Label
         Label nameLabel = new Label("Blank document");
-        nameLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 12px;");
+        nameLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 12px; -fx-font-weight: 500;");
+        nameLabel.setMaxWidth(TEMPLATE_THUMB_WIDTH);
+        nameLabel.setAlignment(Pos.CENTER);
         
         card.getChildren().addAll(preview, nameLabel);
         
@@ -176,12 +178,14 @@ public class CvsController implements Initializable {
         
         // Template name
         Label nameLabel = new Label(template.getName());
-        nameLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 12px;");
+        nameLabel.setStyle("-fx-text-fill: #374151; -fx-font-size: 12px; -fx-font-weight: 500;");
         nameLabel.setMaxWidth(TEMPLATE_THUMB_WIDTH);
+        nameLabel.setAlignment(Pos.CENTER);
         
         // Category label
         Label categoryLabel = new Label(template.getCategory() != null ? formatCategory(template.getCategory()) : "");
         categoryLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 10px;");
+        categoryLabel.setAlignment(Pos.CENTER);
         
         card.getChildren().addAll(preview, nameLabel, categoryLabel);
         
@@ -276,6 +280,8 @@ public class CvsController implements Initializable {
                     return;
                 }
                 Toast.success("Template unlocked!");
+                // Refresh credits display in header immediately
+                router.refreshShellCredits();
                 // Refresh templates and open editor with the newly unlocked template
                 loadTemplates();
                 createNewCV(template.getId(), template.getName());

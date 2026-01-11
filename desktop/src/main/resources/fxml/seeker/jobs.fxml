@@ -74,7 +74,7 @@
     
     <StackPane VBox.vgrow="ALWAYS">
         <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
-            <VBox fx:id="jobsList" spacing="0" style="-fx-padding: 16 28 28 28;">
+            <VBox fx:id="jobsList" spacing="12" style="-fx-padding: 16 28 28 28;">
             </VBox>
         </ScrollPane>
         

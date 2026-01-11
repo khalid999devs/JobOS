@@ -66,7 +66,7 @@
                 <VBox spacing="8">
                     <Label text="Tell the employer why you're the perfect fit for this role" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
                     <TextArea fx:id="coverLetterArea" promptText="Write your cover letter here..." 
-                              styleClass="cover-letter-input" prefRowCount="8" wrapText="true"/>
+                              styleClass="cover-letter-input" prefRowCount="12" wrapText="true" prefHeight="200" minHeight="180"/>
                     <HBox alignment="CENTER_RIGHT">
                         <Label fx:id="charCountLabel" text="0 / 2000" style="-fx-text-fill: #9CA3AF; -fx-font-size: 11px;"/>
                     </HBox>
@@ -95,7 +95,7 @@
     </VBox>
     
     <VBox fx:id="successContainer" alignment="CENTER" spacing="20" style="-fx-background-color: #FAFAFA;" visible="false">
-        <StackPane style="-fx-background-color: #DCFCE7; -fx-background-radius: 32; -fx-min-width: 64; -fx-min-height: 64;">
+        <StackPane style="-fx-background-color: #DCFCE7; -fx-background-radius: 32; -fx-min-width: 64; -fx-min-height: 64; -fx-max-width: 64; -fx-max-height: 64;">
             <FontIcon iconLiteral="fas-check" iconSize="28" iconColor="#16A34A"/>
         </StackPane>
         <VBox alignment="CENTER" spacing="8">

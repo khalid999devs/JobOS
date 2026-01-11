@@ -81,14 +81,6 @@
                                 </HBox>
                             </graphic>
                         </Button>
-                        <Button fx:id="shareBtn" onAction="#onShare" styleClass="button-outline-teal" style="-fx-min-width: 120; -fx-pref-height: 42;">
-                            <graphic>
-                                <HBox spacing="8" alignment="CENTER">
-                                    <FontIcon iconLiteral="fas-share-alt" iconSize="14" iconColor="#0F766E"/>
-                                    <Label text="Share" style="-fx-text-fill: #0F766E; -fx-font-weight: 600;"/>
-                                </HBox>
-                            </graphic>
-                        </Button>
                     </HBox>
                 </VBox>
                 

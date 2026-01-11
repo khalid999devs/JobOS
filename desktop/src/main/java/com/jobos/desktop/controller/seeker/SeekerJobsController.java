@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class SeekerJobsController implements Initializable {
@@ -48,11 +49,13 @@ public class SeekerJobsController implements Initializable {
     @FXML private Button prevBtn;
     @FXML private Button nextBtn;
     @FXML private HBox paginationContainer;
+    @FXML private Button savedJobsBtn;
 
     private final JobService jobService = new JobService();
     private int currentPage = 0;
     private int totalPages = 0;
     private static final int PAGE_SIZE = 15;
+    private boolean showingSavedJobs = false;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -89,24 +92,189 @@ public class SeekerJobsController implements Initializable {
     private void onClearFilters() {
         searchField.clear();
         locationField.clear();
-        workModeCombo.getSelectionModel().clearSelection();
-        jobTypeCombo.getSelectionModel().clearSelection();
-        experienceCombo.getSelectionModel().clearSelection();
-        salaryRangeCombo.getSelectionModel().clearSelection();
+        // Reset ComboBoxes - clear selection and use buttonCell to show prompt
+        resetComboBox(workModeCombo, "Work Mode");
+        resetComboBox(jobTypeCombo, "Job Type");
+        resetComboBox(experienceCombo, "Experience");
+        resetComboBox(salaryRangeCombo, "Salary Range");
         currentPage = 0;
+        
+        // If showing saved jobs, switch back to all jobs
+        if (showingSavedJobs) {
+            showingSavedJobs = false;
+            updateSavedJobsButton();
+        }
         loadJobs();
+    }
+    
+    private void resetComboBox(ComboBox<String> combo, String promptText) {
+        combo.getSelectionModel().clearSelection();
+        combo.setValue(null);
+        combo.setButtonCell(new javafx.scene.control.ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(promptText);
+                    setStyle("-fx-text-fill: #9CA3AF;");
+                } else {
+                    setText(item);
+                    setStyle("-fx-text-fill: #374151;");
+                }
+            }
+        });
     }
 
     @FXML
     private void onSavedJobs() {
-        Toast.info("Saved jobs feature coming soon");
+        showingSavedJobs = !showingSavedJobs;
+        currentPage = 0;
+        updateSavedJobsButton();
+        
+        if (showingSavedJobs) {
+            loadSavedJobs();
+        } else {
+            loadJobs();
+        }
+    }
+    
+    private void updateSavedJobsButton() {
+        if (savedJobsBtn != null) {
+            HBox graphic = (HBox) savedJobsBtn.getGraphic();
+            if (graphic != null) {
+                FontIcon icon = (FontIcon) graphic.getChildren().get(0);
+                Label label = (Label) graphic.getChildren().get(1);
+                
+                if (showingSavedJobs) {
+                    savedJobsBtn.setStyle("-fx-background-color: #0F766E;");
+                    icon.setIconColor(javafx.scene.paint.Color.WHITE);
+                    label.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
+                } else {
+                    savedJobsBtn.setStyle("");
+                    icon.setIconColor(javafx.scene.paint.Color.web("#0F766E"));
+                    label.setStyle("-fx-text-fill: #0F766E; -fx-font-size: 13px;");
+                }
+            }
+        }
+    }
+    
+    private void loadSavedJobs() {
+        showLoading(true);
+        
+        jobService.getSavedJobs(currentPage, PAGE_SIZE).whenComplete((response, error) -> {
+            Platform.runLater(() -> {
+                showLoading(false);
+                if (error != null) {
+                    Toast.error("Failed to load saved jobs");
+                    showEmpty(true);
+                    return;
+                }
+                renderSavedJobs(response);
+            });
+        });
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void renderSavedJobs(Map<String, Object> response) {
+        jobsList.getChildren().clear();
+        
+        if (response == null) {
+            showEmpty(true);
+            resultsLabel.setText("No saved jobs");
+            updatePagination(0, 0);
+            return;
+        }
+        
+        // Backend returns 'jobs' key, not 'content'
+        List<Map<String, Object>> jobs = (List<Map<String, Object>>) response.get("jobs");
+        if (jobs == null || jobs.isEmpty()) {
+            showEmpty(true);
+            resultsLabel.setText("No saved jobs");
+            updatePagination(0, 0);
+            return;
+        }
+        
+        showEmpty(false);
+        totalPages = response.get("totalPages") != null ? ((Number) response.get("totalPages")).intValue() : 1;
+        long totalElements = response.get("totalElements") != null ? ((Number) response.get("totalElements")).longValue() : jobs.size();
+        
+        resultsLabel.setText(totalElements + " saved job" + (totalElements != 1 ? "s" : ""));
+        updatePagination(currentPage + 1, totalPages);
+        
+        for (Map<String, Object> jobMap : jobs) {
+            JobListResponse job = mapToJobListResponse(jobMap);
+            if (job != null) {
+                job.setIsSaved(true); // Saved jobs are always saved
+                jobsList.getChildren().add(createJobCard(job));
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private JobListResponse mapToJobListResponse(Map<String, Object> map) {
+        if (map == null) return null;
+        
+        JobListResponse job = new JobListResponse();
+        job.setId(getString(map, "id"));
+        job.setTitle(getString(map, "title"));
+        job.setCompany(getString(map, "company"));
+        job.setLocation(getString(map, "location"));
+        job.setJobType(getString(map, "jobType"));
+        job.setWorkMode(getString(map, "workMode"));
+        job.setExperienceLevel(getString(map, "experienceLevel"));
+        
+        Object salaryMin = map.get("salaryMin");
+        if (salaryMin instanceof Number) {
+            job.setSalaryMin(((Number) salaryMin).intValue());
+        }
+        Object salaryMax = map.get("salaryMax");
+        if (salaryMax instanceof Number) {
+            job.setSalaryMax(((Number) salaryMax).intValue());
+        }
+        job.setSalaryCurrency(getString(map, "salaryCurrency"));
+        
+        Object skills = map.get("skills");
+        if (skills instanceof List) {
+            job.setSkills((List<String>) skills);
+        }
+        
+        // Parse isSaved and hasApplied
+        Object isSaved = map.get("isSaved");
+        if (isSaved instanceof Boolean) {
+            job.setIsSaved((Boolean) isSaved);
+        }
+        Object hasApplied = map.get("hasApplied");
+        if (hasApplied instanceof Boolean) {
+            job.setHasApplied((Boolean) hasApplied);
+        }
+        
+        // Parse createdAt string to LocalDateTime
+        String createdAtStr = getString(map, "createdAt");
+        if (createdAtStr != null && !createdAtStr.isEmpty()) {
+            try {
+                job.setCreatedAt(LocalDateTime.parse(createdAtStr.replace("Z", "")));
+            } catch (Exception e) {
+                // Ignore parsing errors
+            }
+        }
+        
+        return job;
+    }
+    
+    private String getString(Map<String, Object> map, String key) {
+        Object val = map.get(key);
+        return val != null ? val.toString() : null;
     }
 
     @FXML
     private void onPrevPage() {
         if (currentPage > 0) {
             currentPage--;
-            loadJobs();
+            if (showingSavedJobs) {
+                loadSavedJobs();
+            } else {
+                loadJobs();
+            }
         }
     }
 
@@ -114,7 +282,11 @@ public class SeekerJobsController implements Initializable {
     private void onNextPage() {
         if (currentPage < totalPages - 1) {
             currentPage++;
-            loadJobs();
+            if (showingSavedJobs) {
+                loadSavedJobs();
+            } else {
+                loadJobs();
+            }
         }
     }
 
