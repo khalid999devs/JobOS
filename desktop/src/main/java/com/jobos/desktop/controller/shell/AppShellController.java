@@ -1,11 +1,13 @@
 package com.jobos.desktop.controller.shell;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
 import com.jobos.desktop.core.session.SessionManager;
 import com.jobos.desktop.core.ui.Modal;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.model.UserRole;
+import com.jobos.desktop.service.ApiClient;
 import com.jobos.desktop.service.CreditService;
 import com.jobos.desktop.service.NotificationService;
 import com.jobos.shared.dto.profile.ProfileResponse;
@@ -44,7 +46,7 @@ public class AppShellController implements Initializable, Router.AppShellAware {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         buildNavigation();
-        updateUserInfo();
+        loadUserProfile();
         loadCreditsInfo();
         setupNotificationPolling();
     }
@@ -119,10 +121,37 @@ public class AppShellController implements Initializable, Router.AppShellAware {
     
     private void updateUserInfo() {
         ProfileResponse profile = sessionManager.getProfile();
-        if (profile != null) {
-            String firstName = profile.getFirstName();
-            avatarLabel.setText(firstName != null && !firstName.isEmpty() ? firstName.substring(0, 1).toUpperCase() : "U");
+        String avatarText = "U";
+        
+        if (profile != null && profile.getFirstName() != null && !profile.getFirstName().isEmpty()) {
+            avatarText = profile.getFirstName().substring(0, 1).toUpperCase();
+        } else {
+            String email = sessionManager.getEmail();
+            if (email != null && !email.isEmpty()) {
+                avatarText = email.substring(0, 1).toUpperCase();
+            }
         }
+        
+        avatarLabel.setText(avatarText);
+    }
+    
+    private void loadUserProfile() {
+  
+        updateUserInfo();
+
+        CompletableFuture.runAsync(() -> {
+            ApiClient apiClient = ApiClient.getInstance();
+            apiClient.get("/api/users/me", new TypeReference<ProfileResponse>() {})
+                .thenAccept(profile -> {
+                    if (profile != null) {
+                        Platform.runLater(() -> {
+                            sessionManager.setProfile(profile);
+                            updateUserInfo();
+                        });
+                    }
+                })
+                .exceptionally(e -> null);
+        });
     }
     
     private void loadCreditsInfo() {

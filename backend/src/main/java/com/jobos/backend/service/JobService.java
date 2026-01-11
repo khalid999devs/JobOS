@@ -80,6 +80,16 @@ public class JobService {
         jobPost.setLocation(request.getLocation());
         jobPost.setIsRemote(request.getIsRemote() != null ? request.getIsRemote() : false);
 
+        if (request.getWorkMode() != null && !request.getWorkMode().isEmpty()) {
+            try {
+                jobPost.setWorkMode(WorkMode.valueOf(request.getWorkMode().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid work mode: " + request.getWorkMode());
+            }
+        } else {
+            jobPost.setWorkMode(WorkMode.REMOTE);
+        }
+
         try {
             jobPost.setJobType(JobType.valueOf(request.getJobType().toUpperCase()));
         } catch (IllegalArgumentException e) {
@@ -191,6 +201,14 @@ public class JobService {
         if (request.getCompany() != null) jobPost.setCompany(request.getCompany());
         if (request.getLocation() != null) jobPost.setLocation(request.getLocation());
         if (request.getIsRemote() != null) jobPost.setIsRemote(request.getIsRemote());
+
+        if (request.getWorkMode() != null && !request.getWorkMode().isEmpty()) {
+            try {
+                jobPost.setWorkMode(WorkMode.valueOf(request.getWorkMode().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid work mode: " + request.getWorkMode());
+            }
+        }
 
         if (request.getJobType() != null) {
             try {
@@ -317,6 +335,7 @@ public class JobService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "REMOTE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());
@@ -350,6 +369,7 @@ public class JobService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "REMOTE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());

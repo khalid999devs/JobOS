@@ -14,6 +14,7 @@ public class JobPostResponse {
     private String company;
     private String location;
     private Boolean isRemote;
+    private String workMode;
     private String jobType;
     private String experienceLevel;
     private Integer salaryMin;
@@ -96,6 +97,14 @@ public class JobPostResponse {
 
     public void setIsRemote(Boolean isRemote) {
         this.isRemote = isRemote;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
 
     public String getJobType() {

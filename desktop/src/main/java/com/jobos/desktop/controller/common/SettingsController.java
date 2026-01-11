@@ -5,6 +5,7 @@ import com.jobos.desktop.core.ui.Modal;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApiClient;
 import com.jobos.desktop.service.NotificationService;
+import com.jobos.shared.dto.auth.ChangePasswordRequest;
 import com.jobos.shared.dto.common.ApiResponse;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -163,10 +164,9 @@ public class SettingsController implements Initializable {
         changePasswordButton.setDisable(true);
         Toast.info("Changing password...");
         
-        Map<String, String> request = Map.of(
-            "currentPassword", currentPassword,
-            "newPassword", newPassword
-        );
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setOldPassword(currentPassword);
+        request.setNewPassword(newPassword);
         
         apiClient.post("/api/auth/change-password", request, ApiResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
@@ -179,7 +179,19 @@ public class SettingsController implements Initializable {
             .exceptionally(e -> {
                 Platform.runLater(() -> {
                     changePasswordButton.setDisable(false);
-                    showPasswordError("Failed to change password. Please check your current password.");
+                    Throwable cause = e.getCause();
+                    if (cause != null) {
+                        String message = cause.getMessage();
+                        if (message != null && message.toLowerCase().contains("incorrect")) {
+                            showPasswordError("Current password is incorrect");
+                        } else if (message != null) {
+                            showPasswordError(message);
+                        } else {
+                            showPasswordError("Failed to change password");
+                        }
+                    } else {
+                        showPasswordError("Failed to change password");
+                    }
                 });
                 return null;
             });

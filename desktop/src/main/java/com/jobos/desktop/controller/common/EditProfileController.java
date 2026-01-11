@@ -46,6 +46,7 @@ public class EditProfileController implements Initializable {
     
     // Seeker Preferences Section
     @FXML private VBox seekerPreferencesSection;
+    @FXML private Button saveSeekerPreferencesBtn;
     @FXML private TextField desiredRolesField;
     @FXML private TextField skillsField;
     @FXML private TextField minSalaryField;
@@ -64,6 +65,7 @@ public class EditProfileController implements Initializable {
     
     // Poster Profile Section
     @FXML private VBox posterProfileSection;
+    @FXML private Button savePosterProfileBtn;
     @FXML private TextField companyNameField;
     @FXML private TextField companyWebsiteField;
     @FXML private ComboBox<String> industryCombo;
@@ -76,6 +78,7 @@ public class EditProfileController implements Initializable {
     // Verification Documents Section
     @FXML private VBox verificationDocsContainer;
     @FXML private TextField newDocUrlField;
+    @FXML private Button saveVerificationDocsBtn;
     private List<String> verificationDocuments = new ArrayList<>();
     
     private final ApiClient apiClient = ApiClient.getInstance();
@@ -397,7 +400,7 @@ public class EditProfileController implements Initializable {
         }
         
         hideProfileError();
-        saveBasicInfoBtn.setDisable(true);
+        setButtonLoading(saveBasicInfoBtn, true, "Saving...");
         Toast.info("Saving profile...");
         
         UpdateProfileRequest request = new UpdateProfileRequest();
@@ -410,7 +413,7 @@ public class EditProfileController implements Initializable {
         
         apiClient.patch("/api/users/me", request, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
-                saveBasicInfoBtn.setDisable(false);
+                setButtonLoading(saveBasicInfoBtn, false, "Save Basic Info");
                 Toast.success("Profile updated successfully");
                 // Update session with fresh data
                 if (response != null) {
@@ -420,7 +423,7 @@ public class EditProfileController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    saveBasicInfoBtn.setDisable(false);
+                    setButtonLoading(saveBasicInfoBtn, false, "Save Basic Info");
                     showProfileError("Failed to update profile");
                 });
                 return null;
@@ -429,6 +432,7 @@ public class EditProfileController implements Initializable {
     
     @FXML
     private void onSaveSeekerPreferences() {
+        setButtonLoading(saveSeekerPreferencesBtn, true, "Saving...");
         Toast.info("Saving preferences...");
         
         Map<String, Object> preferences = new HashMap<>();
@@ -485,6 +489,7 @@ public class EditProfileController implements Initializable {
         
         apiClient.put("/api/users/me/preferences", preferences, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
+                setButtonLoading(saveSeekerPreferencesBtn, false, "Save Preferences");
                 Toast.success("Preferences saved successfully");
                 if (response != null) {
                     currentProfile = response;
@@ -493,6 +498,7 @@ public class EditProfileController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
+                    setButtonLoading(saveSeekerPreferencesBtn, false, "Save Preferences");
                     Toast.error("Failed to save preferences");
                 });
                 return null;
@@ -501,6 +507,7 @@ public class EditProfileController implements Initializable {
     
     @FXML
     private void onSavePosterProfile() {
+        setButtonLoading(savePosterProfileBtn, true, "Saving...");
         Toast.info("Saving company info...");
         
         Map<String, Object> posterData = new HashMap<>();
@@ -511,6 +518,7 @@ public class EditProfileController implements Initializable {
         
         apiClient.put("/api/users/me/preferences", posterData, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
+                setButtonLoading(savePosterProfileBtn, false, "Save Company Info");
                 Toast.success("Company info saved successfully");
                 if (response != null) {
                     currentProfile = response;
@@ -519,6 +527,7 @@ public class EditProfileController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
+                    setButtonLoading(savePosterProfileBtn, false, "Save Company Info");
                     Toast.error("Failed to save company info");
                 });
                 return null;
@@ -621,6 +630,7 @@ public class EditProfileController implements Initializable {
     
     @FXML
     private void onSaveVerificationDocs() {
+        setButtonLoading(saveVerificationDocsBtn, true, "Saving...");
         Toast.info("Saving verification documents...");
         
         Map<String, Object> posterData = new HashMap<>();
@@ -628,6 +638,7 @@ public class EditProfileController implements Initializable {
         
         apiClient.put("/api/users/me/preferences", posterData, ProfileResponse.class)
             .thenAccept(response -> Platform.runLater(() -> {
+                setButtonLoading(saveVerificationDocsBtn, false, "Save Verification Documents");
                 Toast.success("Verification documents saved successfully");
                 if (response != null) {
                     currentProfile = response;
@@ -636,9 +647,16 @@ public class EditProfileController implements Initializable {
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
+                    setButtonLoading(saveVerificationDocsBtn, false, "Save Verification Documents");
                     Toast.error("Failed to save verification documents");
                 });
                 return null;
             });
+    }
+    
+    private void setButtonLoading(Button button, boolean loading, String text) {
+        if (button == null) return;
+        button.setDisable(loading);
+        button.setText(text);
     }
 }

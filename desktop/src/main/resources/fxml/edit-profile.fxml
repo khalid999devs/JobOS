@@ -148,7 +148,7 @@
                 </HBox>
             </VBox>
             
-            <Button text="Save Preferences" onAction="#onSaveSeekerPreferences" styleClass="button-primary-teal"/>
+            <Button fx:id="saveSeekerPreferencesBtn" text="Save Preferences" onAction="#onSaveSeekerPreferences" styleClass="button-primary-teal"/>
         </VBox>
         
         <!-- Job Poster Profile (shown only for posters) -->
@@ -186,7 +186,7 @@
                 </HBox>
             </VBox>
             
-            <Button text="Save Company Info" onAction="#onSavePosterProfile" styleClass="button-primary-teal"/>
+            <Button fx:id="savePosterProfileBtn" text="Save Company Info" onAction="#onSavePosterProfile" styleClass="button-primary-teal"/>
             
             <!-- Verification Documents Section -->
             <VBox spacing="16" style="-fx-padding: 20 0 0 0; -fx-border-color: #E5E7EB; -fx-border-width: 1 0 0 0;">
@@ -207,7 +207,7 @@
                     <Button text="Add Document" onAction="#onAddVerificationDoc" styleClass="button-outline-teal"/>
                 </HBox>
                 
-                <Button text="Save Verification Documents" onAction="#onSaveVerificationDocs" styleClass="button-primary-teal"/>
+                <Button fx:id="saveVerificationDocsBtn" text="Save Verification Documents" onAction="#onSaveVerificationDocs" styleClass="button-primary-teal"/>
             </VBox>
         </VBox>
         

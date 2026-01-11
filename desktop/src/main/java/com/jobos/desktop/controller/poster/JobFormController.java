@@ -24,7 +24,7 @@ public class JobFormController implements Initializable {
     @FXML private TextField titleField;
     @FXML private TextField companyField;
     @FXML private TextField locationField;
-    @FXML private CheckBox remoteCheckbox;
+    @FXML private ComboBox<String> workModeCombo;
     @FXML private ComboBox<String> jobTypeCombo;
     @FXML private ComboBox<String> experienceLevelCombo;
     @FXML private TextField salaryMinField;
@@ -39,6 +39,7 @@ public class JobFormController implements Initializable {
     @FXML private DatePicker deadlinePicker;
     @FXML private ComboBox<String> statusCombo;
     @FXML private Button saveButton;
+    @FXML private Button saveButtonBottom;
     @FXML private Button cancelButton;
     
     private final JobPostService jobPostService = new JobPostService();
@@ -59,13 +60,18 @@ public class JobFormController implements Initializable {
         jobTypeCombo.getItems().addAll("FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "FREELANCE");
         jobTypeCombo.setValue("FULL_TIME");
         
-        experienceLevelCombo.getItems().addAll("ENTRY", "JUNIOR", "MID", "SENIOR", "LEAD", "EXECUTIVE");
+        workModeCombo.getItems().addAll("REMOTE", "ONSITE", "HYBRID");
+        workModeCombo.setValue("ONSITE");
+        
+        
+        experienceLevelCombo.getItems().addAll("ENTRY", "MID", "SENIOR", "LEAD", "EXECUTIVE");
         experienceLevelCombo.setValue("MID");
         
         currencyCombo.getItems().addAll("USD", "EUR", "GBP", "BDT", "INR");
         currencyCombo.setValue("USD");
         
-        statusCombo.getItems().addAll("DRAFT", "ACTIVE", "CLOSED");
+        // Must match backend JobStatus enum: DRAFT, ACTIVE, CLOSED, EXPIRED
+        statusCombo.getItems().addAll("DRAFT", "ACTIVE", "CLOSED", "EXPIRED");
         statusCombo.setValue("ACTIVE");
         
         deadlinePicker.setValue(LocalDate.now().plusMonths(1));
@@ -139,8 +145,12 @@ public class JobFormController implements Initializable {
         titleField.setText(job.getTitle());
         companyField.setText(job.getCompany());
         locationField.setText(job.getLocation());
-        remoteCheckbox.setSelected(Boolean.TRUE.equals(job.getIsRemote()));
         
+        if (job.getWorkMode() != null && !job.getWorkMode().isEmpty()) {
+            workModeCombo.setValue(job.getWorkMode());
+        } else {
+            workModeCombo.setValue("REMOTE");
+        }
         if (job.getJobType() != null) {
             jobTypeCombo.setValue(job.getJobType());
         }
@@ -177,14 +187,19 @@ public class JobFormController implements Initializable {
 
     @FXML
     private void onSave() {
-        if (!validateForm()) return;
-        
-        Toast.info(isEditMode ? "Updating job..." : "Creating job...");
-        
-        if (isEditMode) {
-            updateJob();
-        } else {
-            createJob();
+        try {
+            if (!validateForm()) return;
+            
+            Toast.info(isEditMode ? "Updating job..." : "Creating job...");
+            
+            if (isEditMode) {
+                updateJob();
+            } else {
+                createJob();
+            }
+        } catch (Exception e) {
+            Toast.error("Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -215,14 +230,19 @@ public class JobFormController implements Initializable {
         JobPostRequest request = new JobPostRequest();
         populateRequest(request);
         
+        setButtonsDisabled(true);
+        
         jobPostService.createJobPost(request)
             .thenAccept(response -> Platform.runLater(() -> {
+                setButtonsDisabled(false);
                 Toast.success("Job created successfully!");
                 router.navigate(Route.POSTER_JOB_POSTS);
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    Toast.error("Failed to create job: " + e.getMessage());
+                    setButtonsDisabled(false);
+                    Throwable cause = e.getCause() != null ? e.getCause() : e;
+                    Toast.error("Failed to create job: " + cause.getMessage());
                 });
                 return null;
             });
@@ -232,24 +252,35 @@ public class JobFormController implements Initializable {
         JobPostUpdateRequest request = new JobPostUpdateRequest();
         populateUpdateRequest(request);
         
+        setButtonsDisabled(true);
+        
         jobPostService.updateJobPost(editingJobId, request)
             .thenAccept(response -> Platform.runLater(() -> {
+                setButtonsDisabled(false);
                 Toast.success("Job updated successfully!");
                 router.navigate(Route.POSTER_JOB_POSTS);
             }))
             .exceptionally(e -> {
                 Platform.runLater(() -> {
-                    Toast.error("Failed to update job: " + e.getMessage());
+                    setButtonsDisabled(false);
+                    Throwable cause = e.getCause() != null ? e.getCause() : e;
+                    Toast.error("Failed to update job: " + cause.getMessage());
+                    cause.printStackTrace();
                 });
                 return null;
             });
+    }
+    
+    private void setButtonsDisabled(boolean disabled) {
+        if (saveButton != null) saveButton.setDisable(disabled);
+        if (saveButtonBottom != null) saveButtonBottom.setDisable(disabled);
     }
 
     private void populateRequest(JobPostRequest request) {
         request.setTitle(titleField.getText().trim());
         request.setCompany(companyField.getText().trim());
         request.setLocation(locationField.getText().trim());
-        request.setIsRemote(remoteCheckbox.isSelected());
+        request.setWorkMode(workModeCombo.getValue());
         request.setJobType(jobTypeCombo.getValue());
         request.setExperienceLevel(experienceLevelCombo.getValue());
         
@@ -277,7 +308,7 @@ public class JobFormController implements Initializable {
         request.setTitle(titleField.getText().trim());
         request.setCompany(companyField.getText().trim());
         request.setLocation(locationField.getText().trim());
-        request.setIsRemote(remoteCheckbox.isSelected());
+        request.setWorkMode(workModeCombo.getValue());
         request.setJobType(jobTypeCombo.getValue());
         request.setExperienceLevel(experienceLevelCombo.getValue());
         

@@ -160,7 +160,9 @@ public class JobDetailController implements Initializable {
         if (job.getJobType() != null) {
             tagsContainer.getChildren().add(createTag(formatJobType(job.getJobType()), "#E0F2FE", "#0284C7"));
         }
-        if (Boolean.TRUE.equals(job.getIsRemote())) {
+        if (job.getWorkMode() != null && !job.getWorkMode().isEmpty()) {
+            tagsContainer.getChildren().add(createTag(formatWorkMode(job.getWorkMode()), "#DCFCE7", "#16A34A"));
+        } else {
             tagsContainer.getChildren().add(createTag("Remote", "#DCFCE7", "#16A34A"));
         }
         if (job.getExperienceLevel() != null) {
@@ -284,6 +286,16 @@ public class JobDetailController implements Initializable {
             case "INTERNSHIP" -> "Internship";
             case "FREELANCE" -> "Freelance";
             default -> type;
+        };
+    }
+
+    private String formatWorkMode(String mode) {
+        if (mode == null) return "Remote";
+        return switch (mode.toUpperCase()) {
+            case "REMOTE" -> "Remote";
+            case "ONSITE" -> "On-site";
+            case "HYBRID" -> "Hybrid";
+            default -> mode;
         };
     }
 

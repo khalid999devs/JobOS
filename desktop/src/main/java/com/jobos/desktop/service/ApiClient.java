@@ -14,6 +14,8 @@ import javafx.application.Platform;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -25,6 +27,7 @@ public class ApiClient {
     private final String baseUrl;
     private final TokenStore tokenStore;
     private volatile boolean isRefreshing = false;
+    private final List<Runnable> pendingRequests = new ArrayList<>();
     
     private ApiClient() {
         this.baseUrl = AppConfig.getInstance().getApiBaseUrl();
@@ -150,7 +153,9 @@ public class ApiClient {
         try {
             String responseBody = response.body() != null ? response.body().string() : "";
             
-            if (response.code() == 401 && !isRetry && !isRefreshEndpoint(originalRequest)) {
+          
+            boolean isAuthEndpoint = isAuthEndpoint(originalRequest);
+            if (response.code() == 401 && !isRetry && !isAuthEndpoint) {
                 response.close();
                 tryRefreshAndRetry(originalRequest, responseType, typeRef, future);
                 return;
@@ -181,26 +186,58 @@ public class ApiClient {
             response.close();
         }
     }
-    
+
+    private boolean isAuthEndpoint(Request request) {
+        String url = request.url().toString();
+        return url.contains("/api/auth/login") || 
+               url.contains("/api/auth/register") || 
+               url.contains(Constants.Api.AUTH_REFRESH);
+    }
+
     private boolean isRefreshEndpoint(Request request) {
         return request.url().toString().contains(Constants.Api.AUTH_REFRESH);
     }
     
     private <T> void tryRefreshAndRetry(Request originalRequest, Class<T> responseType, 
                                          TypeReference<T> typeRef, CompletableFuture<T> future) {
-        if (isRefreshing) {
-            future.completeExceptionally(new ApiException("Session expired", 401));
-            return;
-        }
+        String refreshToken;
         
-        String refreshToken = tokenStore.getRefreshToken();
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            handleSessionExpired();
-            future.completeExceptionally(new ApiException("Session expired", 401));
-            return;
+        synchronized (this) {
+            if (isRefreshing) {
+                // Queue this request to be retried after refresh completes
+                pendingRequests.add(() -> {
+                    if (responseType != null) {
+                        executeRequest(originalRequest.newBuilder()
+                                .header("Authorization", "Bearer " + tokenStore.getAccessToken())
+                                .build(), responseType, true)
+                                .thenAccept(future::complete)
+                                .exceptionally(e -> {
+                                    future.completeExceptionally(e);
+                                    return null;
+                                });
+                    } else {
+                        executeRequest(originalRequest.newBuilder()
+                                .header("Authorization", "Bearer " + tokenStore.getAccessToken())
+                                .build(), typeRef, true)
+                                .thenAccept(future::complete)
+                                .exceptionally(e -> {
+                                    future.completeExceptionally(e);
+                                    return null;
+                                });
+                    }
+                });
+                return;
+            }
+            
+            refreshToken = tokenStore.getRefreshToken();
+            if (refreshToken == null || refreshToken.isEmpty()) {
+                handleSessionExpired();
+                future.completeExceptionally(new ApiException("Session expired", 401));
+                return;
+            }
+            
+            isRefreshing = true;
         }
-        
-        isRefreshing = true;
         
         Map<String, String> refreshBody = Map.of("refreshToken", refreshToken);
         Request refreshRequest = new Request.Builder()
@@ -212,17 +249,22 @@ public class ApiClient {
         client.newCall(refreshRequest).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                isRefreshing = false;
+                synchronized (ApiClient.this) {
+                    isRefreshing = false;
+                    pendingRequests.clear();
+                }
                 handleSessionExpired();
                 future.completeExceptionally(new ApiException("Session expired", 401));
             }
             
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                isRefreshing = false;
-                
                 if (!response.isSuccessful()) {
                     response.close();
+                    synchronized (ApiClient.this) {
+                        isRefreshing = false;
+                        pendingRequests.clear();
+                    }
                     handleSessionExpired();
                     future.completeExceptionally(new ApiException("Session expired", 401));
                     return;
@@ -239,6 +281,7 @@ public class ApiClient {
                         AuthResponse authResponse = apiResponse.getResult();
                         tokenStore.saveTokens(authResponse.getAccessToken(), authResponse.getRefreshToken());
                         
+                        // Retry the original request
                         Request retryRequest = originalRequest.newBuilder()
                                 .header("Authorization", "Bearer " + authResponse.getAccessToken())
                                 .build();
@@ -258,11 +301,28 @@ public class ApiClient {
                                         return null;
                                     });
                         }
+                        
+                        // Process all pending requests
+                        List<Runnable> toProcess;
+                        synchronized (ApiClient.this) {
+                            toProcess = new ArrayList<>(pendingRequests);
+                            pendingRequests.clear();
+                            isRefreshing = false;
+                        }
+                        toProcess.forEach(Runnable::run);
                     } else {
+                        synchronized (ApiClient.this) {
+                            isRefreshing = false;
+                            pendingRequests.clear();
+                        }
                         handleSessionExpired();
                         future.completeExceptionally(new ApiException("Session expired", 401));
                     }
                 } catch (Exception e) {
+                    synchronized (ApiClient.this) {
+                        isRefreshing = false;
+                        pendingRequests.clear();
+                    }
                     handleSessionExpired();
                     future.completeExceptionally(new ApiException("Session expired", 401));
                 }

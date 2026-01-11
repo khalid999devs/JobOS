@@ -129,13 +129,20 @@ public class RegisterController implements Initializable {
             .exceptionally(e -> {
                 Platform.runLater(() -> {
                     setLoading(false);
-                    if (e.getCause() instanceof ApiClient.ApiException apiEx) {
+                    
+                    // Unwrap the exception
+                    Throwable cause = e.getCause();
+                    if (cause == null) cause = e;
+                    
+                    if (cause instanceof ApiClient.ApiException apiEx) {
                         if (apiEx.getStatusCode() == 409) {
                             showError("An account with this email already exists");
                         } else if (apiEx.getStatusCode() == 400) {
-                            showError("Invalid registration data");
+                            showError(apiEx.getMessage());
+                        } else if (apiEx.getStatusCode() >= 500) {
+                            showError("Server error. Please try again later.");
                         } else {
-                            showError("Registration failed. Please try again.");
+                            showError(apiEx.getMessage());
                         }
                     } else {
                         showError("Connection error. Please check your internet.");

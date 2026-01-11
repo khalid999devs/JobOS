@@ -85,11 +85,18 @@ public class LoginController {
             .exceptionally(e -> {
                 Platform.runLater(() -> {
                     setLoading(false);
-                    if (e.getCause() instanceof ApiClient.ApiException apiEx) {
+                    
+                    // Unwrap the exception
+                    Throwable cause = e.getCause();
+                    if (cause == null) cause = e;
+                    
+                    if (cause instanceof ApiClient.ApiException apiEx) {
                         if (apiEx.getStatusCode() == 401) {
                             showError("Invalid email or password");
+                        } else if (apiEx.getStatusCode() >= 500) {
+                            showError("Server error. Please try again later.");
                         } else {
-                            showError("Login failed. Please try again.");
+                            showError(apiEx.getMessage());
                         }
                     } else {
                         showError("Connection error. Please check your internet.");

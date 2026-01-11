@@ -40,14 +40,14 @@
                 </VBox>
             </HBox>
             
-            <HBox spacing="16" alignment="CENTER_LEFT">
-                <CheckBox fx:id="remoteCheckbox" text="Remote Position"/>
-            </HBox>
-            
             <HBox spacing="16">
                 <VBox spacing="8" HBox.hgrow="ALWAYS">
                     <Label text="Job Type *" styleClass="label-secondary"/>
                     <ComboBox fx:id="jobTypeCombo" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Work Mode *" styleClass="label-secondary"/>
+                    <ComboBox fx:id="workModeCombo" maxWidth="Infinity"/>
                 </VBox>
                 <VBox spacing="8" HBox.hgrow="ALWAYS">
                     <Label text="Experience Level" styleClass="label-secondary"/>
@@ -136,7 +136,7 @@
         <HBox alignment="CENTER_RIGHT" spacing="12">
             <padding><Insets top="8" bottom="24"/></padding>
             <Button text="Cancel" styleClass="button-secondary" onAction="#onCancel"/>
-            <Button text="Save Job" styleClass="button-primary" onAction="#onSave"/>
+            <Button fx:id="saveButtonBottom" text="Save Job" styleClass="button-primary" onAction="#onSave"/>
         </HBox>
     </VBox>
 </ScrollPane>

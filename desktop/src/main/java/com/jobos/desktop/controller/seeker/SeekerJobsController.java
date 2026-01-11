@@ -269,9 +269,9 @@ public class SeekerJobsController implements Initializable {
         if (job.getJobType() != null) {
             tagsRow.getChildren().add(createTag(formatJobType(job.getJobType()), "#E0F2FE", "#0284C7"));
         }
-        if (job.getWorkMode() != null) {
+        if (job.getWorkMode() != null && !job.getWorkMode().isEmpty()) {
             tagsRow.getChildren().add(createTag(formatWorkMode(job.getWorkMode()), "#DCFCE7", "#16A34A"));
-        } else if (Boolean.TRUE.equals(job.getIsRemote())) {
+        } else {
             tagsRow.getChildren().add(createTag("Remote", "#DCFCE7", "#16A34A"));
         }
         if (job.getExperienceLevel() != null) {
