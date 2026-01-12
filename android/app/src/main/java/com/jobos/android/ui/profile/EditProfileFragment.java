@@ -35,10 +35,17 @@ public class EditProfileFragment extends BaseFragment {
     private TextInputEditText emailInput;
     private TextInputEditText phoneInput;
     private TextInputEditText locationInput;
+    private AutoCompleteTextView timezoneDropdown;
     private TextInputEditText bioInput;
     private LinearLayout seekerFields;
     private TextInputEditText jobTitleInput;
     private TextInputEditText skillsInput;
+    private TextInputEditText desiredRolesInput;
+    private TextInputEditText minSalaryInput;
+    private TextInputEditText maxSalaryInput;
+    private ChipGroup jobTypeChips;
+    private ChipGroup workModeChips;
+    private ChipGroup experienceLevelChips;
     private LinearLayout posterFields;
     private TextInputEditText companyNameInput;
     private TextInputEditText companyWebsiteInput;
@@ -83,10 +90,17 @@ public class EditProfileFragment extends BaseFragment {
         emailInput = view.findViewById(R.id.email_input);
         phoneInput = view.findViewById(R.id.phone_input);
         locationInput = view.findViewById(R.id.location_input);
+        timezoneDropdown = view.findViewById(R.id.timezone_dropdown);
         bioInput = view.findViewById(R.id.bio_input);
         seekerFields = view.findViewById(R.id.seeker_fields);
         jobTitleInput = view.findViewById(R.id.job_title_input);
         skillsInput = view.findViewById(R.id.skills_input);
+        desiredRolesInput = view.findViewById(R.id.desired_roles_input);
+        minSalaryInput = view.findViewById(R.id.min_salary_input);
+        maxSalaryInput = view.findViewById(R.id.max_salary_input);
+        jobTypeChips = view.findViewById(R.id.job_type_chips);
+        workModeChips = view.findViewById(R.id.work_mode_chips);
+        experienceLevelChips = view.findViewById(R.id.experience_level_chips);
         posterFields = view.findViewById(R.id.poster_fields);
         companyNameInput = view.findViewById(R.id.company_name_input);
         companyWebsiteInput = view.findViewById(R.id.company_website_input);
@@ -107,6 +121,24 @@ public class EditProfileFragment extends BaseFragment {
         } else {
             seekerFields.setVisibility(View.VISIBLE);
         }
+        setupTimezoneDropdown();
+    }
+
+    private void setupTimezoneDropdown() {
+        String[] timezones = {
+            "UTC-12:00", "UTC-11:00", "UTC-10:00", "UTC-09:00", "UTC-08:00 (PST)",
+            "UTC-07:00 (MST)", "UTC-06:00 (CST)", "UTC-05:00 (EST)", "UTC-04:00",
+            "UTC-03:00", "UTC-02:00", "UTC-01:00", "UTC+00:00 (GMT)", "UTC+01:00",
+            "UTC+02:00", "UTC+03:00", "UTC+04:00", "UTC+05:00", "UTC+05:30 (IST)",
+            "UTC+06:00 (BST)", "UTC+07:00", "UTC+08:00", "UTC+09:00", "UTC+10:00",
+            "UTC+11:00", "UTC+12:00"
+        };
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            timezones
+        );
+        timezoneDropdown.setAdapter(adapter);
     }
 
     private void setupIndustryDropdown() {
@@ -195,6 +227,10 @@ public class EditProfileFragment extends BaseFragment {
         phoneInput.setText(profile.getPhoneNumber());
         locationInput.setText(profile.getLocation());
         bioInput.setText(profile.getBio());
+        
+        if (profile.getTimezone() != null) {
+            timezoneDropdown.setText(profile.getTimezone(), false);
+        }
 
         if (isPoster && profile.getPosterProfile() != null) {
             PosterProfileData posterData = profile.getPosterProfile();
@@ -226,6 +262,80 @@ public class EditProfileFragment extends BaseFragment {
             if (skills != null && !skills.isEmpty()) {
                 skillsInput.setText(String.join(", ", skills));
             }
+            
+            // Populate seeker preferences
+            ProfileResponse.SeekerPreferencesData prefs = profile.getSeekerPreferences();
+            if (prefs != null) {
+                // Desired roles
+                if (prefs.getDesiredRoles() != null && !prefs.getDesiredRoles().isEmpty()) {
+                    desiredRolesInput.setText(String.join(", ", prefs.getDesiredRoles()));
+                }
+                
+                // Salary range
+                if (prefs.getSalaryMin() != null) {
+                    minSalaryInput.setText(String.valueOf(prefs.getSalaryMin()));
+                }
+                if (prefs.getSalaryMax() != null) {
+                    maxSalaryInput.setText(String.valueOf(prefs.getSalaryMax()));
+                }
+                
+                // Job types
+                if (prefs.getJobTypes() != null) {
+                    for (String type : prefs.getJobTypes()) {
+                        setChipChecked(jobTypeChips, getJobTypeChipId(type));
+                    }
+                }
+                
+                // Work modes
+                if (prefs.getWorkModes() != null) {
+                    for (String mode : prefs.getWorkModes()) {
+                        setChipChecked(workModeChips, getWorkModeChipId(mode));
+                    }
+                }
+                
+                // Experience levels
+                if (prefs.getExperienceLevels() != null) {
+                    for (String level : prefs.getExperienceLevels()) {
+                        setChipChecked(experienceLevelChips, getExperienceLevelChipId(level));
+                    }
+                }
+            }
+        }
+    }
+
+    private void setChipChecked(ChipGroup chipGroup, int chipId) {
+        if (chipId != -1 && chipGroup != null) {
+            Chip chip = chipGroup.findViewById(chipId);
+            if (chip != null) chip.setChecked(true);
+        }
+    }
+
+    private int getJobTypeChipId(String type) {
+        switch (type) {
+            case "FULL_TIME": return R.id.chip_full_time;
+            case "PART_TIME": return R.id.chip_part_time;
+            case "CONTRACT": return R.id.chip_contract;
+            case "INTERNSHIP": return R.id.chip_internship;
+            default: return -1;
+        }
+    }
+
+    private int getWorkModeChipId(String mode) {
+        switch (mode) {
+            case "REMOTE": return R.id.chip_remote;
+            case "HYBRID": return R.id.chip_hybrid;
+            case "ONSITE": return R.id.chip_onsite;
+            default: return -1;
+        }
+    }
+
+    private int getExperienceLevelChipId(String level) {
+        switch (level) {
+            case "ENTRY": return R.id.chip_entry;
+            case "MID": return R.id.chip_mid;
+            case "SENIOR": return R.id.chip_senior;
+            case "LEAD": return R.id.chip_lead;
+            default: return -1;
         }
     }
 
@@ -298,6 +408,9 @@ public class EditProfileFragment extends BaseFragment {
         String location = locationInput.getText().toString().trim();
         if (!location.isEmpty()) request.setLocation(location);
         
+        String timezone = timezoneDropdown.getText().toString().trim();
+        if (!timezone.isEmpty()) request.setTimezone(timezone);
+        
         String bio = bioInput.getText().toString().trim();
         if (!bio.isEmpty()) request.setBio(bio);
 
@@ -330,6 +443,51 @@ public class EditProfileFragment extends BaseFragment {
                 }
                 request.setSkills(skillList);
             }
+            
+            // Seeker preferences
+            String desiredRoles = desiredRolesInput.getText().toString().trim();
+            if (!desiredRoles.isEmpty()) {
+                List<String> rolesList = new ArrayList<>();
+                for (String role : desiredRoles.split(",")) {
+                    String trimmed = role.trim();
+                    if (!trimmed.isEmpty()) rolesList.add(trimmed);
+                }
+                request.setDesiredRoles(rolesList);
+            }
+            
+            // Salary range
+            String minSalary = minSalaryInput.getText().toString().trim();
+            if (!minSalary.isEmpty()) {
+                try {
+                    request.setSalaryMin(Integer.parseInt(minSalary));
+                } catch (NumberFormatException e) {
+                    showToast("Invalid minimum salary");
+                    showLoading(false);
+                    return;
+                }
+            }
+            String maxSalary = maxSalaryInput.getText().toString().trim();
+            if (!maxSalary.isEmpty()) {
+                try {
+                    request.setSalaryMax(Integer.parseInt(maxSalary));
+                } catch (NumberFormatException e) {
+                    showToast("Invalid maximum salary");
+                    showLoading(false);
+                    return;
+                }
+            }
+            
+            // Job types
+            List<String> jobTypes = getCheckedChipValues(jobTypeChips, this::getJobTypeValue);
+            if (!jobTypes.isEmpty()) request.setJobTypes(jobTypes);
+            
+            // Work modes
+            List<String> workModes = getCheckedChipValues(workModeChips, this::getWorkModeValue);
+            if (!workModes.isEmpty()) request.setWorkModes(workModes);
+            
+            // Experience levels
+            List<String> experienceLevels = getCheckedChipValues(experienceLevelChips, this::getExperienceLevelValue);
+            if (!experienceLevels.isEmpty()) request.setExperienceLevels(experienceLevels);
         }
 
         apiService.updateProfile(sessionManager.getAccessToken(), request,
@@ -359,5 +517,47 @@ public class EditProfileFragment extends BaseFragment {
     private void showLoading(boolean show) {
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         saveButton.setEnabled(!show);
+    }
+
+    private List<String> getCheckedChipValues(ChipGroup chipGroup, ChipValueMapper mapper) {
+        List<String> values = new ArrayList<>();
+        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+            View child = chipGroup.getChildAt(i);
+            if (child instanceof Chip) {
+                Chip chip = (Chip) child;
+                if (chip.isChecked()) {
+                    String value = mapper.getValue(chip.getId());
+                    if (value != null) values.add(value);
+                }
+            }
+        }
+        return values;
+    }
+
+    private interface ChipValueMapper {
+        String getValue(int chipId);
+    }
+
+    private String getJobTypeValue(int chipId) {
+        if (chipId == R.id.chip_full_time) return "FULL_TIME";
+        if (chipId == R.id.chip_part_time) return "PART_TIME";
+        if (chipId == R.id.chip_contract) return "CONTRACT";
+        if (chipId == R.id.chip_internship) return "INTERNSHIP";
+        return null;
+    }
+
+    private String getWorkModeValue(int chipId) {
+        if (chipId == R.id.chip_remote) return "REMOTE";
+        if (chipId == R.id.chip_hybrid) return "HYBRID";
+        if (chipId == R.id.chip_onsite) return "ONSITE";
+        return null;
+    }
+
+    private String getExperienceLevelValue(int chipId) {
+        if (chipId == R.id.chip_entry) return "ENTRY";
+        if (chipId == R.id.chip_mid) return "MID";
+        if (chipId == R.id.chip_senior) return "SENIOR";
+        if (chipId == R.id.chip_lead) return "LEAD";
+        return null;
     }
 }

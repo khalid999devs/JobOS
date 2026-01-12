@@ -146,6 +146,7 @@ public class LoginFragment extends BaseFragment {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     UserDataManager.getInstance().setCurrentUser(profile);
+                    registerFcmToken(token);
                     navigateBasedOnRole(role);
                 });
             }
@@ -155,10 +156,33 @@ public class LoginFragment extends BaseFragment {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     // Even if profile load fails, navigate to dashboard
+                    registerFcmToken(token);
                     navigateBasedOnRole(role);
                 });
             }
         });
+    }
+
+    private void registerFcmToken(String accessToken) {
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    String fcmToken = task.getResult();
+                    apiService.registerFcmToken(accessToken, fcmToken, new ApiCallback<String>() {
+                        @Override
+                        public void onSuccess(String result) {
+                            android.util.Log.d("LoginFragment", "FCM token registered successfully");
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            android.util.Log.e("LoginFragment", "Failed to register FCM token: " + error);
+                        }
+                    });
+                } else {
+                    android.util.Log.e("LoginFragment", "Failed to get FCM token");
+                }
+            });
     }
 
     private void navigateBasedOnRole(String role) {

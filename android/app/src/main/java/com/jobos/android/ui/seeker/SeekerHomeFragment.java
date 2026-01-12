@@ -77,12 +77,27 @@ public class SeekerHomeFragment extends BaseFragment {
         seeAllRecommended = view.findViewById(R.id.see_all_recommended);
         seeAllRecent = view.findViewById(R.id.see_all_recent);
 
-        String fullName = UserDataManager.getInstance().getFullName();
-        if (fullName != null && !fullName.isEmpty()) {
-            userName.setText(fullName);
+        String firstName = UserDataManager.getInstance().getFirstName();
+        if (firstName != null && !firstName.isEmpty()) {
+            userName.setText(firstName);
         } else {
-            String email = sessionManager.getUserEmail();
-            userName.setText(email != null ? email.split("@")[0] : getString(R.string.seeker));
+            String fullName = UserDataManager.getInstance().getFullName();
+            if (fullName != null && !fullName.isEmpty()) {
+                // Extract first name from full name
+                String[] nameParts = fullName.split(" ");
+                userName.setText(nameParts[0]);
+            } else {
+                String email = sessionManager.getUserEmail();
+                String userName = sessionManager.getUserName();
+                if (userName != null && !userName.isEmpty()) {
+                    String[] nameParts = userName.split(" ");
+                    this.userName.setText(nameParts[0]);
+                } else if (email != null) {
+                    this.userName.setText(email.split("@")[0]);
+                } else {
+                    this.userName.setText(getString(R.string.seeker));
+                }
+            }
         }
 
         updateGreeting();

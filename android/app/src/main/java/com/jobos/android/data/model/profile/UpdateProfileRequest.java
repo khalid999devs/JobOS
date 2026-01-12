@@ -26,6 +26,14 @@ public class UpdateProfileRequest {
     private List<String> verificationDocuments;
     private Integer experienceYears;
     private String role;
+    
+    // Seeker preferences
+    private List<String> desiredRoles;
+    private Integer salaryMin;
+    private Integer salaryMax;
+    private List<String> jobTypes;
+    private List<String> workModes;
+    private List<String> experienceLevels;
 
     public UpdateProfileRequest() {
     }
@@ -199,5 +207,53 @@ public class UpdateProfileRequest {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public List<String> getDesiredRoles() {
+        return desiredRoles;
+    }
+
+    public void setDesiredRoles(List<String> desiredRoles) {
+        this.desiredRoles = desiredRoles;
+    }
+
+    public Integer getSalaryMin() {
+        return salaryMin;
+    }
+
+    public void setSalaryMin(Integer salaryMin) {
+        this.salaryMin = salaryMin;
+    }
+
+    public Integer getSalaryMax() {
+        return salaryMax;
+    }
+
+    public void setSalaryMax(Integer salaryMax) {
+        this.salaryMax = salaryMax;
+    }
+
+    public List<String> getJobTypes() {
+        return jobTypes;
+    }
+
+    public void setJobTypes(List<String> jobTypes) {
+        this.jobTypes = jobTypes;
+    }
+
+    public List<String> getWorkModes() {
+        return workModes;
+    }
+
+    public void setWorkModes(List<String> workModes) {
+        this.workModes = workModes;
+    }
+
+    public List<String> getExperienceLevels() {
+        return experienceLevels;
+    }
+
+    public void setExperienceLevels(List<String> experienceLevels) {
+        this.experienceLevels = experienceLevels;
     }
 }

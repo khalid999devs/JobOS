@@ -19,6 +19,8 @@ import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.application.ApplicationDTO;
+import com.jobos.android.data.model.cv.CVDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -48,6 +50,7 @@ public class ApplicantDetailFragment extends BaseFragment {
     private ApplicationDTO currentApplication;
     private String selectedStatus;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Nullable
     @Override
@@ -119,9 +122,9 @@ public class ApplicantDetailFragment extends BaseFragment {
 
         viewCvButton.setOnClickListener(v -> {
             if (currentApplication != null && currentApplication.getCvId() != null) {
-                Bundle args = new Bundle();
-                args.putString("cvId", currentApplication.getCvId());
-                navController.navigate(R.id.cvPreviewFragment, args);
+                viewApplicantCV();
+            } else if (currentApplication != null && currentApplication.getCvId() == null) {
+                showToast("No CV attached to this application");
             }
         });
     }
@@ -180,9 +183,14 @@ public class ApplicantDetailFragment extends BaseFragment {
             coverLetterCard.setVisibility(View.GONE);
         }
 
-        String cvTitle = currentApplication.getCvTitle();
-        if (cvTitle != null && !cvTitle.isEmpty()) {
-            cvName.setText(cvTitle);
+        // Show CV card if cvId exists
+        if (currentApplication.getCvId() != null && !currentApplication.getCvId().isEmpty()) {
+            String cvTitle = currentApplication.getCvTitle();
+            if (cvTitle != null && !cvTitle.isEmpty()) {
+                cvName.setText(cvTitle);
+            } else {
+                cvName.setText("Resume");
+            }
             cvCard.setVisibility(View.VISIBLE);
         } else {
             cvCard.setVisibility(View.GONE);
@@ -261,6 +269,45 @@ public class ApplicantDetailFragment extends BaseFragment {
                     requireActivity().runOnUiThread(() -> {
                         showLoading(false);
                         showToast("Error updating status: " + error);
+                    });
+                }
+            });
+    }
+
+    private void viewApplicantCV() {
+        showLoading(true);
+        apiService.getApplicantCV(
+            sessionManager.getAccessToken(), 
+            applicationId, 
+            new ApiCallback<CVDTO>() {
+                @Override
+                public void onSuccess(CVDTO cv) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        if (cv != null) {
+                            try {
+                                String cvJson = objectMapper.writeValueAsString(cv);
+                                android.util.Log.d("ApplicantDetail", "CV JSON length: " + cvJson.length());
+                                Bundle args = new Bundle();
+                                args.putString("cvData", cvJson);
+                                navController.navigate(R.id.cvPreviewFragment, args);
+                            } catch (Exception e) {
+                                showToast("Error processing CV data");
+                                e.printStackTrace();
+                            }
+                        } else {
+                            showToast("CV not found");
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(String error) {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        showToast("Error loading CV: " + error);
                     });
                 }
             });

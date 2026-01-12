@@ -38,6 +38,31 @@ public class MainActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         setupNavigation();
+        registerFcmTokenIfLoggedIn();
+    }
+
+    private void registerFcmTokenIfLoggedIn() {
+        String accessToken = sessionManager.getAccessToken();
+        if (accessToken != null && !accessToken.isEmpty()) {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        String fcmToken = task.getResult();
+                        com.jobos.android.data.network.ApiService apiService = new com.jobos.android.data.network.ApiService();
+                        apiService.registerFcmToken(accessToken, fcmToken, new com.jobos.android.data.network.ApiCallback<String>() {
+                            @Override
+                            public void onSuccess(String result) {
+                                android.util.Log.d("MainActivity", "FCM token registered on app start");
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                android.util.Log.e("MainActivity", "Failed to register FCM token: " + error);
+                            }
+                        });
+                    }
+                });
+        }
     }
 
     private void setupNavigation() {

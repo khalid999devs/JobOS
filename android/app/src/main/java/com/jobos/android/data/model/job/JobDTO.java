@@ -1,5 +1,6 @@
 package com.jobos.android.data.model.job;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class JobDTO {
@@ -31,6 +32,7 @@ public class JobDTO {
     private String updatedAt;
     private String closedAt;
     private Boolean isSaved;
+    @JsonProperty("hasApplied")
     private Boolean isApplied;
 
     public String getId() {
@@ -272,6 +274,16 @@ public class JobDTO {
 
     public void setIsApplied(Boolean isApplied) {
         this.isApplied = isApplied;
+    }
+
+    @JsonProperty("hasApplied")
+    public Boolean getHasApplied() {
+        return isApplied;
+    }
+
+    @JsonProperty("hasApplied")
+    public void setHasApplied(Boolean hasApplied) {
+        this.isApplied = hasApplied;
     }
 
     public boolean isApplied() {

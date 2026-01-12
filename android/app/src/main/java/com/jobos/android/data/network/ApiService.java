@@ -214,16 +214,6 @@ public class ApiService {
         searchJobs(null, request, callback);
     }
 
-    public void getRecommendedJobs(String token, int page, int size, ApiCallback<List<JobDTO>> callback) {
-        Request httpRequest = new Request.Builder()
-                .url(BASE_URL + "/api/jobs/recommended?page=" + page + "&size=" + size)
-                .header("Authorization", "Bearer " + token)
-                .get()
-                .build();
-
-        executeAsyncList(httpRequest, new TypeReference<List<JobDTO>>() {}, callback);
-    }
-
     public void getJobById(String jobId, ApiCallback<JobDTO> callback) {
         Request httpRequest = new Request.Builder()
                 .url(BASE_URL + "/api/jobs/" + jobId)
@@ -564,6 +554,37 @@ public class ApiService {
 
     public void getCVDetails(String token, String cvId, ApiCallback<CVDTO> callback) {
         getCVById(token, cvId, callback);
+    }
+
+    public void getApplicantCV(String token, String applicationId, ApiCallback<CVDTO> callback) {
+        Request httpRequest = new Request.Builder()
+                .url(BASE_URL + "/api/applications/" + applicationId + "/cv")
+                .header("Authorization", "Bearer " + token)
+                .get()
+                .build();
+
+        // This endpoint returns CVResponse directly, not wrapped in ApiResponse
+        client.newCall(httpRequest).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String body = response.body() != null ? response.body().string() : "";
+                if (response.isSuccessful()) {
+                    try {
+                        CVDTO cv = objectMapper.readValue(body, CVDTO.class);
+                        callback.onSuccess(cv);
+                    } catch (Exception e) {
+                        callback.onError("Parse error: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError(parseError(body));
+                }
+            }
+        });
     }
 
     public void deleteCV(String token, String cvId, ApiCallback<String> callback) {

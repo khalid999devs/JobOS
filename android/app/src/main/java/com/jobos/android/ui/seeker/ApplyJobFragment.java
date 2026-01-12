@@ -149,9 +149,8 @@ public class ApplyJobFragment extends BaseFragment {
 
         CreateApplicationRequest request = new CreateApplicationRequest();
         request.setJobId(jobId);
-        // Use CV file URL for application
-        // For now, generate a placeholder URL based on CV id
-        request.setCvFileUrl("/api/cvs/" + selectedCv.getId() + "/file");
+        request.setCvId(selectedCv.getId());
+        request.setCvFileUrl(selectedCv.getId());
         
         String coverLetter = coverLetterInput.getText() != null ? 
             coverLetterInput.getText().toString().trim() : "";
