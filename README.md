@@ -76,12 +76,6 @@ JobOS/
 ├── shared/                    # Shared code
 │   └── dto/
 │
-├── docs/                      # Development documentation
-│   ├── BACKEND_PLAN.md
-│   ├── DESKTOP_IMPLEMENTATION_PHASES.md
-│   ├── ANDROID_IMPLEMENTATION_PLAN.md
-│   └── ...test cases and reports
-│
 └── firebase-keys/             # Firebase service account (gitignored)
 ```
 
