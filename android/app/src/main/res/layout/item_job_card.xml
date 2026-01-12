@@ -94,6 +94,20 @@
                 android:drawableTint="@color/secondary"
                 android:gravity="center_vertical" />
 
+            <TextView
+                android:id="@+id/applied_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_xs"
+                android:background="@drawable/bg_chip_primary"
+                android:paddingHorizontal="@dimen/spacing_sm"
+                android:paddingVertical="@dimen/spacing_xxs"
+                android:textSize="@dimen/text_xs"
+                android:textColor="@color/primary"
+                android:text="Applied"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
         </LinearLayout>
 
         <View

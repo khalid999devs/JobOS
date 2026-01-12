@@ -139,7 +139,36 @@ public class SeekerHomeFragment extends BaseFragment {
         String token = sessionManager.getAccessToken();
         
         loadNotificationCount();
+        loadRecommendedJobs();
         loadRecentJobs();
+    }
+
+    private void loadRecommendedJobs() {
+        JobSearchRequest request = new JobSearchRequest();
+        request.setPage(0);
+        request.setSize(4);
+
+        String token = sessionManager.getAccessToken();
+        apiService.searchJobs(token, request, new ApiCallback<List<JobDTO>>() {
+            @Override
+            public void onSuccess(List<JobDTO> jobs) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    recommendedJobs.clear();
+                    recommendedJobs.addAll(jobs);
+                    recommendedAdapter.notifyDataSetChanged();
+                    updateEmptyState();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    updateEmptyState();
+                });
+            }
+        });
     }
 
     private void loadRecentJobs() {
@@ -156,12 +185,6 @@ public class SeekerHomeFragment extends BaseFragment {
                     recentJobs.clear();
                     recentJobs.addAll(jobs);
                     recentAdapter.notifyDataSetChanged();
-                    
-                    if (jobs.size() >= 5) {
-                        recommendedJobs.clear();
-                        recommendedJobs.addAll(jobs.subList(0, Math.min(5, jobs.size())));
-                        recommendedAdapter.notifyDataSetChanged();
-                    }
                     
                     hideLoading();
                     updateEmptyState();

@@ -59,6 +59,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
         private final TextView postedDate;
         private final ImageView bookmarkButton;
         private final ImageView companyLogo;
+        private final TextView appliedTag;
 
         JobViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -70,6 +71,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             postedDate = itemView.findViewById(R.id.posted_date);
             bookmarkButton = itemView.findViewById(R.id.bookmark_button);
             companyLogo = itemView.findViewById(R.id.company_logo);
+            appliedTag = itemView.findViewById(R.id.applied_tag);
         }
 
         void bind(JobDTO job, int position) {
@@ -92,6 +94,14 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
             }
 
             bookmarkButton.setImageResource(Boolean.TRUE.equals(job.getSaved()) ? R.drawable.ic_bookmark_filled : R.drawable.ic_bookmark_outline);
+
+            if (Boolean.TRUE.equals(job.getIsApplied())) {
+                appliedTag.setVisibility(View.VISIBLE);
+                itemView.setAlpha(0.7f);
+            } else {
+                appliedTag.setVisibility(View.GONE);
+                itemView.setAlpha(1.0f);
+            }
 
             itemView.setOnClickListener(v -> {
                 if (onJobClick != null) onJobClick.onClick(job);
