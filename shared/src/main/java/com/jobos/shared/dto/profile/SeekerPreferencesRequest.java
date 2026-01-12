@@ -12,6 +12,10 @@ public class SeekerPreferencesRequest {
     
     private List<String> jobTypes;
     
+    private List<String> workModes;
+    
+    private List<String> experienceLevels;
+    
     private String workingHours;
     
     @Min(value = 0, message = "Minimum salary cannot be negative")
@@ -46,6 +50,22 @@ public class SeekerPreferencesRequest {
 
     public void setJobTypes(List<String> jobTypes) {
         this.jobTypes = jobTypes;
+    }
+
+    public List<String> getWorkModes() {
+        return workModes;
+    }
+
+    public void setWorkModes(List<String> workModes) {
+        this.workModes = workModes;
+    }
+
+    public List<String> getExperienceLevels() {
+        return experienceLevels;
+    }
+
+    public void setExperienceLevels(List<String> experienceLevels) {
+        this.experienceLevels = experienceLevels;
     }
 
     public String getWorkingHours() {

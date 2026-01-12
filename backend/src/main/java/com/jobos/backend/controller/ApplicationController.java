@@ -4,6 +4,7 @@ import com.jobos.backend.security.AuthenticatedUser;
 import com.jobos.backend.service.ApplicationService;
 import com.jobos.shared.dto.application.*;
 import com.jobos.shared.dto.common.ApiResponse;
+import com.jobos.shared.dto.cv.CVResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -74,5 +75,13 @@ public class ApplicationController {
             @Valid @RequestBody ApplicationStatusUpdateRequest request) {
         ApplicationResponse response = applicationService.updateApplicationStatus(id, authenticatedUser.getUserId(), request);
         return ResponseEntity.ok(ApiResponse.success(response, "Application status updated successfully"));
+    }
+
+    @GetMapping("/{applicationId}/cv")
+    public ResponseEntity<CVResponse> getApplicantCV(
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser,
+            @PathVariable UUID applicationId) {
+        CVResponse response = applicationService.getApplicantCV(applicationId, authenticatedUser.getUserId());
+        return ResponseEntity.ok(response);
     }
 }

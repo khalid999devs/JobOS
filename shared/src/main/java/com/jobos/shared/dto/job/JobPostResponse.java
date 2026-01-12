@@ -14,6 +14,7 @@ public class JobPostResponse {
     private String company;
     private String location;
     private Boolean isRemote;
+    private String workMode;
     private String jobType;
     private String experienceLevel;
     private Integer salaryMin;
@@ -32,6 +33,7 @@ public class JobPostResponse {
     private LocalDateTime updatedAt;
     private LocalDateTime closedAt;
     private Boolean isSaved;
+    private Boolean hasApplied;
 
     public String getId() {
         return id;
@@ -95,6 +97,14 @@ public class JobPostResponse {
 
     public void setIsRemote(Boolean isRemote) {
         this.isRemote = isRemote;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
 
     public String getJobType() {
@@ -239,5 +249,13 @@ public class JobPostResponse {
 
     public void setIsSaved(Boolean isSaved) {
         this.isSaved = isSaved;
+    }
+
+    public Boolean getHasApplied() {
+        return hasApplied;
+    }
+
+    public void setHasApplied(Boolean hasApplied) {
+        this.hasApplied = hasApplied;
     }
 }

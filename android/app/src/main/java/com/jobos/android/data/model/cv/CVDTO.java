@@ -202,12 +202,20 @@ public class CVDTO {
                 List<String> result = new ArrayList<>();
                 for (Object item : (List<?>) value) {
                     if (item instanceof String) {
-                        result.add((String) item);
+                        String strItem = (String) item;
+                        if (!strItem.trim().isEmpty()) {
+                            result.add(strItem);
+                        }
                     } else if (item instanceof Map) {
-                        // Handle complex objects - extract display text
-                        result.add(formatComplexItem((Map<?, ?>) item));
-                    } else {
-                        result.add(item.toString());
+                        String formatted = formatComplexItem((Map<?, ?>) item);
+                        if (!formatted.trim().isEmpty()) {
+                            result.add(formatted);
+                        }
+                    } else if (item != null) {
+                        String strItem = item.toString().trim();
+                        if (!strItem.isEmpty()) {
+                            result.add(strItem);
+                        }
                     }
                 }
                 return result.isEmpty() ? null : result;
@@ -221,55 +229,83 @@ public class CVDTO {
     // Format a complex item (map) into a readable string
     private String formatComplexItem(Map<?, ?> item) {
         StringBuilder sb = new StringBuilder();
-        // Try common field patterns for experience/education
-        if (item.containsKey("title") || item.containsKey("position")) {
-            Object titleVal = item.get("title");
+        
+        if (item.containsKey("jobTitle") || item.containsKey("title") || item.containsKey("position")) {
+            Object titleVal = item.get("jobTitle");
+            if (titleVal == null) titleVal = item.get("title");
             if (titleVal == null) titleVal = item.get("position");
-            if (titleVal != null) sb.append(titleVal);
+            if (titleVal != null && !titleVal.toString().trim().isEmpty()) {
+                sb.append(titleVal.toString().trim());
+            }
         }
+        
         if (item.containsKey("company") || item.containsKey("organization")) {
             Object compVal = item.get("company");
             if (compVal == null) compVal = item.get("organization");
-            if (compVal != null) {
+            if (compVal != null && !compVal.toString().trim().isEmpty()) {
                 if (sb.length() > 0) sb.append(" at ");
-                sb.append(compVal);
+                sb.append(compVal.toString().trim());
             }
         }
+        
+        if (item.containsKey("degree")) {
+            Object degreeVal = item.get("degree");
+            if (degreeVal != null && !degreeVal.toString().trim().isEmpty()) {
+                if (sb.length() > 0) sb.append(" - ");
+                else sb.append(degreeVal.toString().trim());
+            }
+        }
+        
         if (item.containsKey("institution") || item.containsKey("school")) {
             Object instVal = item.get("institution");
             if (instVal == null) instVal = item.get("school");
-            if (instVal != null) {
+            if (instVal != null && !instVal.toString().trim().isEmpty()) {
                 if (sb.length() > 0) sb.append(" - ");
-                sb.append(instVal);
+                sb.append(instVal.toString().trim());
             }
         }
-        if (item.containsKey("degree")) {
-            Object degreeVal = item.get("degree");
-            if (degreeVal != null) {
-                if (sb.length() > 0) sb.append(" | ");
-                sb.append(degreeVal);
+        
+        Object startVal = item.get("startDate");
+        if (startVal == null) startVal = item.get("duration");
+        Object endVal = item.get("endDate");
+        if (startVal != null || endVal != null) {
+            StringBuilder dateStr = new StringBuilder();
+            if (startVal != null && !startVal.toString().trim().isEmpty()) {
+                dateStr.append(startVal.toString().trim());
+            }
+            if (startVal != null && endVal != null) dateStr.append(" - ");
+            if (endVal != null && !endVal.toString().trim().isEmpty()) {
+                dateStr.append(endVal.toString().trim());
+            }
+            if (dateStr.length() > 0) {
+                if (sb.length() > 0) sb.append(" (").append(dateStr).append(")");
+                else sb.append(dateStr);
             }
         }
-        if (item.containsKey("startDate") || item.containsKey("endDate")) {
-            Object startVal = item.get("startDate");
-            Object endVal = item.get("endDate");
-            if (startVal != null || endVal != null) {
-                if (sb.length() > 0) sb.append(" (");
-                if (startVal != null) sb.append(startVal);
-                if (startVal != null && endVal != null) sb.append(" - ");
-                if (endVal != null) sb.append(endVal);
-                if (startVal != null || endVal != null) sb.append(")");
+        
+        if (item.containsKey("description")) {
+            Object descVal = item.get("description");
+            if (descVal != null && !descVal.toString().trim().isEmpty()) {
+                String desc = descVal.toString().trim();
+                if (desc.length() > 100) desc = desc.substring(0, 97) + "...";
+                if (sb.length() > 0) sb.append(" - ").append(desc);
+                else sb.append(desc);
             }
         }
+        
         if (sb.length() == 0) {
-            // Fallback: just concatenate all string values
-            for (Object val : item.values()) {
-                if (val instanceof String && !((String) val).isEmpty()) {
-                    if (sb.length() > 0) sb.append(" | ");
-                    sb.append(val);
+            for (Map.Entry<?, ?> entry : item.entrySet()) {
+                Object val = entry.getValue();
+                if (val instanceof String && !((String) val).trim().isEmpty()) {
+                    String strVal = ((String) val).trim();
+                    if (!strVal.equals("null") && !strVal.equals("")) {
+                        if (sb.length() > 0) sb.append(" | ");
+                        sb.append(strVal);
+                    }
                 }
             }
         }
+        
         return sb.toString();
     }
 

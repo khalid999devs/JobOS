@@ -77,12 +77,27 @@ public class SeekerHomeFragment extends BaseFragment {
         seeAllRecommended = view.findViewById(R.id.see_all_recommended);
         seeAllRecent = view.findViewById(R.id.see_all_recent);
 
-        String fullName = UserDataManager.getInstance().getFullName();
-        if (fullName != null && !fullName.isEmpty()) {
-            userName.setText(fullName);
+        String firstName = UserDataManager.getInstance().getFirstName();
+        if (firstName != null && !firstName.isEmpty()) {
+            userName.setText(firstName);
         } else {
-            String email = sessionManager.getUserEmail();
-            userName.setText(email != null ? email.split("@")[0] : getString(R.string.seeker));
+            String fullName = UserDataManager.getInstance().getFullName();
+            if (fullName != null && !fullName.isEmpty()) {
+                // Extract first name from full name
+                String[] nameParts = fullName.split(" ");
+                userName.setText(nameParts[0]);
+            } else {
+                String email = sessionManager.getUserEmail();
+                String userName = sessionManager.getUserName();
+                if (userName != null && !userName.isEmpty()) {
+                    String[] nameParts = userName.split(" ");
+                    this.userName.setText(nameParts[0]);
+                } else if (email != null) {
+                    this.userName.setText(email.split("@")[0]);
+                } else {
+                    this.userName.setText(getString(R.string.seeker));
+                }
+            }
         }
 
         updateGreeting();
@@ -139,7 +154,36 @@ public class SeekerHomeFragment extends BaseFragment {
         String token = sessionManager.getAccessToken();
         
         loadNotificationCount();
+        loadRecommendedJobs();
         loadRecentJobs();
+    }
+
+    private void loadRecommendedJobs() {
+        JobSearchRequest request = new JobSearchRequest();
+        request.setPage(0);
+        request.setSize(4);
+
+        String token = sessionManager.getAccessToken();
+        apiService.searchJobs(token, request, new ApiCallback<List<JobDTO>>() {
+            @Override
+            public void onSuccess(List<JobDTO> jobs) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    recommendedJobs.clear();
+                    recommendedJobs.addAll(jobs);
+                    recommendedAdapter.notifyDataSetChanged();
+                    updateEmptyState();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    updateEmptyState();
+                });
+            }
+        });
     }
 
     private void loadRecentJobs() {
@@ -156,12 +200,6 @@ public class SeekerHomeFragment extends BaseFragment {
                     recentJobs.clear();
                     recentJobs.addAll(jobs);
                     recentAdapter.notifyDataSetChanged();
-                    
-                    if (jobs.size() >= 5) {
-                        recommendedJobs.clear();
-                        recommendedJobs.addAll(jobs.subList(0, Math.min(5, jobs.size())));
-                        recommendedAdapter.notifyDataSetChanged();
-                    }
                     
                     hideLoading();
                     updateEmptyState();

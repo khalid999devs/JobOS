@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.jobos.desktop.controller.poster.JobFormController"
+            fitToWidth="true" styleClass="page-container">
+    <VBox spacing="24">
+        <padding>
+            <Insets topRightBottomLeft="24"/>
+        </padding>
+        
+        <HBox alignment="CENTER_LEFT" spacing="16">
+            <Label fx:id="pageTitle" text="Create New Job" styleClass="h2"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="cancelButton" text="Cancel" styleClass="button-secondary" onAction="#onCancel"/>
+            <Button fx:id="saveButton" text="Post Job" styleClass="button-primary" onAction="#onSave"/>
+        </HBox>
+        
+        <!-- Basic Information -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Basic Information" styleClass="h4" style="-fx-font-weight: bold;"/>
+            
+            <VBox spacing="8">
+                <Label text="Job Title *" styleClass="label-secondary"/>
+                <TextField fx:id="titleField" promptText="e.g. Senior Software Engineer"/>
+            </VBox>
+            
+            <HBox spacing="16">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Company" styleClass="label-secondary"/>
+                    <TextField fx:id="companyField" promptText="Company name"/>
+                </VBox>
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Location" styleClass="label-secondary"/>
+                    <TextField fx:id="locationField" promptText="e.g. New York, NY"/>
+                </VBox>
+            </HBox>
+            
+            <HBox spacing="16">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Job Type *" styleClass="label-secondary"/>
+                    <ComboBox fx:id="jobTypeCombo" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Work Mode *" styleClass="label-secondary"/>
+                    <ComboBox fx:id="workModeCombo" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Experience Level" styleClass="label-secondary"/>
+                    <ComboBox fx:id="experienceLevelCombo" maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Compensation -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Compensation" styleClass="h4" style="-fx-font-weight: bold;"/>
+            
+            <HBox spacing="16">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Minimum Salary" styleClass="label-secondary"/>
+                    <TextField fx:id="salaryMinField" promptText="e.g. 50000"/>
+                </VBox>
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Maximum Salary" styleClass="label-secondary"/>
+                    <TextField fx:id="salaryMaxField" promptText="e.g. 80000"/>
+                </VBox>
+                <VBox spacing="8">
+                    <Label text="Currency" styleClass="label-secondary"/>
+                    <ComboBox fx:id="currencyCombo" prefWidth="100"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Skills -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Required Skills *" styleClass="h4" style="-fx-font-weight: bold;"/>
+            
+            <HBox spacing="8">
+                <TextField fx:id="skillInput" promptText="Type a skill and press Enter" HBox.hgrow="ALWAYS"/>
+                <Button text="Add" styleClass="button-secondary" onAction="#addSkill"/>
+            </HBox>
+            
+            <FlowPane fx:id="skillsContainer" hgap="8" vgap="8"/>
+        </VBox>
+        
+        <!-- Description -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Job Description *" styleClass="h4" style="-fx-font-weight: bold;"/>
+            
+            <VBox spacing="8">
+                <Label text="Description" styleClass="label-secondary"/>
+                <TextArea fx:id="descriptionArea" promptText="Describe the role..." prefRowCount="8" wrapText="true"/>
+            </VBox>
+            
+            <VBox spacing="8">
+                <Label text="Responsibilities" styleClass="label-secondary"/>
+                <TextArea fx:id="responsibilitiesArea" promptText="Key responsibilities..." prefRowCount="6" wrapText="true"/>
+            </VBox>
+            
+            <VBox spacing="8">
+                <Label text="Requirements" styleClass="label-secondary"/>
+                <TextArea fx:id="requirementsArea" promptText="Required qualifications..." prefRowCount="6" wrapText="true"/>
+            </VBox>
+            
+            <VBox spacing="8">
+                <Label text="Benefits" styleClass="label-secondary"/>
+                <TextArea fx:id="benefitsArea" promptText="Perks and benefits..." prefRowCount="5" wrapText="true"/>
+            </VBox>
+        </VBox>
+        
+        <!-- Publishing -->
+        <VBox styleClass="card" spacing="16">
+            <padding><Insets topRightBottomLeft="20"/></padding>
+            <Label text="Publishing" styleClass="h4" style="-fx-font-weight: bold;"/>
+            
+            <HBox spacing="16">
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Application Deadline" styleClass="label-secondary"/>
+                    <DatePicker fx:id="deadlinePicker" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="8" HBox.hgrow="ALWAYS">
+                    <Label text="Status" styleClass="label-secondary"/>
+                    <ComboBox fx:id="statusCombo" maxWidth="Infinity"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <HBox alignment="CENTER_RIGHT" spacing="12">
+            <padding><Insets top="8" bottom="24"/></padding>
+            <Button text="Cancel" styleClass="button-secondary" onAction="#onCancel"/>
+            <Button fx:id="saveButtonBottom" text="Save Job" styleClass="button-primary" onAction="#onSave"/>
+        </HBox>
+    </VBox>
+</ScrollPane>

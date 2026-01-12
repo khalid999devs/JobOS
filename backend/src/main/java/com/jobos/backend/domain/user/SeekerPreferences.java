@@ -28,6 +28,12 @@ public class SeekerPreferences {
     @Column(columnDefinition = "TEXT")
     private String jobTypes;
 
+    @Column(columnDefinition = "TEXT")
+    private String workModes;
+
+    @Column(columnDefinition = "TEXT")
+    private String experienceLevels;
+
     private String workingHours;
 
     private Integer salaryMin;
@@ -92,6 +98,22 @@ public class SeekerPreferences {
 
     public void setJobTypes(String jobTypes) {
         this.jobTypes = jobTypes;
+    }
+
+    public String getWorkModes() {
+        return workModes;
+    }
+
+    public void setWorkModes(String workModes) {
+        this.workModes = workModes;
+    }
+
+    public String getExperienceLevels() {
+        return experienceLevels;
+    }
+
+    public void setExperienceLevels(String experienceLevels) {
+        this.experienceLevels = experienceLevels;
     }
 
     public String getWorkingHours() {

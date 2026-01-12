@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.common.SettingsController"
+      fitToWidth="true" style="-fx-background-color: transparent; -fx-border-width: 0;">
+    
+    <VBox spacing="24" style="-fx-background-color: #FAFAFA;">
+        <padding>
+            <Insets top="32" right="32" bottom="32" left="32"/>
+        </padding>
+        
+        <VBox spacing="8">
+            <Label text="Settings" style="-fx-text-fill: #111827; -fx-font-size: 26px; -fx-font-weight: 700;"/>
+            <Label text="Manage your account preferences" style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+        </VBox>
+        
+        <!-- Appearance Section -->
+        <VBox styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #EDE9FE; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-palette" iconSize="18" iconColor="#7C3AED"/>
+                </StackPane>
+                <Label text="Appearance" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Theme" style="-fx-text-fill: #111827; -fx-font-size: 14px; -fx-font-weight: 500;"/>
+                    <Label text="Choose your preferred color theme" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                </VBox>
+                <ComboBox fx:id="themeCombo" prefWidth="150"/>
+            </HBox>
+        </VBox>
+        
+        <!-- Notifications Section -->
+        <VBox styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #FEF3C7; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-bell" iconSize="18" iconColor="#D97706"/>
+                </StackPane>
+                <Label text="Notifications" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Desktop Notifications" style="-fx-text-fill: #111827; -fx-font-size: 14px; -fx-font-weight: 500;"/>
+                    <Label text="Receive desktop notifications for important updates" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                </VBox>
+                <CheckBox fx:id="desktopNotificationsCheck" selected="true"/>
+            </HBox>
+            
+            <Separator style="-fx-background-color: #E5E7EB;"/>
+            
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Email Notifications" style="-fx-text-fill: #111827; -fx-font-size: 14px; -fx-font-weight: 500;"/>
+                    <Label text="Receive email updates about applications and jobs" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                </VBox>
+                <CheckBox fx:id="emailNotificationsCheck" selected="true"/>
+            </HBox>
+            
+            <Separator style="-fx-background-color: #E5E7EB;"/>
+            
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="Job Alerts" style="-fx-text-fill: #111827; -fx-font-size: 14px; -fx-font-weight: 500;"/>
+                    <Label text="Get notified about new jobs matching your preferences" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                </VBox>
+                <CheckBox fx:id="jobAlertsCheck" selected="true"/>
+            </HBox>
+        </VBox>
+        
+        <!-- Security Section -->
+        <VBox styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #DBEAFE; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-lock" iconSize="18" iconColor="#2563EB"/>
+                </StackPane>
+                <Label text="Security" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            
+            <Label fx:id="passwordErrorLabel" styleClass="error-text" visible="false" managed="false"/>
+            
+            <VBox styleClass="form-field">
+                <Label text="Current Password" styleClass="form-label"/>
+                <PasswordField fx:id="currentPasswordField" promptText="Enter current password"/>
+            </VBox>
+            
+            <HBox spacing="16">
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="New Password" styleClass="form-label"/>
+                    <PasswordField fx:id="newPasswordField" promptText="Enter new password"/>
+                </VBox>
+                <VBox styleClass="form-field" HBox.hgrow="ALWAYS">
+                    <Label text="Confirm Password" styleClass="form-label"/>
+                    <PasswordField fx:id="confirmPasswordField" promptText="Confirm new password"/>
+                </VBox>
+            </HBox>
+            
+            <Button fx:id="changePasswordButton" text="Change Password" onAction="#onChangePassword" styleClass="button-outline-teal"/>
+        </VBox>
+        
+        <!-- About Section -->
+        <VBox styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #F0FDFA; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-info-circle" iconSize="18" iconColor="#0F766E"/>
+                </StackPane>
+                <Label text="About" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            
+            <HBox alignment="CENTER_LEFT" spacing="16">
+                <Label text="Version" style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="versionLabel" text="1.0.0" style="-fx-text-fill: #111827; -fx-font-size: 14px;"/>
+            </HBox>
+            
+            <Separator style="-fx-background-color: #E5E7EB;"/>
+            
+            <HBox spacing="12">
+                <Button text="Privacy Policy" onAction="#onPrivacyPolicy" styleClass="button-text-subtle"/>
+                <Button text="Terms of Service" onAction="#onTermsOfService" styleClass="button-text-subtle"/>
+                <Button text="Help Center" onAction="#onHelpCenter" styleClass="button-text-subtle"/>
+            </HBox>
+        </VBox>
+        
+        <!-- Danger Zone -->
+        <VBox fx:id="dangerZone" styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #FEE2E2; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-exclamation-triangle" iconSize="18" iconColor="#DC2626"/>
+                </StackPane>
+                <Label text="Danger Zone" style="-fx-text-fill: #DC2626; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            <Label text="Once you delete your account, there is no going back. Please be certain." style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+            <Button text="Delete Account" onAction="#onDeleteAccount" styleClass="button-danger"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

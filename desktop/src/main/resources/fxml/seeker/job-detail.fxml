@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.web.WebView?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.jobos.desktop.controller.seeker.JobDetailController"
+           style="-fx-background-color: #FAFAFA;">
+    
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
+        <VBox spacing="0">
+            <VBox style="-fx-background-color: white; -fx-border-color: #E5E7EB; -fx-border-width: 0 0 1 0;">
+                <padding>
+                    <Insets top="20" right="28" bottom="20" left="28"/>
+                </padding>
+                
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Button onAction="#onBack" styleClass="button-icon-back">
+                        <graphic>
+                            <FontIcon iconLiteral="fas-arrow-left" iconSize="14" iconColor="#6B7280"/>
+                        </graphic>
+                    </Button>
+                    <Label text="Job Details" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                </HBox>
+            </VBox>
+            
+            <VBox fx:id="contentContainer" spacing="24" style="-fx-padding: 24 28;">
+                <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                    <HBox alignment="CENTER_LEFT" spacing="16">
+                        <StackPane fx:id="companyIcon" style="-fx-background-color: #F0FDFA; -fx-background-radius: 12; -fx-min-width: 56; -fx-min-height: 56;">
+                            <FontIcon iconLiteral="fas-building" iconSize="24" iconColor="#0F766E"/>
+                        </StackPane>
+                        <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <Label fx:id="titleLabel" text="Job Title" style="-fx-text-fill: #111827; -fx-font-size: 20px; -fx-font-weight: 700;"/>
+                            <Label fx:id="companyLabel" text="Company Name" style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+                        </VBox>
+                        <VBox alignment="CENTER_RIGHT" spacing="8">
+                            <Button fx:id="saveBtn" onAction="#onSave" styleClass="button-icon-save">
+                                <graphic>
+                                    <FontIcon fx:id="saveIcon" iconLiteral="far-heart" iconSize="18" iconColor="#9CA3AF"/>
+                                </graphic>
+                            </Button>
+                        </VBox>
+                    </HBox>
+                    
+                    <HBox spacing="12" alignment="CENTER_LEFT">
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <FontIcon iconLiteral="fas-map-marker-alt" iconSize="13" iconColor="#6B7280"/>
+                            <Label fx:id="locationLabel" text="Location" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                        </HBox>
+                        <Label text="•" style="-fx-text-fill: #D1D5DB;"/>
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <FontIcon iconLiteral="fas-briefcase" iconSize="13" iconColor="#6B7280"/>
+                            <Label fx:id="jobTypeLabel" text="Full-time" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                        </HBox>
+                        <Label text="•" style="-fx-text-fill: #D1D5DB;"/>
+                        <HBox alignment="CENTER_LEFT" spacing="6">
+                            <FontIcon iconLiteral="fas-clock" iconSize="13" iconColor="#6B7280"/>
+                            <Label fx:id="postedLabel" text="Posted 2d ago" style="-fx-text-fill: #6B7280; -fx-font-size: 13px;"/>
+                        </HBox>
+                    </HBox>
+                    
+                    <FlowPane fx:id="tagsContainer" hgap="8" vgap="8"/>
+                    
+                    <HBox spacing="12" style="-fx-padding: 8 0 0 0;">
+                        <Button fx:id="applyBtn" onAction="#onApply" styleClass="button-primary-teal" style="-fx-min-width: 160; -fx-pref-height: 42;">
+                            <graphic>
+                                <HBox spacing="8" alignment="CENTER">
+                                    <FontIcon iconLiteral="fas-paper-plane" iconSize="14" iconColor="white"/>
+                                    <Label fx:id="applyBtnLabel" text="Apply Now" style="-fx-text-fill: white; -fx-font-weight: 600;"/>
+                                </HBox>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                </VBox>
+                
+                <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                    <Label text="Salary" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <FontIcon iconLiteral="fas-dollar-sign" iconSize="20" iconColor="#0F766E"/>
+                        <Label fx:id="salaryLabel" text="Competitive" style="-fx-text-fill: #111827; -fx-font-size: 18px; -fx-font-weight: 600;"/>
+                    </HBox>
+                </VBox>
+                
+                <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                    <Label text="Job Description" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="descriptionContent" spacing="4"/>
+                </VBox>
+                
+                <VBox fx:id="requirementsSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                    <Label text="Requirements" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="requirementsContent" spacing="4"/>
+                </VBox>
+                
+                <VBox fx:id="responsibilitiesSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                    <Label text="Responsibilities" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="responsibilitiesContent" spacing="4"/>
+                </VBox>
+                
+                <VBox fx:id="skillsSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                    <Label text="Required Skills" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <FlowPane fx:id="skillsContainer" hgap="8" vgap="8"/>
+                </VBox>
+                
+                <VBox fx:id="benefitsSection" spacing="16" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 24;">
+                    <Label text="Benefits" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 700;"/>
+                    <VBox fx:id="benefitsContent" spacing="4"/>
+                </VBox>
+                
+                <Region style="-fx-min-height: 40;"/>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+    
+    <VBox fx:id="loadingContainer" alignment="CENTER" spacing="12" style="-fx-background-color: #FAFAFA;">
+        <ProgressIndicator style="-fx-progress-color: #0F766E;"/>
+        <Label text="Loading job details..." style="-fx-text-fill: #6B7280;"/>
+    </VBox>
+</StackPane>

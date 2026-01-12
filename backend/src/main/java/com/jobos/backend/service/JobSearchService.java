@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobos.backend.domain.job.*;
 import com.jobos.backend.domain.user.User;
+import com.jobos.backend.repository.ApplicationRepository;
 import com.jobos.backend.repository.JobPostRepository;
 import com.jobos.backend.repository.SavedJobRepository;
 import com.jobos.backend.repository.UserRepository;
@@ -35,15 +36,18 @@ public class JobSearchService {
 
     private final JobPostRepository jobPostRepository;
     private final SavedJobRepository savedJobRepository;
+    private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
     public JobSearchService(JobPostRepository jobPostRepository,
                            SavedJobRepository savedJobRepository,
+                           ApplicationRepository applicationRepository,
                            UserRepository userRepository,
                            ObjectMapper objectMapper) {
         this.jobPostRepository = jobPostRepository;
         this.savedJobRepository = savedJobRepository;
+        this.applicationRepository = applicationRepository;
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
     }
@@ -150,6 +154,23 @@ public class JobSearchService {
 
             if (searchRequest.getIsRemote() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("isRemote"), searchRequest.getIsRemote()));
+            }
+
+            if (searchRequest.getWorkModes() != null && !searchRequest.getWorkModes().isEmpty()) {
+                List<WorkMode> workModes = searchRequest.getWorkModes().stream()
+                        .map(mode -> {
+                            try {
+                                return WorkMode.valueOf(mode.toUpperCase());
+                            } catch (IllegalArgumentException e) {
+                                return null;
+                            }
+                        })
+                        .filter(mode -> mode != null)
+                        .collect(Collectors.toList());
+
+                if (!workModes.isEmpty()) {
+                    predicates.add(root.get("workMode").in(workModes));
+                }
             }
 
             if (searchRequest.getJobTypes() != null && !searchRequest.getJobTypes().isEmpty()) {
@@ -270,6 +291,7 @@ public class JobSearchService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "ONSITE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());
@@ -290,10 +312,13 @@ public class JobSearchService {
         response.setCreatedAt(jobPost.getCreatedAt());
 
         Boolean isSaved = false;
+        Boolean hasApplied = false;
         if (user != null) {
             isSaved = savedJobRepository.existsByUserAndJobPost(user, jobPost);
+            hasApplied = applicationRepository.existsBySeekerAndJobPost(user, jobPost);
         }
         response.setIsSaved(isSaved);
+        response.setHasApplied(hasApplied);
 
         return response;
     }
@@ -306,6 +331,7 @@ public class JobSearchService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "ONSITE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());
@@ -326,6 +352,13 @@ public class JobSearchService {
         response.setCreatedAt(jobPost.getCreatedAt());
         response.setSavedAt(savedJob.getSavedAt());
         response.setIsSaved(true);
+        
+        // Check if user has applied to this job
+        Boolean hasApplied = false;
+        if (user != null) {
+            hasApplied = applicationRepository.existsBySeekerAndJobPost(user, jobPost);
+        }
+        response.setHasApplied(hasApplied);
 
         return response;
     }

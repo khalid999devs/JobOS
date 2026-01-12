@@ -30,10 +30,13 @@ import com.jobos.android.data.network.ApiCallback;
 import com.jobos.android.data.network.ApiService;
 import com.jobos.android.ui.base.BaseFragment;
 import com.jobos.android.data.model.cv.CVDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CVPreviewFragment extends BaseFragment {
@@ -59,6 +62,9 @@ public class CVPreviewFragment extends BaseFragment {
     private String cvId = null;
     private ApiService apiService;
     private CVDTO currentCV;
+    private boolean cvDataProvided = false;
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Nullable
     @Override
@@ -74,6 +80,18 @@ public class CVPreviewFragment extends BaseFragment {
 
         if (getArguments() != null) {
             cvId = getArguments().getString("cvId");
+            // Check if CV data is provided directly (serialized)
+            String cvJson = getArguments().getString("cvData");
+            if (cvJson != null && !cvJson.isEmpty()) {
+                try {
+                    currentCV = objectMapper.readValue(cvJson, CVDTO.class);
+                    cvDataProvided = true;
+                    android.util.Log.d("CVPreviewFragment", "Successfully parsed CV data");
+                } catch (Exception e) {
+                    android.util.Log.e("CVPreviewFragment", "Error parsing CV data: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
         }
 
         initViews(view);
@@ -135,6 +153,12 @@ public class CVPreviewFragment extends BaseFragment {
     }
 
     private void loadCVDetails() {
+        // If CV data is already provided, use it directly
+        if (cvDataProvided && currentCV != null) {
+            displayCV();
+            return;
+        }
+        
         if (cvId == null) {
             showToast("Invalid CV");
             navController.popBackStack();
@@ -169,86 +193,130 @@ public class CVPreviewFragment extends BaseFragment {
         if (currentCV == null) return;
 
         toolbar.setTitle(currentCV.getTitle());
-        fullName.setText(currentCV.getFullName());
-        email.setText(currentCV.getEmail());
+        
+        String fullNameText = currentCV.getFullName();
+        if (fullNameText != null && !fullNameText.isEmpty()) {
+            fullName.setText(fullNameText);
+        }
+        
+        String emailText = currentCV.getEmail();
+        if (emailText != null && !emailText.isEmpty()) {
+            email.setText(emailText);
+        }
 
         String phoneText = currentCV.getPhone();
         if (phoneText != null && !phoneText.isEmpty()) {
             phone.setText(phoneText);
             phone.setVisibility(View.VISIBLE);
+        } else {
+            phone.setVisibility(View.GONE);
         }
 
         String addressText = currentCV.getAddress();
         if (addressText != null && !addressText.isEmpty()) {
             address.setText(addressText);
             address.setVisibility(View.VISIBLE);
+        } else {
+            address.setVisibility(View.GONE);
         }
 
         String summaryText = currentCV.getSummary();
-        if (summaryText != null && !summaryText.isEmpty()) {
+        if (summaryText != null && !summaryText.isEmpty() && !summaryText.equals("null") && !summaryText.trim().isEmpty()) {
             summary.setText(summaryText);
             summaryCard.setVisibility(View.VISIBLE);
+        } else {
+            summaryCard.setVisibility(View.GONE);
         }
 
         List<String> skills = currentCV.getSkills();
+        skillsChipGroup.removeAllViews();
         if (skills != null && !skills.isEmpty()) {
-            skillsChipGroup.removeAllViews();
+            boolean hasValidSkills = false;
             for (String skill : skills) {
-                Chip chip = new Chip(requireContext());
-                chip.setText(skill);
-                chip.setClickable(false);
-                skillsChipGroup.addView(chip);
+                if (skill != null && !skill.trim().isEmpty() && !skill.equals("null")) {
+                    Chip chip = new Chip(requireContext());
+                    chip.setText(skill.trim());
+                    chip.setClickable(false);
+                    skillsChipGroup.addView(chip);
+                    hasValidSkills = true;
+                }
             }
-            skillsCard.setVisibility(View.VISIBLE);
+            skillsCard.setVisibility(hasValidSkills ? View.VISIBLE : View.GONE);
+        } else {
+            skillsCard.setVisibility(View.GONE);
         }
 
         List<String> experience = currentCV.getExperience();
+        experienceContainer.removeAllViews();
         if (experience != null && !experience.isEmpty()) {
-            experienceContainer.removeAllViews();
+            boolean hasValidExperience = false;
             for (String exp : experience) {
-                TextView textView = createListItem(exp);
-                experienceContainer.addView(textView);
+                if (exp != null && !exp.trim().isEmpty() && !exp.equals("null")) {
+                    TextView textView = createSectionItem(exp.trim());
+                    experienceContainer.addView(textView);
+                    hasValidExperience = true;
+                }
             }
-            experienceCard.setVisibility(View.VISIBLE);
+            experienceCard.setVisibility(hasValidExperience ? View.VISIBLE : View.GONE);
+        } else {
+            experienceCard.setVisibility(View.GONE);
         }
 
         List<String> education = currentCV.getEducation();
+        educationContainer.removeAllViews();
         if (education != null && !education.isEmpty()) {
-            educationContainer.removeAllViews();
+            boolean hasValidEducation = false;
             for (String edu : education) {
-                TextView textView = createListItem(edu);
-                educationContainer.addView(textView);
+                if (edu != null && !edu.trim().isEmpty() && !edu.equals("null")) {
+                    TextView textView = createSectionItem(edu.trim());
+                    educationContainer.addView(textView);
+                    hasValidEducation = true;
+                }
             }
-            educationCard.setVisibility(View.VISIBLE);
+            educationCard.setVisibility(hasValidEducation ? View.VISIBLE : View.GONE);
+        } else {
+            educationCard.setVisibility(View.GONE);
         }
 
         String linkedin = currentCV.getLinkedinUrl();
         String portfolio = currentCV.getPortfolioUrl();
         boolean hasLinks = false;
 
-        if (linkedin != null && !linkedin.isEmpty()) {
+        if (linkedin != null && !linkedin.isEmpty() && !linkedin.equals("null")) {
             linkedinLink.setText(linkedin);
             linkedinLink.setVisibility(View.VISIBLE);
             hasLinks = true;
+        } else {
+            linkedinLink.setVisibility(View.GONE);
         }
 
-        if (portfolio != null && !portfolio.isEmpty()) {
+        if (portfolio != null && !portfolio.isEmpty() && !portfolio.equals("null")) {
             portfolioLink.setText(portfolio);
             portfolioLink.setVisibility(View.VISIBLE);
             hasLinks = true;
+        } else {
+            portfolioLink.setVisibility(View.GONE);
         }
 
         if (hasLinks) {
             linksCard.setVisibility(View.VISIBLE);
+        } else {
+            linksCard.setVisibility(View.GONE);
         }
     }
 
-    private TextView createListItem(String text) {
+    private TextView createSectionItem(String text) {
         TextView textView = new TextView(requireContext());
         textView.setText("• " + text);
         textView.setTextSize(14);
-        textView.setTextColor(getResources().getColor(R.color.on_surface_secondary, null));
-        textView.setPadding(0, 8, 0, 8);
+        textView.setTextColor(getResources().getColor(R.color.on_surface, null));
+        textView.setLineSpacing(4, 1.0f);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 0, 0, 16);
+        textView.setLayoutParams(params);
         return textView;
     }
 
@@ -331,23 +399,30 @@ public class CVPreviewFragment extends BaseFragment {
             int sectionSpacing = 30;
             
             String fullNameText = currentCV.getFullName();
-            if (fullNameText != null) {
+            if (fullNameText != null && !fullNameText.isEmpty() && !fullNameText.equals("null")) {
                 canvas.drawText(fullNameText, margin, yPos, titlePaint);
                 yPos += lineSpacing + 10;
             }
             
             StringBuilder contactLine = new StringBuilder();
-            if (currentCV.getEmail() != null) contactLine.append(currentCV.getEmail());
-            if (currentCV.getPhone() != null && !currentCV.getPhone().isEmpty()) {
-                if (contactLine.length() > 0) contactLine.append(" | ");
-                contactLine.append(currentCV.getPhone());
+            String emailPdf = currentCV.getEmail();
+            if (emailPdf != null && !emailPdf.isEmpty() && !emailPdf.equals("null")) {
+                contactLine.append(emailPdf);
             }
-            if (currentCV.getAddress() != null && !currentCV.getAddress().isEmpty()) {
+            String phonePdf = currentCV.getPhone();
+            if (phonePdf != null && !phonePdf.isEmpty() && !phonePdf.equals("null")) {
                 if (contactLine.length() > 0) contactLine.append(" | ");
-                contactLine.append(currentCV.getAddress());
+                contactLine.append(phonePdf);
             }
-            canvas.drawText(contactLine.toString(), margin, yPos, contactPaint);
-            yPos += sectionSpacing;
+            String addressPdf = currentCV.getAddress();
+            if (addressPdf != null && !addressPdf.isEmpty() && !addressPdf.equals("null")) {
+                if (contactLine.length() > 0) contactLine.append(" | ");
+                contactLine.append(addressPdf);
+            }
+            if (contactLine.length() > 0) {
+                canvas.drawText(contactLine.toString(), margin, yPos, contactPaint);
+                yPos += sectionSpacing;
+            }
             
             Paint linePaint = new Paint();
             linePaint.setColor(Color.parseColor("#dddddd"));
@@ -356,7 +431,7 @@ public class CVPreviewFragment extends BaseFragment {
             yPos += sectionSpacing;
             
             String summaryText = currentCV.getSummary();
-            if (summaryText != null && !summaryText.isEmpty()) {
+            if (summaryText != null && !summaryText.isEmpty() && !summaryText.equals("null") && !summaryText.trim().isEmpty()) {
                 canvas.drawText("PROFESSIONAL SUMMARY", margin, yPos, headerPaint);
                 yPos += lineSpacing;
                 yPos = drawWrappedText(canvas, summaryText, margin, yPos, pageWidth - 2 * margin, textPaint);
@@ -365,32 +440,45 @@ public class CVPreviewFragment extends BaseFragment {
             
             List<String> skills = currentCV.getSkills();
             if (skills != null && !skills.isEmpty()) {
-                canvas.drawText("SKILLS", margin, yPos, headerPaint);
-                yPos += lineSpacing;
-                canvas.drawText(String.join(", ", skills), margin, yPos, textPaint);
-                yPos += sectionSpacing;
+                List<String> validSkills = new ArrayList<>();
+                for (String skill : skills) {
+                    if (skill != null && !skill.trim().isEmpty() && !skill.equals("null")) {
+                        validSkills.add(skill.trim());
+                    }
+                }
+                if (!validSkills.isEmpty()) {
+                    canvas.drawText("SKILLS", margin, yPos, headerPaint);
+                    yPos += lineSpacing;
+                    String skillsText = String.join(", ", validSkills);
+                    yPos = drawWrappedText(canvas, skillsText, margin, yPos, pageWidth - 2 * margin, textPaint);
+                    yPos += sectionSpacing;
+                }
             }
             
             List<String> experience = currentCV.getExperience();
-            if (experience != null && !experience.isEmpty()) {
+            if (experience != null && !experience.isEmpty() && yPos < pageHeight - margin) {
                 canvas.drawText("WORK EXPERIENCE", margin, yPos, headerPaint);
                 yPos += lineSpacing;
                 for (String exp : experience) {
-                    canvas.drawText("• " + exp, margin + 10, yPos, textPaint);
-                    yPos += lineSpacing;
-                    if (yPos > pageHeight - margin) break;
+                    if (exp != null && !exp.trim().isEmpty() && !exp.equals("null")) {
+                        yPos = drawWrappedText(canvas, "• " + exp.trim(), margin + 10, yPos, pageWidth - 2 * margin - 10, textPaint);
+                        yPos += 5;
+                        if (yPos > pageHeight - margin - 50) break;
+                    }
                 }
                 yPos += sectionSpacing - lineSpacing;
             }
             
             List<String> education = currentCV.getEducation();
-            if (education != null && !education.isEmpty()) {
+            if (education != null && !education.isEmpty() && yPos < pageHeight - margin) {
                 canvas.drawText("EDUCATION", margin, yPos, headerPaint);
                 yPos += lineSpacing;
                 for (String edu : education) {
-                    canvas.drawText("• " + edu, margin + 10, yPos, textPaint);
-                    yPos += lineSpacing;
-                    if (yPos > pageHeight - margin) break;
+                    if (edu != null && !edu.trim().isEmpty() && !edu.equals("null")) {
+                        yPos = drawWrappedText(canvas, "• " + edu.trim(), margin + 10, yPos, pageWidth - 2 * margin - 10, textPaint);
+                        yPos += 5;
+                        if (yPos > pageHeight - margin - 50) break;
+                    }
                 }
                 yPos += sectionSpacing - lineSpacing;
             }

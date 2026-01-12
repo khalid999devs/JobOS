@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.credits.CreditsController"
+      fitToWidth="true" style="-fx-background-color: transparent; -fx-border-width: 0;">
+    
+    <VBox spacing="24" style="-fx-background-color: #FAFAFA;">
+        <padding>
+            <Insets top="32" right="32" bottom="32" left="32"/>
+        </padding>
+        
+        <VBox spacing="8">
+            <Label text="Credits &amp; Plans" style="-fx-text-fill: #111827; -fx-font-size: 26px; -fx-font-weight: 700;"/>
+            <Label text="Manage your credits and subscription" style="-fx-text-fill: #6B7280; -fx-font-size: 14px;"/>
+        </VBox>
+        
+        <!-- Stats Cards -->
+        <HBox spacing="16">
+            <VBox styleClass="card-modern" spacing="8" prefWidth="300">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #F0FDFA; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                        <FontIcon iconLiteral="fas-coins" iconSize="18" iconColor="#0F766E"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label fx:id="creditsBalance" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                        <Label text="Available Credits" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            
+            <VBox styleClass="card-modern" spacing="8" prefWidth="300">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #FEF3C7; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                        <FontIcon iconLiteral="fas-chart-line" iconSize="18" iconColor="#D97706"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label fx:id="usedCredits" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #F59E0B;"/>
+                        <Label text="Used This Month" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+            
+            <VBox styleClass="card-modern" spacing="8" prefWidth="300">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <StackPane style="-fx-background-color: #EDE9FE; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                        <FontIcon iconLiteral="fas-crown" iconSize="18" iconColor="#7C3AED"/>
+                    </StackPane>
+                    <VBox spacing="2">
+                        <Label fx:id="planLabel" text="FREE" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #3B82F6;"/>
+                        <Label text="Current Plan" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </HBox>
+        
+        <!-- Subscription Plans -->
+        <VBox styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #DBEAFE; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-rocket" iconSize="18" iconColor="#2563EB"/>
+                </StackPane>
+                <VBox spacing="2">
+                    <Label text="Subscription Plans" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                    <Label text="Choose the plan that best fits your needs" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                </VBox>
+            </HBox>
+            <HBox fx:id="plansContainer" spacing="16" style="-fx-padding: 8 0 0 0;">
+                <!-- Plans will be loaded dynamically -->
+            </HBox>
+        </VBox>
+        
+        <!-- Purchase Credits -->
+        <VBox styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #F0FDFA; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-shopping-cart" iconSize="18" iconColor="#0F766E"/>
+                </StackPane>
+                <VBox spacing="2">
+                    <Label text="Buy Extra Credits" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+                    <Label text="Need more credits? Purchase additional credits anytime" style="-fx-text-fill: #6B7280; -fx-font-size: 12px;"/>
+                </VBox>
+            </HBox>
+            
+            <HBox spacing="20" alignment="CENTER">
+                <!-- Starter Package -->
+                <VBox spacing="12" alignment="CENTER" prefWidth="220"
+                      style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 24;">
+                    <Label text="Starter" style="-fx-text-fill: #6B7280; -fx-font-weight: 600; -fx-font-size: 13px;"/>
+                    <Label text="200 Credits" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>
+                    <Label text="USD 5" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                    <Button text="Buy Now" styleClass="button-primary" prefWidth="160" prefHeight="42" onAction="#onPurchase200"/>
+                </VBox>
+                
+                <!-- Popular Package -->
+                <VBox spacing="12" alignment="CENTER" prefWidth="220"
+                      style="-fx-background-color: #F0FDFA; -fx-background-radius: 12; -fx-border-color: #0F766E; -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 24;">
+                    <Label text="BEST VALUE" style="-fx-background-color: #0F766E; -fx-text-fill: white; -fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                    <Label text="800 Credits" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>
+                    <Label text="USD 10" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                    <Button text="Buy Now" styleClass="button-primary" prefWidth="160" prefHeight="42" onAction="#onPurchase800"/>
+                </VBox>
+                
+                <!-- Pro Package -->
+                <VBox spacing="12" alignment="CENTER" prefWidth="220"
+                      style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #E5E7EB; -fx-border-radius: 12; -fx-border-width: 1; -fx-padding: 24;">
+                    <Label text="Pro" style="-fx-text-fill: #6B7280; -fx-font-weight: 600; -fx-font-size: 13px;"/>
+                    <Label text="2000 Credits" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>
+                    <Label text="USD 20" style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #0F766E;"/>
+                    <Button text="Buy Now" styleClass="button-primary" prefWidth="160" prefHeight="42" onAction="#onPurchase2000"/>
+                </VBox>
+            </HBox>
+        </VBox>
+        
+        <!-- Transaction History -->
+        <VBox styleClass="card-modern" spacing="16">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <StackPane style="-fx-background-color: #FEE2E2; -fx-background-radius: 10; -fx-min-width: 40; -fx-min-height: 40;">
+                    <FontIcon iconLiteral="fas-history" iconSize="18" iconColor="#DC2626"/>
+                </StackPane>
+                <Label text="Transaction History" style="-fx-text-fill: #111827; -fx-font-size: 16px; -fx-font-weight: 600;"/>
+            </HBox>
+            <VBox fx:id="transactionsList" spacing="8"/>
+            <HBox fx:id="paginationContainer" alignment="CENTER" spacing="16"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

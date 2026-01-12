@@ -17,6 +17,8 @@ public class JobPostUpdateRequest {
 
     private Boolean isRemote;
 
+    private String workMode;
+
     private String jobType;
 
     private String experienceLevel;
@@ -76,6 +78,14 @@ public class JobPostUpdateRequest {
 
     public void setIsRemote(Boolean isRemote) {
         this.isRemote = isRemote;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
 
     public String getJobType() {

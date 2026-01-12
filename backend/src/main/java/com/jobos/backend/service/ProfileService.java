@@ -60,6 +60,8 @@ public class ProfileService {
                 data.setDesiredRoles(parseJsonArray(prefs.getDesiredRoles()));
                 data.setSkills(parseJsonArray(prefs.getSkills()));
                 data.setJobTypes(parseJsonArray(prefs.getJobTypes()));
+                data.setWorkModes(parseJsonArray(prefs.getWorkModes()));
+                data.setExperienceLevels(parseJsonArray(prefs.getExperienceLevels()));
                 data.setWorkingHours(prefs.getWorkingHours());
                 data.setSalaryMin(prefs.getSalaryMin());
                 data.setSalaryMax(prefs.getSalaryMax());
@@ -151,6 +153,12 @@ public class ProfileService {
         }
         if (request.getJobTypes() != null) {
             prefs.setJobTypes(toJsonArray(request.getJobTypes()));
+        }
+        if (request.getWorkModes() != null) {
+            prefs.setWorkModes(toJsonArray(request.getWorkModes()));
+        }
+        if (request.getExperienceLevels() != null) {
+            prefs.setExperienceLevels(toJsonArray(request.getExperienceLevels()));
         }
         if (request.getWorkingHours() != null) {
             prefs.setWorkingHours(request.getWorkingHours());

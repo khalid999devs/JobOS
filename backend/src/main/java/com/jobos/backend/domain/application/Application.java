@@ -37,6 +37,9 @@ public class Application {
     @Column(columnDefinition = "TEXT")
     private String answers;
 
+    @Column
+    private UUID cvId;
+
     @Column(nullable = false)
     private String cvFileUrl;
 
@@ -109,6 +112,14 @@ public class Application {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public UUID getCvId() {
+        return cvId;
+    }
+
+    public void setCvId(UUID cvId) {
+        this.cvId = cvId;
     }
 
     public String getCvFileUrl() {

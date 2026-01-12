@@ -10,11 +10,18 @@ public class ApplicationResponse {
     private String company;
     private String location;
     private String status;
+    private String cvId;
     private String cvFileUrl;
     private String coverLetter;
     private String answers;
     private LocalDateTime appliedAt;
     private LocalDateTime updatedAt;
+    
+    // Applicant info
+    private String applicantId;
+    private String applicantName;
+    private String applicantEmail;
+    private String applicantAvatar;
 
     public String getId() {
         return id;
@@ -64,6 +71,14 @@ public class ApplicationResponse {
         this.status = status;
     }
 
+    public String getCvId() {
+        return cvId;
+    }
+
+    public void setCvId(String cvId) {
+        this.cvId = cvId;
+    }
+
     public String getCvFileUrl() {
         return cvFileUrl;
     }
@@ -102,5 +117,37 @@ public class ApplicationResponse {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public String getApplicantId() {
+        return applicantId;
+    }
+    
+    public void setApplicantId(String applicantId) {
+        this.applicantId = applicantId;
+    }
+    
+    public String getApplicantName() {
+        return applicantName;
+    }
+    
+    public void setApplicantName(String applicantName) {
+        this.applicantName = applicantName;
+    }
+    
+    public String getApplicantEmail() {
+        return applicantEmail;
+    }
+    
+    public void setApplicantEmail(String applicantEmail) {
+        this.applicantEmail = applicantEmail;
+    }
+    
+    public String getApplicantAvatar() {
+        return applicantAvatar;
+    }
+    
+    public void setApplicantAvatar(String applicantAvatar) {
+        this.applicantAvatar = applicantAvatar;
     }
 }

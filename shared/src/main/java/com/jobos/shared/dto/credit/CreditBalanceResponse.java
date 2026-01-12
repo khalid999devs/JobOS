@@ -3,10 +3,11 @@ package com.jobos.shared.dto.credit;
 public class CreditBalanceResponse {
     private String userId;
     private Integer balance;
+    private String plan;
+    private Integer usedCredits;
     private String createdAt;
     private String updatedAt;
 
-    // Getters and Setters
     public String getUserId() {
         return userId;
     }
@@ -21,6 +22,22 @@ public class CreditBalanceResponse {
 
     public void setBalance(Integer balance) {
         this.balance = balance;
+    }
+
+    public String getPlan() {
+        return plan;
+    }
+
+    public void setPlan(String plan) {
+        this.plan = plan;
+    }
+
+    public Integer getUsedCredits() {
+        return usedCredits;
+    }
+
+    public void setUsedCredits(Integer usedCredits) {
+        this.usedCredits = usedCredits;
     }
 
     public String getCreatedAt() {

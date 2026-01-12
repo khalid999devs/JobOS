@@ -132,6 +132,7 @@ public class NotificationService {
     private boolean isNotificationTypeEnabled(NotificationPreference pref, NotificationType type) {
         return switch (type) {
             case APPLICATION_STATUS_CHANGE -> Boolean.TRUE.equals(pref.getApplicationUpdates());
+            case NEW_APPLICATION -> Boolean.TRUE.equals(pref.getApplicationUpdates());
             case NEW_JOB_MATCH -> Boolean.TRUE.equals(pref.getJobRecommendations());
             case MESSAGE_RECEIVED -> true;
             case CREDIT_LOW -> true;

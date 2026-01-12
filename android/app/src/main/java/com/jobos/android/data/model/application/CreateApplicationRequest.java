@@ -3,6 +3,7 @@ package com.jobos.android.data.model.application;
 public class CreateApplicationRequest {
 
     private String jobId;
+    private String cvId;
     private String cvFileUrl;
     private String coverLetter;
     private String answers;
@@ -10,8 +11,9 @@ public class CreateApplicationRequest {
     public CreateApplicationRequest() {
     }
 
-    public CreateApplicationRequest(String jobId, String cvFileUrl, String coverLetter, String answers) {
+    public CreateApplicationRequest(String jobId, String cvId, String cvFileUrl, String coverLetter, String answers) {
         this.jobId = jobId;
+        this.cvId = cvId;
         this.cvFileUrl = cvFileUrl;
         this.coverLetter = coverLetter;
         this.answers = answers;
@@ -23,6 +25,14 @@ public class CreateApplicationRequest {
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
+    }
+
+    public String getCvId() {
+        return cvId;
+    }
+
+    public void setCvId(String cvId) {
+        this.cvId = cvId;
     }
 
     public String getCvFileUrl() {

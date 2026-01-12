@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class ProfileResponse {
+    private String id;
     private String email;
     private String role;
     private String firstName;
@@ -20,10 +21,20 @@ public class ProfileResponse {
     private SeekerPreferencesData seekerPreferences;
     private PosterProfileData posterProfile;
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public static class SeekerPreferencesData {
         private List<String> desiredRoles;
         private List<String> skills;
         private List<String> jobTypes;
+        private List<String> workModes;
+        private List<String> experienceLevels;
         private String workingHours;
         private Integer salaryMin;
         private Integer salaryMax;
@@ -52,6 +63,22 @@ public class ProfileResponse {
 
         public void setJobTypes(List<String> jobTypes) {
             this.jobTypes = jobTypes;
+        }
+
+        public List<String> getWorkModes() {
+            return workModes;
+        }
+
+        public void setWorkModes(List<String> workModes) {
+            this.workModes = workModes;
+        }
+
+        public List<String> getExperienceLevels() {
+            return experienceLevels;
+        }
+
+        public void setExperienceLevels(List<String> experienceLevels) {
+            this.experienceLevels = experienceLevels;
         }
 
         public String getWorkingHours() {

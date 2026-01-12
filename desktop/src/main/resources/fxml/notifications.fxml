@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.jobos.desktop.controller.notification.NotificationsController"
+      spacing="24" styleClass="page-container">
+    <padding>
+        <Insets topRightBottomLeft="24"/>
+    </padding>
+    
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <VBox spacing="4" HBox.hgrow="ALWAYS">
+            <Label text="Notifications" styleClass="h2"/>
+            <Label fx:id="unreadCountLabel" text="0 unread" styleClass="label-secondary"/>
+        </VBox>
+        <ComboBox fx:id="filterCombo" promptText="Filter"/>
+        <Button text="Mark all as read" styleClass="button-secondary" onAction="#onMarkAllRead"/>
+    </HBox>
+    
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+        <VBox fx:id="notificationsList" spacing="12"/>
+    </ScrollPane>
+    
+    <HBox fx:id="paginationContainer" alignment="CENTER" spacing="16">
+        <padding>
+            <Insets top="16"/>
+        </padding>
+    </HBox>
+</VBox>

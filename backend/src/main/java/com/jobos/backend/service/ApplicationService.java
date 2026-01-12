@@ -12,6 +12,7 @@ import com.jobos.backend.repository.ApplicationStatusHistoryRepository;
 import com.jobos.backend.repository.JobPostRepository;
 import com.jobos.backend.repository.UserRepository;
 import com.jobos.shared.dto.application.*;
+import com.jobos.shared.dto.cv.CVResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -33,18 +34,21 @@ public class ApplicationService {
     private final JobPostRepository jobPostRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final CVService cvService;
 
     public ApplicationService(
             ApplicationRepository applicationRepository,
             ApplicationStatusHistoryRepository statusHistoryRepository,
             JobPostRepository jobPostRepository,
             UserRepository userRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            CVService cvService) {
         this.applicationRepository = applicationRepository;
         this.statusHistoryRepository = statusHistoryRepository;
         this.jobPostRepository = jobPostRepository;
         this.userRepository = userRepository;
         this.notificationService = notificationService;
+        this.cvService = cvService;
     }
 
     @Transactional
@@ -71,6 +75,7 @@ public class ApplicationService {
         Application application = new Application();
         application.setSeeker(seeker);
         application.setJobPost(jobPost);
+        application.setCvId(request.getCvId());
         application.setCvFileUrl(request.getCvFileUrl());
         application.setCoverLetter(request.getCoverLetter());
         application.setAnswers(request.getAnswers());
@@ -82,12 +87,13 @@ public class ApplicationService {
         jobPost.setApplicationCount(jobPost.getApplicationCount() + 1);
         jobPostRepository.save(jobPost);
 
+        // Send notification to job poster about new application
         notificationService.createNotification(
                 jobPost.getPoster(),
-                com.jobos.backend.domain.notification.NotificationType.APPLICATION_STATUS_CHANGE,
+                com.jobos.backend.domain.notification.NotificationType.NEW_APPLICATION,
                 "New Application for " + jobPost.getTitle(),
-                seeker.getFirstName() + " " + seeker.getLastName() + " applied to your job",
-                "/applications/" + application.getId()
+                seeker.getFirstName() + " " + seeker.getLastName() + " applied to your job posting",
+                "/jobs/" + jobPost.getId() + "/applications"
         );
 
         return mapToApplicationResponse(application);
@@ -198,6 +204,33 @@ public class ApplicationService {
         return mapToApplicationResponse(application);
     }
 
+    @Transactional(readOnly = true)
+    public CVResponse getApplicantCV(UUID applicationId, UUID posterId) {
+        User poster = userRepository.findById(posterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (poster.getRole() != UserRole.POSTER) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only posters can view applicant CVs");
+        }
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Application not found"));
+
+        // Verify the poster owns the job
+        if (!application.getJobPost().getPoster().getId().equals(posterId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only view CVs for applications to your own jobs");
+        }
+
+        UUID cvId = application.getCvId();
+        if (cvId == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No CV associated with this application");
+        }
+
+        // Get the CV using the seeker's ID (the applicant)
+        UUID seekerId = application.getSeeker().getId();
+        return cvService.getCVById(cvId, seekerId);
+    }
+
     private ApplicationResponse mapToApplicationResponse(Application application) {
         ApplicationResponse response = new ApplicationResponse();
         response.setId(application.getId().toString());
@@ -206,11 +239,29 @@ public class ApplicationService {
         response.setCompany(application.getJobPost().getCompany());
         response.setLocation(application.getJobPost().getLocation());
         response.setStatus(application.getStatus().name());
+        response.setCvId(application.getCvId() != null ? application.getCvId().toString() : null);
         response.setCvFileUrl(application.getCvFileUrl());
         response.setCoverLetter(application.getCoverLetter());
         response.setAnswers(application.getAnswers());
         response.setAppliedAt(application.getAppliedAt());
         response.setUpdatedAt(application.getUpdatedAt());
+        
+        // Add applicant info
+        if (application.getSeeker() != null) {
+            response.setApplicantId(application.getSeeker().getId().toString());
+            String firstName = application.getSeeker().getFirstName();
+            String lastName = application.getSeeker().getLastName();
+            if (firstName != null && lastName != null) {
+                response.setApplicantName(firstName + " " + lastName);
+            } else if (firstName != null) {
+                response.setApplicantName(firstName);
+            } else {
+                response.setApplicantName("Unknown Applicant");
+            }
+            response.setApplicantEmail(application.getSeeker().getEmail());
+            response.setApplicantAvatar(application.getSeeker().getAvatarUrl());
+        }
+        
         return response;
     }
 

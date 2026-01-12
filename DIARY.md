@@ -48,3 +48,35 @@
 - Added profileCompleted flag for frontend onboarding detection
 - Implemented AuthenticatedUser principal (userId + email accessible in controllers)
 - Role-aware responses automatically populate seeker or poster data based on user type
+
+## January 10, 2026
+
+### Desktop Application Complete
+
+- Finished full implementation of all desktop features
+- Built seeker flows: dashboard, job search with filters, applications list, CV builder
+- Built poster flows: dashboard with stats, job management, applicant review
+- Added CV preview with PDF export
+- Implemented settings and profile editing
+- Made sure all API calls are synced with backend
+
+## January 12, 2026
+
+### Android Application Complete
+
+- Finished full Android implementation matching desktop features
+- Built all seeker screens: home with recommendations, job search, saved jobs, applications, CV management
+- Built all poster screens: dashboard, job listings, applicant details with CV viewing
+- Added PDF generation for CVs directly on device
+- Integrated Firebase Cloud Messaging for push notifications
+- FCM token registration on login and app startup
+
+### Android Fixes and Enhancements
+
+- Fixed dashboard to show user's first name instead of email
+- Fixed CV preview to show all sections (skills, experience, education) when data exists
+- Fixed PDF generation to use actual CV data instead of placeholders
+- Added seeker job preferences to edit profile (job types, work modes, experience levels, salary range)
+- Added timezone selector to profile
+- Fixed applicant CV viewing for posters using the correct endpoint
+- Added navigation actions for CV preview from applicant details

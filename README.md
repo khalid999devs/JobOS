@@ -1,128 +1,142 @@
 # JobOS
 
-A modern job application flow and CV management system designed to streamline the hiring process for both job seekers and recruiters. Built with a focus on interactive user experience and powered by a freemium, credit-based pricing model.
+A job application and CV management platform built for both job seekers and recruiters. The system handles the full hiring workflow from job posting to candidate management, with real-time notifications and cross-platform support.
 
-## Overview
+## What It Does
 
-JobOS bridges the gap between talented job seekers and companies looking to hire. The platform supports two primary user roles:
+JobOS connects two types of users:
 
-- **Job Seeker**: Create professional profiles, upload CVs, browse job listings, and track application status in real-time.
-- **Job Poster**: Post job openings, review candidate profiles, manage applications, and communicate with potential hires.
+- **Job Seekers** can build CVs, search and filter jobs, apply with cover letters, and track their application status.
+- **Job Posters** can create job listings, review applicants, view submitted CVs, and manage the hiring pipeline.
 
-The system features real-time notifications powered by Firebase, ensuring users stay updated on application status, new job postings, and important messages.
+Both sides get real-time push notifications through Firebase for status updates, new applications, and messages.
 
 ## Tech Stack
 
-### Backend
-
-- **Spring Boot** - REST API server
-- **PostgreSQL** - Primary database
-- **Firebase Admin SDK** - Real-time notifications
-- **Java** - Language runtime
-
-### Desktop Application
-
-- **JavaFX** - Rich desktop UI with FXML/CSS
-- **OkHttp** - HTTP client
-- **MVC Architecture** - Clean separation of concerns
-
-### Android Application
-
-- **Android SDK** - Java-only
-- **Firebase BOM** - Real-time database client
-- **OkHttp** - Network layer
-- **Package-by-feature** - Production-ready structure
-
-### Shared
-
-- **Common DTOs** - Reusable data models across platforms
-- **Gradle** - Multi-module build system
+| Layer   | Technology                                    |
+| ------- | --------------------------------------------- |
+| Backend | Spring Boot, PostgreSQL, Firebase Admin SDK   |
+| Desktop | JavaFX with FXML/CSS, OkHttp                  |
+| Android | Native Java, Firebase Cloud Messaging, OkHttp |
+| Shared  | Common DTOs, Gradle multi-module              |
 
 ## Project Structure
 
 ```
 JobOS/
-├── backend/              # Spring Boot REST API
-│   ├── config/          # Firebase, Security, CORS
-│   ├── controller/      # REST endpoints
-│   ├── service/         # Business logic
-│   └── resources/       # application.yml
+├── backend/                    # Spring Boot REST API
+│   ├── config/
+│   ├── controller/
+│   │   ├── AuthController
+│   │   ├── JobPostController
+│   │   ├── JobSearchController
+│   │   ├── ApplicationController
+│   │   ├── CVController
+│   │   ├── ProfileController
+│   │   └── NotificationController
+│   ├── domain/
+│   │   ├── user/
+│   │   ├── job/
+│   │   ├── application/
+│   │   ├── cv/
+│   │   └── notification/
+│   ├── service/
+│   ├── repository/
+│   └── security/
 │
-├── desktop/             # JavaFX desktop app
-│   ├── controller/      # FXML controllers
-│   ├── service/         # API communication
-│   ├── util/            # Helper classes
+├── desktop/                   # JavaFX application
+│   ├── controller/
+│   │   ├── auth/
+│   │   ├── seeker/
+│   │   ├── poster/
+│   │   ├── settings/
+│   │   └── shell/
+│   ├── service/
+│   ├── model/
 │   └── resources/
-│       ├── fxml/        # UI layouts
-│       └── css/         # Stylesheets
+│       ├── fxml/
+│       └── css/
 │
-├── android/             # Android mobile app
+├── android/                   # Android application
 │   └── app/src/main/java/com/jobos/android/
-│       ├── JobOSApplication.java
-│       ├── config/      # API configuration
+│       ├── ui/
+│       │   ├── auth/
+│       │   ├── seeker/
+│       │   ├── poster/
+│       │   ├── cv/
+│       │   ├── profile/
+│       │   ├── notifications/
+│       │   └── onboarding/
 │       ├── data/
-│       │   ├── model/   # Data models
-│       │   └── network/ # API clients
-│       └── ui/
-│           ├── main/    # Main activity
-│           └── notifications/
+│       │   ├── model/
+│       │   └── network/
+│       ├── adapter/
+│       └── service/
 │
-└── shared/              # Shared DTOs
-    └── dto/common/      # Common data models
+├── shared/                    # Shared code
+│   └── dto/
+│
+├── docs/                      # Development documentation
+│   ├── BACKEND_PLAN.md
+│   ├── DESKTOP_IMPLEMENTATION_PHASES.md
+│   ├── ANDROID_IMPLEMENTATION_PLAN.md
+│   └── ...test cases and reports
+│
+└── firebase-keys/             # Firebase service account (gitignored)
 ```
+
+## Features
+
+### For Job Seekers
+
+- Profile management with skills, desired roles, salary expectations, job type preferences
+- CV builder with multiple templates and section management
+- Job search with filters (location, salary, job type, work mode)
+- Application tracking with status updates
+- Save jobs for later
+- PDF export for CVs
+
+### For Job Posters
+
+- Company profile with verification documents
+- Job posting with requirements, salary range, application deadlines
+- Applicant management with status workflow (Pending, Reviewed, Shortlisted, Hired, Rejected)
+- View applicant CVs directly from application details
+- Application statistics per job
+
+### Shared Features
+
+- JWT authentication with refresh tokens
+- Multi-device session support
+- Real-time push notifications via Firebase
+- Role-based access control
 
 ## Getting Started
 
-### Prerequisites
+### Requirements
 
-- **JDK 25** or higher
-- **Gradle 9.2.1** (included via wrapper)
-- **PostgreSQL** (running on localhost:5432)
-- **Android Studio** (for Android development)
-- **Firebase Project** (for real-time features)
+- JDK 21 or higher
+- PostgreSQL 14+
+- Android Studio (for mobile development)
+- Firebase project with Cloud Messaging enabled
 
 ### Database Setup
 
-1. Install PostgreSQL and create a database:
-
-   ```sql
-   CREATE DATABASE jobos;
-   CREATE USER jobos WITH PASSWORD 'jobos';
-   GRANT ALL PRIVILEGES ON DATABASE jobos TO jobos;
-   ```
-
-2. Update `backend/src/main/resources/application.yml` with your credentials if needed.
+```sql
+CREATE DATABASE jobos;
+CREATE USER jobos WITH PASSWORD 'jobos';
+GRANT ALL PRIVILEGES ON DATABASE jobos TO jobos;
+```
 
 ### Firebase Setup
 
-1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Download service account key:
-
-   - Go to Project Settings → Service Accounts
-   - Click "Generate New Private Key"
-   - Save as `firebase-keys/jobos-firebase-key.json`
-
-3. Enable Firebase Realtime Database:
-
-   - Set database URL in `backend/config/FirebaseConfig.java`
-   - Configure rules to allow read/write on `/users/{userId}/notifications`
-
-4. For Android:
-
-   - Download `google-services.json` from Firebase Console
-   - Place in `android/app/` directory
-
-5. Set environment variable:
+1. Create a project at [Firebase Console](https://console.firebase.google.com/)
+2. Download the service account key and save to `firebase-keys/jobos-firebase-key.json`
+3. For Android, download `google-services.json` to `android/app/`
+4. Set the environment variable:
    ```bash
-   echo 'export FIREBASE_SERVICE_ACCOUNT_JSON_PATH="/path/to/firebase-keys/jobos-firebase-key.json"' >> ~/.zshrc
-   source ~/.zshrc
+   export FIREBASE_SERVICE_ACCOUNT_JSON_PATH="/path/to/firebase-keys/jobos-firebase-key.json"
    ```
-
-### Continuously building the Backend
-
-```bash
-./gradlew :backend:classes --continuous
-```
 
 ### Running the Backend
 
@@ -130,13 +144,7 @@ JobOS/
 ./gradlew :backend:bootRun
 ```
 
-The server will start on `http://localhost:8080`
-
-**Available endpoints:**
-
-- `GET /api/health` - Health check
-- `GET /api/ping` - Ping endpoint
-- `POST /api/notifications/send` - Send notification
+Server starts at `http://localhost:8080`
 
 ### Running the Desktop App
 
@@ -144,44 +152,51 @@ The server will start on `http://localhost:8080`
 ./gradlew :desktop:run
 ```
 
-The JavaFX application will launch with a clean, professional interface.
-
 ### Running the Android App
 
-1. Open the `android/` directory in Android Studio
-2. Sync Gradle files
-3. Run on emulator or physical device
+Open `android/` in Android Studio and run on emulator or device.
 
-**Note:** Ensure `google-services.json` is present in `android/app/` before building.
+## API Overview
 
-### Building All Modules
+The backend exposes REST endpoints under `/api`:
+
+| Endpoint                   | Purpose                          |
+| -------------------------- | -------------------------------- |
+| `/auth/*`                  | Login, register, refresh, logout |
+| `/users/me`                | Profile management               |
+| `/users/me/preferences`    | Seeker/poster preferences        |
+| `/jobs`                    | Job CRUD, search, filters        |
+| `/jobs/{id}/apply`         | Submit applications              |
+| `/applications`            | Application management           |
+| `/applications/{id}/cv`    | View applicant CV (poster only)  |
+| `/cvs`                     | CV CRUD                          |
+| `/notifications`           | Notification management          |
+| `/notifications/fcm-token` | Register device for push         |
+
+## Architecture Notes
+
+- Backend uses layered architecture: Controller -> Service -> Repository
+- Desktop follows MVC with FXML for views
+- Android uses package-by-feature with fragments and a single activity
+- All platforms share similar data models for consistency
+- Firebase handles real-time notifications across all clients
+
+## Development
+
+Build all modules:
 
 ```bash
 ./gradlew clean build
 ```
 
-This compiles all modules (shared, backend, desktop) and runs tests.
-
-## Development
-
-### Testing Backend API
-
-Send a test notification:
+Run backend tests:
 
 ```bash
-curl -X POST http://localhost:8080/api/notifications/send \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "test-user-123",
-    "title": "Welcome to JobOS",
-    "body": "Your profile is now active!"
-  }'
+./gradlew :backend:test
 ```
 
-### Architecture Patterns
+Compile check:
 
-- **Backend**: Layered architecture (Controller → Service → Repository)
-- **Desktop**: MVC with FXML
-- **Android**: Package-by-feature, preparing for MVVM
-
-See `android/STRUCTURE.md` for detailed Android architecture documentation.
+```bash
+./gradlew :backend:compileJava :desktop:compileJava
+```

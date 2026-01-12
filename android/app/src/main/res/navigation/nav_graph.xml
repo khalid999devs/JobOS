@@ -253,6 +253,9 @@
         <argument
             android:name="applicationId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_applicant_to_cv_preview"
+            app:destination="@id/cvPreviewFragment" />
     </fragment>
 
     <fragment
@@ -445,6 +448,9 @@
         <argument
             android:name="applicationId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_applicant_to_cv_preview"
+            app:destination="@id/cvPreviewFragment" />
     </fragment>
 
     <fragment

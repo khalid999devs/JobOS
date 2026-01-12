@@ -18,6 +18,8 @@ public class JobPostRequest {
 
     private Boolean isRemote;
 
+    private String workMode;
+
     @NotBlank(message = "Job type is required")
     private String jobType;
 
@@ -80,6 +82,14 @@ public class JobPostRequest {
 
     public void setIsRemote(Boolean isRemote) {
         this.isRemote = isRemote;
+    }
+
+    public String getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
 
     public String getJobType() {

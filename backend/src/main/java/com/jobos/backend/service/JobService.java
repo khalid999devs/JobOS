@@ -6,6 +6,7 @@ import com.jobos.backend.domain.job.*;
 import com.jobos.backend.domain.user.PosterProfile;
 import com.jobos.backend.domain.user.User;
 import com.jobos.backend.domain.user.UserRole;
+import com.jobos.backend.repository.ApplicationRepository;
 import com.jobos.backend.repository.JobPostRepository;
 import com.jobos.backend.repository.PosterProfileRepository;
 import com.jobos.backend.repository.SavedJobRepository;
@@ -35,17 +36,20 @@ public class JobService {
     private final UserRepository userRepository;
     private final PosterProfileRepository posterProfileRepository;
     private final SavedJobRepository savedJobRepository;
+    private final ApplicationRepository applicationRepository;
     private final ObjectMapper objectMapper;
 
     public JobService(JobPostRepository jobPostRepository,
                      UserRepository userRepository,
                      PosterProfileRepository posterProfileRepository,
                      SavedJobRepository savedJobRepository,
+                     ApplicationRepository applicationRepository,
                      ObjectMapper objectMapper) {
         this.jobPostRepository = jobPostRepository;
         this.userRepository = userRepository;
         this.posterProfileRepository = posterProfileRepository;
         this.savedJobRepository = savedJobRepository;
+        this.applicationRepository = applicationRepository;
         this.objectMapper = objectMapper;
     }
 
@@ -75,6 +79,16 @@ public class JobService {
         jobPost.setCompany(request.getCompany());
         jobPost.setLocation(request.getLocation());
         jobPost.setIsRemote(request.getIsRemote() != null ? request.getIsRemote() : false);
+
+        if (request.getWorkMode() != null && !request.getWorkMode().isEmpty()) {
+            try {
+                jobPost.setWorkMode(WorkMode.valueOf(request.getWorkMode().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid work mode: " + request.getWorkMode());
+            }
+        } else {
+            jobPost.setWorkMode(WorkMode.REMOTE);
+        }
 
         try {
             jobPost.setJobType(JobType.valueOf(request.getJobType().toUpperCase()));
@@ -120,7 +134,7 @@ public class JobService {
         jobPost.setApplicationCount(0);
 
         JobPost saved = jobPostRepository.save(jobPost);
-        return mapToJobPostResponse(saved, null);
+        return mapToJobPostResponse(saved, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -152,18 +166,23 @@ public class JobService {
         JobPost jobPost = jobPostRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Job not found"));
 
-        jobPost.incrementViewCount();
-        jobPostRepository.save(jobPost);
+        boolean isPoster = userId != null && jobPost.getPoster().getId().equals(userId);
+        if (!isPoster) {
+            jobPost.incrementViewCount();
+            jobPostRepository.save(jobPost);
+        }
 
         Boolean isSaved = null;
+        Boolean hasApplied = null;
         if (userId != null) {
             User user = userRepository.findById(userId).orElse(null);
             if (user != null) {
                 isSaved = savedJobRepository.existsByUserAndJobPost(user, jobPost);
+                hasApplied = applicationRepository.existsBySeekerAndJobPost(user, jobPost);
             }
         }
 
-        return mapToJobPostResponse(jobPost, isSaved);
+        return mapToJobPostResponse(jobPost, isSaved, hasApplied);
     }
 
     @Transactional
@@ -182,6 +201,14 @@ public class JobService {
         if (request.getCompany() != null) jobPost.setCompany(request.getCompany());
         if (request.getLocation() != null) jobPost.setLocation(request.getLocation());
         if (request.getIsRemote() != null) jobPost.setIsRemote(request.getIsRemote());
+
+        if (request.getWorkMode() != null && !request.getWorkMode().isEmpty()) {
+            try {
+                jobPost.setWorkMode(WorkMode.valueOf(request.getWorkMode().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid work mode: " + request.getWorkMode());
+            }
+        }
 
         if (request.getJobType() != null) {
             try {
@@ -232,7 +259,7 @@ public class JobService {
         }
 
         JobPost updated = jobPostRepository.save(jobPost);
-        return mapToJobPostResponse(updated, null);
+        return mapToJobPostResponse(updated, null, null);
     }
 
     @Transactional
@@ -308,6 +335,7 @@ public class JobService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "REMOTE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());
@@ -330,7 +358,7 @@ public class JobService {
         return response;
     }
 
-    private JobPostResponse mapToJobPostResponse(JobPost jobPost, Boolean isSaved) {
+    private JobPostResponse mapToJobPostResponse(JobPost jobPost, Boolean isSaved, Boolean hasApplied) {
         JobPostResponse response = new JobPostResponse();
         response.setId(jobPost.getId().toString());
         response.setPosterId(jobPost.getPoster().getId().toString());
@@ -341,6 +369,7 @@ public class JobService {
         response.setCompany(jobPost.getCompany());
         response.setLocation(jobPost.getLocation());
         response.setIsRemote(jobPost.getIsRemote());
+        response.setWorkMode(jobPost.getWorkMode() != null ? jobPost.getWorkMode().name() : "REMOTE");
         response.setJobType(jobPost.getJobType().name());
         response.setExperienceLevel(jobPost.getExperienceLevel() != null ? jobPost.getExperienceLevel().name() : null);
         response.setSalaryMin(jobPost.getSalaryMin());
@@ -366,6 +395,7 @@ public class JobService {
         response.setUpdatedAt(jobPost.getUpdatedAt());
         response.setClosedAt(jobPost.getClosedAt());
         response.setIsSaved(isSaved);
+        response.setHasApplied(hasApplied);
 
         return response;
     }

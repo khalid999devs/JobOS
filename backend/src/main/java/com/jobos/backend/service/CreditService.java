@@ -197,6 +197,16 @@ public class CreditService {
         response.setBalance(balance.getBalance());
         response.setCreatedAt(balance.getCreatedAt() != null ? balance.getCreatedAt().toString() : null);
         response.setUpdatedAt(balance.getUpdatedAt() != null ? balance.getUpdatedAt().toString() : null);
+        
+        User user = balance.getUser();
+        UserSubscription subscription = userSubscriptionRepository.findByUserAndIsActiveTrueAndEndDateAfter(user, Instant.now()).orElse(null);
+        if (subscription != null && subscription.getPlan() != null) {
+            response.setPlan(subscription.getPlan().getPlanType().name());
+        } else {
+            response.setPlan("FREE");
+        }
+        response.setUsedCredits(0);
+        
         return response;
     }
 

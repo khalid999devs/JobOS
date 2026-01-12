@@ -9,6 +9,8 @@ public class ApplicationRequest {
     @NotNull(message = "Job ID is required")
     private UUID jobId;
 
+    private UUID cvId;
+
     @NotBlank(message = "CV file URL is required")
     private String cvFileUrl;
 
@@ -22,6 +24,14 @@ public class ApplicationRequest {
 
     public void setJobId(UUID jobId) {
         this.jobId = jobId;
+    }
+
+    public UUID getCvId() {
+        return cvId;
+    }
+
+    public void setCvId(UUID cvId) {
+        this.cvId = cvId;
     }
 
     public String getCvFileUrl() {
