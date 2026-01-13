@@ -25,8 +25,8 @@ Both sides get real-time push notifications through Firebase for status updates,
 ```
 JobOS/
 ├── backend/                    # Spring Boot REST API
-│   ├── config/
-│   ├── controller/
+│   ├── config/                 # App configuration, security, CORS, Firebase
+│   ├── controller/             # REST endpoints, request/response handling
 │   │   ├── AuthController
 │   │   ├── JobPostController
 │   │   ├── JobSearchController
@@ -34,32 +34,32 @@ JobOS/
 │   │   ├── CVController
 │   │   ├── ProfileController
 │   │   └── NotificationController
-│   ├── domain/
+│   ├── domain/                 # JPA entities, database models
 │   │   ├── user/
 │   │   ├── job/
 │   │   ├── application/
 │   │   ├── cv/
 │   │   └── notification/
-│   ├── service/
-│   ├── repository/
-│   └── security/
+│   ├── service/                # Business logic layer
+│   ├── repository/             # Database access layer (JPA repositories)
+│   └── security/               # JWT authentication, authorization filters
 │
 ├── desktop/                   # JavaFX application
-│   ├── controller/
+│   ├── controller/             # UI controllers for FXML views
 │   │   ├── auth/
 │   │   ├── seeker/
 │   │   ├── poster/
 │   │   ├── settings/
 │   │   └── shell/
-│   ├── service/
-│   ├── model/
-│   └── resources/
-│       ├── fxml/
-│       └── css/
+│   ├── service/                # API client services (HTTP calls)
+│   ├── model/                  # Desktop-specific models, state management
+│   └── resources/              # UI resources
+│       ├── fxml/               # Scene layouts
+│       └── css/                # Styling
 │
 ├── android/                   # Android application
 │   └── app/src/main/java/com/jobos/android/
-│       ├── ui/
+│       ├── ui/                 # Activities, fragments, view models
 │       │   ├── auth/
 │       │   ├── seeker/
 │       │   ├── poster/
@@ -67,14 +67,14 @@ JobOS/
 │       │   ├── profile/
 │       │   ├── notifications/
 │       │   └── onboarding/
-│       ├── data/
-│       │   ├── model/
-│       │   └── network/
-│       ├── adapter/
-│       └── service/
+│       ├── data/               # Data layer
+│       │   ├── model/          # Android-specific models
+│       │   └── network/        # API client, Retrofit services
+│       ├── adapter/            # RecyclerView adapters
+│       └── service/            # Background services
 │
-├── shared/                    # Shared code
-│   └── dto/
+├── shared/                    # Shared code across all platforms
+│   └── dto/                    # Data transfer objects for API communication
 │
 └── firebase-keys/             # Firebase service account (gitignored)
 ```
