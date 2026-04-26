@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
+import com.jobos.desktop.core.ui.Dialogs;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApplicationService;
 import com.jobos.desktop.service.JobPostService;
@@ -415,7 +416,7 @@ public class PosterApplicationDetailController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
-        alert.showAndWait();
+        Dialogs.prepare(alert).showAndWait();
     }
 
     @FXML

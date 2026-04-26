@@ -6,6 +6,7 @@ import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
 import com.jobos.desktop.core.session.SessionManager;
 import com.jobos.desktop.core.state.WindowStateManager;
+import com.jobos.desktop.core.ui.Dialogs;
 import com.jobos.desktop.core.ui.LoadingOverlay;
 import com.jobos.desktop.core.ui.Modal;
 import com.jobos.desktop.core.ui.Toast;
@@ -43,6 +44,7 @@ public class Main extends Application {
         );
         
         Toast.setContainer(rootContainer);
+        Dialogs.setContainer(rootContainer);
         Modal.setContainer(rootContainer);
         LoadingOverlay.setContainer(rootContainer);
         

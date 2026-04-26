@@ -248,6 +248,78 @@
 }
 
 /* ============================================
+   APP DIALOGS
+   ============================================ */
+
+.jobos-dialog-pane {
+  -fx-background-color: white;
+  -fx-background-radius: 18;
+  -fx-border-color: #e5e7eb;
+  -fx-border-width: 1;
+  -fx-border-radius: 18;
+  -fx-effect: dropshadow(gaussian, rgba(17, 24, 39, 0.22), 34, 0, 0, 14);
+}
+
+.jobos-dialog-pane > .header-panel {
+  -fx-background-color: white;
+  -fx-background-radius: 18 18 0 0;
+  -fx-padding: 24 28 10 28;
+}
+
+.jobos-dialog-pane > .header-panel .label {
+  -fx-text-fill: #111827;
+  -fx-font-size: 20px;
+  -fx-font-weight: 700;
+}
+
+.jobos-dialog-pane > .content {
+  -fx-padding: 12 28 20 28;
+  -fx-text-fill: #374151;
+  -fx-font-size: 14px;
+}
+
+.jobos-dialog-pane .text-field,
+.jobos-dialog-pane .combo-box {
+  -fx-background-color: white;
+  -fx-border-color: #d1d5db;
+  -fx-border-width: 1.5;
+  -fx-border-radius: 10;
+  -fx-background-radius: 10;
+  -fx-padding: 10 12 10 12;
+}
+
+.jobos-dialog-pane .text-field:focused,
+.jobos-dialog-pane .combo-box:focused {
+  -fx-border-color: #0f766e;
+}
+
+.jobos-dialog-pane > .button-bar > .container {
+  -fx-padding: 0 28 24 28;
+}
+
+.jobos-dialog-pane .button {
+  -fx-background-color: #f3f4f6;
+  -fx-text-fill: #374151;
+  -fx-padding: 10 22 10 22;
+  -fx-background-radius: 10;
+  -fx-font-weight: 600;
+  -fx-cursor: hand;
+}
+
+.jobos-dialog-pane .button:hover {
+  -fx-background-color: #e5e7eb;
+}
+
+.jobos-dialog-pane .button:default {
+  -fx-background-color: #0f766e;
+  -fx-text-fill: white;
+}
+
+.jobos-dialog-pane .button:default:hover {
+  -fx-background-color: #0d6963;
+}
+
+/* ============================================
    WELCOME SCREEN
    ============================================ */
 

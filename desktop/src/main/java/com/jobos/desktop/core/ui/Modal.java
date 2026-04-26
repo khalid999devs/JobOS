@@ -47,7 +47,7 @@ public class Modal {
     public static void confirm(String title, String message, Runnable onConfirm) {
         Label messageLabel = new Label(message);
         messageLabel.setWrapText(true);
-        messageLabel.setStyle("-fx-text-fill: #B3B3B3; -fx-font-size: 14px;");
+        messageLabel.setStyle("-fx-text-fill: #4B5563; -fx-font-size: 14px;");
         
         show(title, messageLabel, "Confirm", onConfirm);
     }
@@ -55,7 +55,7 @@ public class Modal {
     public static void alert(String title, String message) {
         Label messageLabel = new Label(message);
         messageLabel.setWrapText(true);
-        messageLabel.setStyle("-fx-text-fill: #B3B3B3; -fx-font-size: 14px;");
+        messageLabel.setStyle("-fx-text-fill: #4B5563; -fx-font-size: 14px;");
         
         show(title, messageLabel, "OK", () -> {}, null, null);
     }
@@ -70,7 +70,7 @@ public class Modal {
     
     private static StackPane createOverlay() {
         StackPane overlay = new StackPane();
-        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.6);");
+        overlay.setStyle("-fx-background-color: rgba(17, 24, 39, 0.42);");
         overlay.setAlignment(Pos.CENTER);
         return overlay;
     }
@@ -83,30 +83,30 @@ public class Modal {
         modal.setAlignment(Pos.TOP_LEFT);
         modal.setPadding(new Insets(24));
         modal.setStyle("""
-            -fx-background-color: #1E1E1E;
-            -fx-background-radius: 12;
-            -fx-border-color: #3D3D3D;
-            -fx-border-radius: 12;
-            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 16, 0, 0, 8);
+            -fx-background-color: white;
+            -fx-background-radius: 18;
+            -fx-border-color: #E5E7EB;
+            -fx-border-radius: 18;
+            -fx-effect: dropshadow(gaussian, rgba(17,24,39,0.22), 34, 0, 0, 14);
             """);
         
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
         
         Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;");
         HBox.setHgrow(titleLabel, Priority.ALWAYS);
         
         Button closeButton = new Button("✕");
         closeButton.setStyle("""
             -fx-background-color: transparent;
-            -fx-text-fill: #808080;
+            -fx-text-fill: #6B7280;
             -fx-font-size: 16px;
             -fx-cursor: hand;
             -fx-padding: 4 8;
             """);
-        closeButton.setOnMouseEntered(e -> closeButton.setStyle(closeButton.getStyle() + "-fx-text-fill: white;"));
-        closeButton.setOnMouseExited(e -> closeButton.setStyle(closeButton.getStyle().replace("-fx-text-fill: white;", "-fx-text-fill: #808080;")));
+        closeButton.setOnMouseEntered(e -> closeButton.setStyle(closeButton.getStyle() + "-fx-text-fill: #111827;"));
+        closeButton.setOnMouseExited(e -> closeButton.setStyle(closeButton.getStyle().replace("-fx-text-fill: #111827;", "-fx-text-fill: #6B7280;")));
         closeButton.setOnAction(e -> close(overlay));
         
         header.getChildren().addAll(titleLabel, closeButton);
@@ -155,7 +155,7 @@ public class Modal {
         Button button = new Button(text);
         if (primary) {
             button.setStyle("""
-                -fx-background-color: #1E88E5;
+                -fx-background-color: #0F766E;
                 -fx-text-fill: white;
                 -fx-font-weight: 500;
                 -fx-padding: 10 20;
@@ -164,12 +164,12 @@ public class Modal {
                 """);
         } else {
             button.setStyle("""
-                -fx-background-color: #2D2D2D;
-                -fx-text-fill: #B3B3B3;
+                -fx-background-color: #F3F4F6;
+                -fx-text-fill: #374151;
                 -fx-font-weight: 500;
                 -fx-padding: 10 20;
                 -fx-background-radius: 8;
-                -fx-border-color: #3D3D3D;
+                -fx-border-color: #E5E7EB;
                 -fx-border-radius: 8;
                 -fx-cursor: hand;
                 """);

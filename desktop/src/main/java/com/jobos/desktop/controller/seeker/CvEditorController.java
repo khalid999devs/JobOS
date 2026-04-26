@@ -3,6 +3,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
+import com.jobos.desktop.core.ui.Dialogs;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.CVService;
 import com.jobos.desktop.util.CvPdfGenerator;
@@ -1041,7 +1042,7 @@ public class CvEditorController implements Initializable {
         alert.setTitle("Delete Section");
         alert.setHeaderText("Delete this section?");
         alert.setContentText("This action cannot be undone.");
-        alert.showAndWait().ifPresent(response -> {
+        Dialogs.prepare(alert).showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 cvService.deleteSection(cvId, sectionId).whenComplete((result, error) -> {
                     Platform.runLater(() -> {
@@ -1064,7 +1065,7 @@ public class CvEditorController implements Initializable {
         dialog.setTitle("Add Section");
         dialog.setHeaderText("Select section type");
         dialog.setContentText("Type:");
-        dialog.showAndWait().ifPresent(type -> {
+        Dialogs.prepare(dialog).showAndWait().ifPresent(type -> {
             CVSectionRequest request = new CVSectionRequest();
             request.setSectionType(type);
             request.setTitle(formatSectionType(type));
@@ -1265,7 +1266,7 @@ public class CvEditorController implements Initializable {
             ButtonType discardButton = new ButtonType("Discard");
             ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
-            alert.showAndWait().ifPresent(response -> {
+            Dialogs.prepare(alert).showAndWait().ifPresent(response -> {
                 if (response == saveButton) {
                     onSave();
                     Router.getInstance().navigate(Route.SEEKER_CVS);

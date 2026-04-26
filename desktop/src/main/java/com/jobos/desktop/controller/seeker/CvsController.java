@@ -2,6 +2,7 @@ package com.jobos.desktop.controller.seeker;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
+import com.jobos.desktop.core.ui.Dialogs;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.CVService;
 import com.jobos.desktop.util.CvPdfGenerator;
@@ -265,7 +266,7 @@ public class CvsController implements Initializable {
         alert.setHeaderText("Unlock \"" + template.getName() + "\"");
         alert.setContentText("This template costs " + template.getCreditCost() + " credits. Unlock it?");
         
-        alert.showAndWait().ifPresent(response -> {
+        Dialogs.prepare(alert).showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 unlockTemplate(template);
             }
@@ -295,7 +296,7 @@ public class CvsController implements Initializable {
         dialog.setHeaderText(templateName != null ? "Using template: " + templateName : "Create a blank CV");
         dialog.setContentText("CV Name:");
         
-        dialog.showAndWait().ifPresent(title -> {
+        Dialogs.prepare(dialog).showAndWait().ifPresent(title -> {
             CVCreateRequest request = new CVCreateRequest();
             request.setTitle(title);
             if (templateId != null) {
@@ -588,7 +589,7 @@ public class CvsController implements Initializable {
         alert.setHeaderText("Delete \"" + title + "\"?");
         alert.setContentText("This action cannot be undone.");
         
-        alert.showAndWait().ifPresent(response -> {
+        Dialogs.prepare(alert).showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 cvService.deleteCV(cvId).whenComplete((v, error) -> {
                     Platform.runLater(() -> {

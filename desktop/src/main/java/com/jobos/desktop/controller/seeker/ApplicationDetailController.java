@@ -2,6 +2,7 @@ package com.jobos.desktop.controller.seeker;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
+import com.jobos.desktop.core.ui.Dialogs;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.ApplicationService;
 import com.jobos.desktop.service.CVService;
@@ -339,6 +340,6 @@ public class ApplicationDetailController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
-        alert.showAndWait();
+        Dialogs.prepare(alert).showAndWait();
     }
 }

@@ -1,6 +1,7 @@
 package com.jobos.desktop.controller.credits;
 
 import com.jobos.desktop.core.navigation.Router;
+import com.jobos.desktop.core.ui.Dialogs;
 import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.CreditService;
@@ -310,7 +311,7 @@ public class CreditsController implements Initializable {
         okButton.setText("Subscribe " + price + "/mo");
         okButton.setStyle("-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: bold;");
         
-        dialog.showAndWait().ifPresent(response -> {
+        Dialogs.prepare(dialog).showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 processSubscription(planId, planName);
             }
@@ -576,7 +577,7 @@ public class CreditsController implements Initializable {
         okButton.setText("Pay " + price);
         okButton.setStyle("-fx-background-color: #0F766E; -fx-text-fill: white; -fx-font-weight: bold;");
         
-        dialog.showAndWait().ifPresent(response -> {
+        Dialogs.prepare(dialog).showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 processPayment(credits, price);
             }

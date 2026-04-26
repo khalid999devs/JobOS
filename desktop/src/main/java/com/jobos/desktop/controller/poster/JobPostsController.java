@@ -2,6 +2,7 @@ package com.jobos.desktop.controller.poster;
 
 import com.jobos.desktop.core.navigation.Route;
 import com.jobos.desktop.core.navigation.Router;
+import com.jobos.desktop.core.ui.Dialogs;
 import com.jobos.desktop.core.ui.SkeletonLoader;
 import com.jobos.desktop.core.ui.Toast;
 import com.jobos.desktop.service.JobPostService;
@@ -248,7 +249,7 @@ public class JobPostsController implements Initializable {
         alert.setHeaderText("Close this job posting?");
         alert.setContentText("This will stop accepting new applications. You can reopen it later.");
         
-        Optional<ButtonType> result = alert.showAndWait();
+        Optional<ButtonType> result = Dialogs.prepare(alert).showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             Toast.info("Closing job...");
             jobPostService.closeJob(jobId)
