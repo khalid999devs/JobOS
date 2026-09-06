@@ -21,7 +21,7 @@ For a closer look, expand a gallery below and click any image to open the origin
 The screenshots show desktop and Android views side by side where available. Each gallery follows a related part of the user journey.
 
 <details>
-<summary><strong>1. Getting into JobOS — welcome, registration, and onboarding</strong></summary>
+<summary><strong>1. Getting into JobOS: welcome, registration, and onboarding</strong></summary>
 
 Choose a role, create an account, and complete a seeker or company profile.
 
@@ -34,7 +34,7 @@ Choose a role, create an account, and complete a seeker or company profile.
 </details>
 
 <details open>
-<summary><strong>2. Finding a job — discover, apply, and track progress</strong></summary>
+<summary><strong>2. Finding a job: discover, apply, and track progress</strong></summary>
 
 Start at the seeker dashboard, browse opportunities, inspect a listing, and apply with a CV and cover letter. Return to application history to follow the outcome.
 
@@ -49,7 +49,7 @@ Start at the seeker dashboard, browse opportunities, inspect a listing, and appl
 </details>
 
 <details>
-<summary><strong>3. Building a CV — templates, editing, and export</strong></summary>
+<summary><strong>3. Building a CV: templates, editing, and export</strong></summary>
 
 Manage CVs, select a template, edit sections, and preview the exported document.
 
@@ -62,7 +62,7 @@ Manage CVs, select a template, edit sections, and preview the exported document.
 </details>
 
 <details>
-<summary><strong>4. Hiring candidates — manage jobs and review applicants</strong></summary>
+<summary><strong>4. Hiring candidates: manage jobs and review applicants</strong></summary>
 
 Use the recruiter dashboard to manage listings, inspect applications, review candidate CVs, and maintain a company profile.
 
@@ -75,7 +75,7 @@ Use the recruiter dashboard to manage listings, inspect applications, review can
 </details>
 
 <details>
-<summary><strong>5. Managing an account — plans, notifications, and settings</strong></summary>
+<summary><strong>5. Managing an account: plans, notifications, and settings</strong></summary>
 
 View credits and plans, follow application updates, and adjust account preferences. The plans screen demonstrates the project's credit and subscription model; payment processing is simulated.
 
