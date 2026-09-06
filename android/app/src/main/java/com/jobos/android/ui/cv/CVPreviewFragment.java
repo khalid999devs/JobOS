@@ -120,7 +120,7 @@ public class CVPreviewFragment extends BaseFragment {
     }
 
     private void setupClickListeners() {
-        toolbar.setNavigationOnClickListener(v -> navController.popBackStack());
+        toolbar.setNavigationOnClickListener(v -> navigateBack());
 
         toolbar.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
@@ -161,7 +161,7 @@ public class CVPreviewFragment extends BaseFragment {
         
         if (cvId == null) {
             showToast("Invalid CV");
-            navController.popBackStack();
+            navigateBack();
             return;
         }
 

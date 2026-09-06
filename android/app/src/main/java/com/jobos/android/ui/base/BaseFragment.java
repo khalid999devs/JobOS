@@ -12,6 +12,7 @@ import com.jobos.android.R;
 import com.jobos.android.data.local.SessionManager;
 import com.jobos.android.data.network.TokenManager;
 import com.jobos.android.ui.main.MainActivity;
+import com.jobos.android.ui.util.SystemBarsUtil;
 
 public abstract class BaseFragment extends Fragment {
     
@@ -25,6 +26,7 @@ public abstract class BaseFragment extends Fragment {
         sessionManager = new SessionManager(requireContext());
         navController = Navigation.findNavController(view);
         tokenManager = new TokenManager(requireContext());
+        SystemBarsUtil.applyTopInsetToToolbarArea(view);
     }
     
     protected void showToast(String message) {
@@ -63,6 +65,13 @@ public abstract class BaseFragment extends Fragment {
     
     protected String getAccessToken() {
         return sessionManager != null ? sessionManager.getAccessToken() : null;
+    }
+
+    protected void navigateBack() {
+        if (navController != null && (navController.popBackStack() || navController.navigateUp())) {
+            return;
+        }
+        requireActivity().getOnBackPressedDispatcher().onBackPressed();
     }
     
     /**

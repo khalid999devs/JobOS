@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.jobos.android.R;
+import com.jobos.android.ui.util.SystemBarsUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,6 +49,7 @@ public class PdfPreviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pdf_preview);
 
         initViews();
+        SystemBarsUtil.applyTopInsetToToolbarArea(toolbar);
         setupToolbar();
         loadFromIntent();
     }

@@ -10,6 +10,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.jobos.android.R;
 import com.jobos.android.data.local.SessionManager;
+import com.jobos.android.ui.util.SystemBarsUtil;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigation = findViewById(R.id.bottom_navigation);
         if (bottomNavigation != null) {
+            SystemBarsUtil.applyBottomInset(bottomNavigation);
             bottomNavigation.setVisibility(View.GONE);
         }
         
